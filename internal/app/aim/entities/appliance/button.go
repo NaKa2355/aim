@@ -2,19 +2,12 @@ package appliance
 
 import "github.com/NaKa2355/aim/internal/app/aim/entities/command"
 
-type Button struct {
-	*ApplianceData
-}
-
-func NewButton(name string, deviceID string) (*Button, error) {
-	var b *Button
-	a, err := NewAppliance(name, AppTypeButton, deviceID)
+func NewButton(name Name, deviceID DeviceID) (Appliance, error) {
+	var a *ApplianceData
+	a, err := NewAppliance(name, AppTypeButton, deviceID, "")
 	if err != nil {
-		return b, err
+		return a, err
 	}
-	b = &Button{
-		ApplianceData: a,
-	}
-	b.commands = append(b.commands, command.New("push"))
-	return b, nil
+	a.commands = append(a.commands, command.New("push"))
+	return a, nil
 }

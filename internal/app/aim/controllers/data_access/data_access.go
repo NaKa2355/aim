@@ -35,32 +35,11 @@ func (d *DataAccess) Close() error {
 	return d.db.Close()
 }
 
-func (d *DataAccess) SaveButton(b *appliance.Button) error {
+func (d *DataAccess) SaveApp(a appliance.Appliance) error {
 	return d.db.Exec(
 		[]database.Query{
-			saveApp(b),
-			saveButton(b),
-			saveCommands(b),
-		},
-	)
-}
-
-func (d *DataAccess) SaveSwitch(s *appliance.Switch) error {
-	return d.db.Exec(
-		[]database.Query{
-			saveApp(s),
-			saveSwitch(s),
-			saveCommands(s),
-		},
-	)
-}
-
-func (d *DataAccess) SaveThermostat(t *appliance.Thermostat) error {
-	return d.db.Exec(
-		[]database.Query{
-			saveApp(t),
-			saveThermostat(t),
-			saveCommands(t),
+			saveApp(a),
+			saveCommands(a),
 		},
 	)
 }
@@ -73,12 +52,12 @@ func (d *DataAccess) RemoveApp(a appliance.Appliance) error {
 	)
 }
 
-func (d *DataAccess) GetAppList() ([]appliance.Appliance, error) {
+func (d *DataAccess) GetAppList() ([]*appliance.ApplianceData, error) {
 	r, err := d.db.Query(getAppsList())
 	if err != nil {
 		return nil, err
 	}
-	apps := r.([]appliance.Appliance)
+	apps := r.([]*appliance.ApplianceData)
 	return apps, nil
 }
 

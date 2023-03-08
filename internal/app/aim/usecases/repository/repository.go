@@ -8,9 +8,7 @@ import (
 type Repository interface {
 	GetAppsList() ([]appliance.Appliance, error) //get only appliances data without commands data
 
-	SaveSwitch(*appliance.Switch) error
-	SaveButton(*appliance.Button) error
-	SaveThermostat(*appliance.Thermostat) error
+	SaveApp(appliance.Appliance) error
 	RemoveApp(appliance.Appliance) error //remove appliances data and commands
 
 	SetIRData(*command.Command) error                     //save command with irdata
