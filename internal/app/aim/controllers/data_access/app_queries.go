@@ -10,13 +10,14 @@ import (
 
 func saveApp(a appliance.Appliance) database.Query {
 	return database.Query{
-		Statement: "INSERT INTO appliances VALUES(?, ?, ?, ?) ON CONFLICT(app_id) DO UPDATE SET name=?, device_id=?;",
+		Statement: "INSERT INTO appliances VALUES(?, ?, ?, ?, ?) ON CONFLICT(app_id) DO UPDATE SET name=?, device_id=?;",
 		Exec: func(stmt *sql.Stmt) error {
 			var err error = nil
 			if a.GetID() == "" {
-				a.SetID(genID())
+				id, _ := appliance.NewID(genID())
+				a.SetID(id)
 			}
-			_, err = stmt.Exec(a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID(),
+			_, err = stmt.Exec(a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID(), a.GetOpt(),
 				a.GetName(), a.GetDeviceID())
 			if err != nil {
 				return err
@@ -43,12 +44,13 @@ func getAppsList() database.Query {
 	return database.Query{
 		Statement: "SELECT * FROM appliances",
 		Query: func(stmt *sql.Stmt) (any, error) {
-			var id string
-			var name string
+			var id appliance.ID
+			var name appliance.Name
 			var appType appliance.ApplianceType
-			var deviceID string
+			var deviceID appliance.DeviceID
+			var opt appliance.Opt
 
-			var apps []appliance.Appliance = make([]appliance.Appliance, 0, 4)
+			var apps []*appliance.ApplianceData = make([]*appliance.ApplianceData, 0, 4)
 
 			rows, err := stmt.Query()
 			if err != nil {
@@ -56,10 +58,11 @@ func getAppsList() database.Query {
 			}
 			defer rows.Close()
 			for rows.Next() {
-				if err := rows.Scan(&id, &name, &appType, &deviceID); err != nil {
+				if err := rows.Scan(&id, &name, &appType, &deviceID, &opt); err != nil {
 					return nil, err
 				}
-				a, err := appliance.NewApplianceWithID(id, name, appType, deviceID)
+
+				a, err := appliance.CloneAppliance(id, name, appType, deviceID, make([]*command.Command, 0), opt)
 				if err != nil {
 					return a, err
 				}
@@ -79,44 +82,6 @@ func setIRData(com *command.Command) database.Query {
 				return err
 			}
 			return nil
-		},
-	}
-}
-
-func saveButton(b *appliance.Button) database.Query {
-	return database.Query{
-		Statement: "INSERT INTO buttons VALUES(?);",
-		Exec: func(stmt *sql.Stmt) error {
-			var err error = nil
-			_, err = stmt.Exec(b.GetID())
-			return err
-		},
-	}
-}
-
-func saveSwitch(s *appliance.Switch) database.Query {
-	return database.Query{
-		Statement: "INSERT INTO switches VALUES(?);",
-		Exec: func(stmt *sql.Stmt) error {
-			var err error = nil
-			_, err = stmt.Exec(s.GetID())
-			return err
-
-		},
-	}
-}
-
-func saveThermostat(t *appliance.Thermostat) database.Query {
-	return database.Query{
-		Statement: "INSERT INTO thermostats VALUES(?,?,?,?,?,?);",
-		Exec: func(stmt *sql.Stmt) error {
-			var err error = nil
-			_, err = stmt.Exec(t.GetID(), t.GetScale(),
-				t.GetMaximumHeatingTemp(), t.GetMinimumHeatingTemp(),
-				t.GetMaximumCoolingTemp(), t.GetMinimumCoolingTemp(),
-			)
-			return err
-
 		},
 	}
 }

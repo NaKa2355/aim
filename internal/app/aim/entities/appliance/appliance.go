@@ -25,73 +25,38 @@ func (a ApplianceType) String() string {
 }
 
 type Appliance interface {
-	GetID() string
-	GetName() string
+	GetID() ID
+	GetName() Name
 	GetType() ApplianceType
-	GetDeviceID() string
-	SetID(string) error
-	ChangeName(string) error
-	ChangeDeviceID(string) error
+	GetDeviceID() DeviceID
+	GetOpt() Opt
 	GetCommands() []*command.Command
+
+	SetID(ID) error
+	ChangeName(Name) error
+	ChangeDeviceID(DeviceID) error
 }
 
-type ApplianceData struct {
-	id       string
-	name     string
-	appType  ApplianceType
-	deviceID string
-	commands []*command.Command
+type ID string
+
+func NewID(id string) (ID, error) {
+	return ID(id), nil
 }
 
-func NewAppliance(name string, appType ApplianceType, deviceID string) (*ApplianceData, error) {
-	a := &ApplianceData{
-		name:     name,
-		appType:  appType,
-		deviceID: deviceID,
-	}
-	return a, nil
+type Name string
+
+func NewName(name string) (Name, error) {
+	return Name(name), nil
 }
 
-func NewApplianceWithID(id string, name string, appType ApplianceType, deviceID string) (*ApplianceData, error) {
-	a, err := NewAppliance(name, appType, deviceID)
-	if err != nil {
-		return a, err
-	}
-	a.SetID(id)
-	return a, nil
+type DeviceID string
+
+func NewDeviceID(id string) (DeviceID, error) {
+	return DeviceID(id), nil
 }
 
-func (a *ApplianceData) SetID(id string) error {
-	a.id = id
-	return nil
-}
+type Opt string
 
-func (a *ApplianceData) GetID() string {
-	return a.id
-}
-
-func (a *ApplianceData) GetName() string {
-	return a.name
-}
-
-func (a *ApplianceData) GetType() ApplianceType {
-	return a.appType
-}
-
-func (a *ApplianceData) GetDeviceID() string {
-	return a.deviceID
-}
-
-func (a *ApplianceData) GetCommands() []*command.Command {
-	return a.commands
-}
-
-func (a *ApplianceData) ChangeName(name string) error {
-	a.name = name
-	return nil
-}
-
-func (a *ApplianceData) ChangeDeviceID(devID string) error {
-	a.deviceID = devID
-	return nil
+func NewOpt(opt string) (Opt, error) {
+	return Opt(opt), nil
 }

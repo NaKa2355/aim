@@ -1,8 +1,10 @@
 package appliance
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
+	"unsafe"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
@@ -13,62 +15,49 @@ const HEATING_THRESHOLD_MAX = 25
 const COOLING_THRESHOLD_MIN = 10
 const COOLING_THRESHOLD_MAX = 35
 
-type Thermostat struct {
-	*ApplianceData
-
-	scale              float64
-	maximumHeatingTemp int
-	minimumHeatingTemp int
-	maximumCoolingTemp int
-	minimumCoolingTemp int
+type ThermostatOpt struct {
+	Scale              float64 `json:"scale"`
+	MaximumHeatingTemp int     `json:"maximum_heating_temp"`
+	MinimumHeatingTemp int     `json:"minimum_heating_temp"`
+	MaximumCoolingTemp int     `json:"maximum_cooling_temp"`
+	MinimumCoolingTemp int     `json:"minimum_cooling_temp"`
 }
 
-func NewThermostat(name string, deviceID string,
-	s float64, miht int, maht int, mict int, mact int) (*Thermostat, error) {
+func NewThermostat(name Name, deviceID DeviceID,
+	s float64, miht int, maht int, mict int, mact int) (Appliance, error) {
 
-	var t *Thermostat
+	var a *ApplianceData
 
 	err := validateInput(s, miht, maht, mict, mact)
 	if err != nil {
-		return t, err
+		return a, err
 	}
 
-	a, err := NewAppliance(name, AppTypeThermostat, deviceID)
+	rawOpt, err := json.Marshal(
+		ThermostatOpt{
+			Scale:              s,
+			MaximumHeatingTemp: maht,
+			MinimumHeatingTemp: miht,
+			MaximumCoolingTemp: mact,
+			MinimumCoolingTemp: mict,
+		},
+	)
 	if err != nil {
-		return t, err
+		return a, err
 	}
 
-	t = &Thermostat{
-		ApplianceData:      a,
-		scale:              s,
-		maximumHeatingTemp: maht,
-		minimumHeatingTemp: miht,
-		maximumCoolingTemp: mact,
-		minimumCoolingTemp: mict,
+	opt, err := NewOpt(*(*string)(unsafe.Pointer(&rawOpt)))
+	if err != nil {
+		return a, err
 	}
 
-	t.addCommands()
-	return t, nil
-}
+	a, err = NewAppliance(name, AppTypeThermostat, deviceID, opt)
+	if err != nil {
+		return a, err
+	}
 
-func (t *Thermostat) GetScale() float64 {
-	return t.scale
-}
-
-func (t *Thermostat) GetMaximumHeatingTemp() int {
-	return t.maximumHeatingTemp
-}
-
-func (t *Thermostat) GetMinimumHeatingTemp() int {
-	return t.minimumHeatingTemp
-}
-
-func (t *Thermostat) GetMaximumCoolingTemp() int {
-	return t.maximumCoolingTemp
-}
-
-func (t *Thermostat) GetMinimumCoolingTemp() int {
-	return t.minimumCoolingTemp
+	a.commands = getCommands(s, miht, maht, mict, mact)
+	return a, nil
 }
 
 func validateInput(s float64, miht int, maht int, mict int, mact int) error {
@@ -108,27 +97,29 @@ func validateInput(s float64, miht int, maht int, mict int, mact int) error {
 	return nil
 }
 
-func (t *Thermostat) addCommands() {
+func getCommands(s float64, miht int, maht int, mict int, mact int) []*command.Command {
 	var name string
 	var temp float64
+	var size int = int(float64(mact-mict)/s + 1 + float64(maht-miht)/s + 1 + 1)
+	var commands = make([]*command.Command, 0, size)
 
-	temp = float64(t.minimumHeatingTemp)
-	for temp <= float64(t.maximumHeatingTemp) {
+	temp = float64(miht)
+	for temp <= float64(maht) {
 		name = fmt.Sprintf("h%.1f", temp)
-		t.commands = append(t.commands, command.New(name))
-		temp += t.scale
+		commands = append(commands, command.New(name))
+		temp += s
 		temp = round2ndDiminals(temp)
 	}
 
-	temp = float64(t.minimumCoolingTemp)
-	for temp <= float64(t.maximumCoolingTemp) {
+	temp = float64(mict)
+	for temp <= float64(mact) {
 		name = fmt.Sprintf("c%.1f", temp)
-		t.commands = append(t.commands, command.New(name))
-		temp += t.scale
+		commands = append(commands, command.New(name))
+		temp += s
 		temp = round2ndDiminals(temp)
 	}
-
-	t.commands = append(t.commands, command.New("off"))
+	commands = append(commands, command.New("off"))
+	return commands
 }
 
 func foor2ndDiminals(f float64) float64 {

@@ -11,14 +11,10 @@ import (
 
 func saveCommands(a appliance.Appliance) database.Query {
 	return database.Query{
-		Statement: "INSERT INTO commands VALUES(?, ?, ?)",
+		Statement: "INSERT INTO commands VALUES(?, ?, NULL)",
 		Exec: func(stmt *sql.Stmt) error {
 			for _, com := range a.GetCommands() {
-				if com.GetID() == "" {
-					com.SetID(genID())
-				}
-
-				_, err := stmt.Exec(com.GetID(), com.GetName(), a.GetID())
+				_, err := stmt.Exec(a.GetID(), com.GetName())
 				if err != nil {
 					return err
 				}
@@ -48,7 +44,7 @@ func deleteCommands(a appliance.Appliance) database.Query {
 	}
 }
 
-func getCommandsLists(appID string) database.Query {
+func getCommandsLists(appID appliance.ID) database.Query {
 	q := database.Query{
 		Statement: "SELECT commands.command_id, name FROM commands WHERE commands.app_id=?",
 		Query: func(stmt *sql.Stmt) (any, error) {
