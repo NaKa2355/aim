@@ -1,6 +1,7 @@
 package data_access
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -23,10 +24,11 @@ func (d *DataAccess) CreateTable() error {
 
 func (d *DataAccess) AddAppTypeQuery() error {
 	return d.db.Exec(
+		context.Background(),
 		[]database.Query{
 			{
 				Statement: "INSERT OR IGNORE INTO appliance_types VALUES(?, ?)",
-				Exec: func(stmt *sql.Stmt) error {
+				Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 					var err error = nil
 					for i, appType := range appliance.ApplianceTypeMap {
 						_, err = stmt.Exec(i, appType)

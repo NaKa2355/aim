@@ -7,7 +7,7 @@ import (
 
 type Repository interface {
 	GetAppsList() ([]appliance.Appliance, error) //get only appliances data without commands data
-
+	GetApp(appliance.Appliance) (appliance.Appliance, error)
 	SaveApp(appliance.Appliance) error
 	RemoveApp(appliance.Appliance) error //remove appliances data and commands
 

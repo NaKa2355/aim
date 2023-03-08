@@ -1,6 +1,7 @@
 package data_access
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
@@ -11,13 +12,9 @@ import (
 func saveApp(a appliance.Appliance) database.Query {
 	return database.Query{
 		Statement: "INSERT INTO appliances VALUES(?, ?, ?, ?, ?) ON CONFLICT(app_id) DO UPDATE SET name=?, device_id=?;",
-		Exec: func(stmt *sql.Stmt) error {
+		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			var err error = nil
-			if a.GetID() == "" {
-				id, _ := appliance.NewID(genID())
-				a.SetID(id)
-			}
-			_, err = stmt.Exec(a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID(), a.GetOpt(),
+			_, err = stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID(), a.GetOpt(),
 				a.GetName(), a.GetDeviceID())
 			if err != nil {
 				return err
@@ -30,8 +27,8 @@ func saveApp(a appliance.Appliance) database.Query {
 func deleteApp(a appliance.Appliance) database.Query {
 	return database.Query{
 		Statement: "DELETE FROM appliances WHERE app_id=?",
-		Exec: func(stmt *sql.Stmt) error {
-			_, err := stmt.Exec(a.GetID())
+		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
+			_, err := stmt.ExecContext(ctx, a.GetID())
 			if err != nil {
 				return err
 			}
@@ -43,16 +40,16 @@ func deleteApp(a appliance.Appliance) database.Query {
 func getAppsList() database.Query {
 	return database.Query{
 		Statement: "SELECT * FROM appliances",
-		Query: func(stmt *sql.Stmt) (any, error) {
+		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
 			var id appliance.ID
 			var name appliance.Name
 			var appType appliance.ApplianceType
 			var deviceID appliance.DeviceID
 			var opt appliance.Opt
 
-			var apps []*appliance.ApplianceData = make([]*appliance.ApplianceData, 0, 4)
+			var apps []appliance.Appliance = make([]appliance.Appliance, 0, 4)
 
-			rows, err := stmt.Query()
+			rows, err := stmt.QueryContext(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -62,26 +59,13 @@ func getAppsList() database.Query {
 					return nil, err
 				}
 
-				a, err := appliance.CloneAppliance(id, name, appType, deviceID, make([]*command.Command, 0), opt)
+				a, err := appliance.CloneAppliance(id, name, appType, deviceID, make([]command.Command, 0), opt)
 				if err != nil {
 					return a, err
 				}
 				apps = append(apps, a)
 			}
 			return apps, err
-		},
-	}
-}
-
-func setIRData(com *command.Command) database.Query {
-	return database.Query{
-		Statement: "INSERT INTO irdata VALUES(?, NULL);",
-		Exec: func(stmt *sql.Stmt) error {
-			var err error = nil
-			if _, err = stmt.Exec(com.GetID()); err != nil {
-				return err
-			}
-			return nil
 		},
 	}
 }

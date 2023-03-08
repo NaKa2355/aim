@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -30,12 +29,12 @@ func main() {
 		//return
 	}
 
-	t, err := appliance.NewThermostat("エアコ", "10", 0.5, 10, 20, 10, 20)
+	//t, err := appliance.NewThermostat("エアコ", "10", 0.5, 10, 20, 10, 20)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	err = d.SaveApp(t)
+	//err = d.SaveApp(t)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -48,5 +47,12 @@ func main() {
 	for _, app := range apps {
 		fmt.Println(app.GetName())
 	}
-	fmt.Println(apps[0].GetOpt())
+	d.SaveApp(apps[0])
+	a, err := d.GetApp(apps[0])
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, c := range a.GetCommands() {
+		fmt.Println(c.GetName())
+	}
 }
