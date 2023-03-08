@@ -1,6 +1,7 @@
 package data_access
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -12,7 +13,7 @@ import (
 func saveCommands(a appliance.Appliance) database.Query {
 	return database.Query{
 		Statement: "INSERT INTO commands VALUES(?, ?, NULL)",
-		Exec: func(stmt *sql.Stmt) error {
+		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			for _, com := range a.GetCommands() {
 				_, err := stmt.Exec(a.GetID(), com.GetName())
 				if err != nil {
@@ -27,16 +28,10 @@ func saveCommands(a appliance.Appliance) database.Query {
 func deleteCommands(a appliance.Appliance) database.Query {
 	return database.Query{
 		Statement: "DELETE FROM commands WHERE app_id=?",
-		Exec: func(stmt *sql.Stmt) error {
-			for _, com := range a.GetCommands() {
-				if com.GetID() == "" {
-					com.SetID(genID())
-				}
-
-				_, err := stmt.Exec(a.GetID())
-				if err != nil {
-					return err
-				}
+		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
+			_, err := stmt.Exec(a.GetID())
+			if err != nil {
+				return err
 			}
 			fmt.Println("deleting")
 			return nil
@@ -46,21 +41,20 @@ func deleteCommands(a appliance.Appliance) database.Query {
 
 func getCommandsLists(appID appliance.ID) database.Query {
 	q := database.Query{
-		Statement: "SELECT commands.command_id, name FROM commands WHERE commands.app_id=?",
-		Query: func(stmt *sql.Stmt) (any, error) {
-			var id string
+		Statement: "SELECT name FROM commands WHERE commands.app_id=?",
+		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
 			var name string
-			var coms []*command.Command = make([]*command.Command, 0, 2)
+			var coms []command.Command = make([]command.Command, 0, 2)
 			rows, err := stmt.Query(appID)
 			if err != nil {
 				return nil, err
 			}
 			defer rows.Close()
 			for rows.Next() {
-				if err := rows.Scan(&id, &name); err != nil {
+				if err := rows.Scan(&name); err != nil {
 					return nil, err
 				}
-				coms = append(coms, command.NewWithID(id, name))
+				coms = append(coms, command.New(name))
 			}
 			return coms, nil
 		},

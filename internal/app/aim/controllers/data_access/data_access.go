@@ -1,6 +1,7 @@
 package data_access
 
 import (
+	"context"
 	"embed"
 	"math/rand"
 	"time"
@@ -36,7 +37,23 @@ func (d *DataAccess) Close() error {
 }
 
 func (d *DataAccess) SaveApp(a appliance.Appliance) error {
+	var id appliance.ID
+	var err error = nil
+
+	if a.GetID() == "" {
+		id, err = appliance.NewID(genID())
+		if err != nil {
+			return err
+		}
+		a, err = appliance.CloneAppliance(id, a.GetName(), a.GetType(), a.GetDeviceID(), a.GetCommands(), a.GetOpt())
+	}
+
+	if err != nil {
+		return err
+	}
+
 	return d.db.Exec(
+		context.Background(),
 		[]database.Query{
 			saveApp(a),
 			saveCommands(a),
@@ -46,32 +63,38 @@ func (d *DataAccess) SaveApp(a appliance.Appliance) error {
 
 func (d *DataAccess) RemoveApp(a appliance.Appliance) error {
 	return d.db.Exec(
+		context.Background(),
 		[]database.Query{
 			deleteApp(a),
 		},
 	)
 }
 
-func (d *DataAccess) GetAppList() ([]*appliance.ApplianceData, error) {
-	r, err := d.db.Query(getAppsList())
+func (d *DataAccess) GetApp(a appliance.Appliance) (appliance.Appliance, error) {
+	r, err := d.db.Query(context.Background(), getCommandsLists(a.GetID()))
+	if err != nil {
+		return a, err
+	}
+	commands := r.([]command.Command)
+	return appliance.CloneAppliance(a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID(), commands, a.GetOpt())
+}
+
+func (d *DataAccess) GetAppList() ([]appliance.Appliance, error) {
+	r, err := d.db.Query(context.Background(), getAppsList())
 	if err != nil {
 		return nil, err
 	}
-	apps := r.([]*appliance.ApplianceData)
+	apps := r.([]appliance.Appliance)
 	return apps, nil
 }
 
 func (d *DataAccess) GetCommandsList(a appliance.Appliance) ([]*command.Command, error) {
-	r, err := d.db.Query(getCommandsLists(a.GetID()))
+	r, err := d.db.Query(context.Background(), getCommandsLists(a.GetID()))
 	if err != nil {
 		return nil, err
 	}
 	coms := r.([]*command.Command)
 	return coms, nil
-}
-
-func (d *DataAccess) SetIRData(com *command.Command) error {
-	return d.db.Exec([]database.Query{setIRData(com)})
 }
 
 func genID() string {

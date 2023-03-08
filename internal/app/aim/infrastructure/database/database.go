@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 )
 
@@ -23,31 +24,31 @@ func New(dbFile string) (*DataBase, error) {
 
 type Query struct {
 	Statement string
-	Exec      func(*sql.Stmt) error
-	Query     func(*sql.Stmt) (any, error)
+	Exec      func(context.Context, *sql.Stmt) error
+	Query     func(context.Context, *sql.Stmt) (any, error)
 }
 
-func (q *Query) exec(tx *sql.Tx) error {
+func (q *Query) exec(ctx context.Context, tx *sql.Tx) error {
 	stmt, err := tx.Prepare(q.Statement)
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
-	return q.Exec(stmt)
+	return q.Exec(ctx, stmt)
 }
 
-func (q *Query) query(tx *sql.Tx) (any, error) {
+func (q *Query) query(ctx context.Context, tx *sql.Tx) (any, error) {
 	stmt, err := tx.Prepare(q.Statement)
 	if err != nil {
 		return nil, err
 	}
 
 	defer stmt.Close()
-	return q.Query(stmt)
+	return q.Query(ctx, stmt)
 }
 
-func (d *DataBase) Exec(queries []Query) error {
+func (d *DataBase) Exec(ctx context.Context, queries []Query) error {
 	var err error = nil
 	tx, err := d.db.Begin()
 	if err != nil {
@@ -55,7 +56,7 @@ func (d *DataBase) Exec(queries []Query) error {
 	}
 
 	for _, q := range queries {
-		err = (&q).exec(tx)
+		err = (&q).exec(ctx, tx)
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -65,13 +66,13 @@ func (d *DataBase) Exec(queries []Query) error {
 	return tx.Commit()
 }
 
-func (d *DataBase) Query(q Query) (any, error) {
+func (d *DataBase) Query(ctx context.Context, q Query) (any, error) {
 	var err error = nil
 	tx, err := d.db.Begin()
 	if err != nil {
 		return nil, err
 	}
-	r, err := q.query(tx)
+	r, err := q.query(ctx, tx)
 	if err != nil {
 		tx.Rollback()
 		return r, err
