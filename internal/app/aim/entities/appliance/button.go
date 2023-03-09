@@ -8,6 +8,6 @@ func NewButton(name Name, deviceID DeviceID) (Appliance, error) {
 	if err != nil {
 		return a, err
 	}
-	a.commands = append(a.commands, command.New("push"))
+	a.commands = append(a.commands, command.New("", "push"))
 	return a, nil
 }
