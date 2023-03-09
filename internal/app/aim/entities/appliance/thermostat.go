@@ -26,7 +26,7 @@ type ThermostatOpt struct {
 func NewThermostat(name Name, deviceID DeviceID,
 	s float64, miht int, maht int, mict int, mact int) (Appliance, error) {
 
-	var a *ApplianceData
+	var a ApplianceData
 
 	err := validateInput(s, miht, maht, mict, mact)
 	if err != nil {
@@ -51,10 +51,7 @@ func NewThermostat(name Name, deviceID DeviceID,
 		return a, err
 	}
 
-	a, err = NewAppliance(name, AppTypeThermostat, deviceID, opt)
-	if err != nil {
-		return a, err
-	}
+	a = NewAppliance(name, AppTypeThermostat, deviceID, opt)
 
 	a.commands = getCommands(s, miht, maht, mict, mact)
 	return a, nil

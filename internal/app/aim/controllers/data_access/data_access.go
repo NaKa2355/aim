@@ -45,7 +45,7 @@ func (d *DataAccess) SaveApp(a appliance.Appliance) error {
 		if err != nil {
 			return err
 		}
-		a, err = appliance.CloneAppliance(id, a.GetName(), a.GetType(), a.GetDeviceID(), a.GetCommands(), a.GetOpt())
+		a = appliance.CloneAppliance(id, a.GetName(), a.GetType(), a.GetDeviceID(), a.GetCommands(), a.GetOpt())
 	}
 
 	if err != nil {
@@ -71,12 +71,12 @@ func (d *DataAccess) RemoveApp(a appliance.Appliance) error {
 }
 
 func (d *DataAccess) GetApp(a appliance.Appliance) (appliance.Appliance, error) {
-	r, err := d.db.Query(context.Background(), getCommandsLists(a.GetID()))
+	r, err := d.db.Query(context.Background(), getCommandsLists(a))
 	if err != nil {
 		return a, err
 	}
 	commands := r.([]command.Command)
-	return appliance.CloneAppliance(a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID(), commands, a.GetOpt())
+	return appliance.CloneAppliance(a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID(), commands, a.GetOpt()), nil
 }
 
 func (d *DataAccess) GetAppList() ([]appliance.Appliance, error) {
@@ -86,15 +86,6 @@ func (d *DataAccess) GetAppList() ([]appliance.Appliance, error) {
 	}
 	apps := r.([]appliance.Appliance)
 	return apps, nil
-}
-
-func (d *DataAccess) GetCommandsList(a appliance.Appliance) ([]*command.Command, error) {
-	r, err := d.db.Query(context.Background(), getCommandsLists(a.GetID()))
-	if err != nil {
-		return nil, err
-	}
-	coms := r.([]*command.Command)
-	return coms, nil
 }
 
 func genID() string {

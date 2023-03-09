@@ -5,12 +5,8 @@ import (
 )
 
 func NewSwitch(name Name, deviceID DeviceID) (Appliance, error) {
-	var a *ApplianceData
-	a, err := NewAppliance(name, AppTypeSwitch, deviceID, "")
-	if err != nil {
-		return a, err
-	}
-
+	var a ApplianceData
+	a = NewAppliance(name, AppTypeSwitch, deviceID, "")
 	a.commands = append(a.commands, command.New("", "on"))
 	a.commands = append(a.commands, command.New("", "off"))
 	return a, nil

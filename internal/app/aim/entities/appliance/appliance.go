@@ -32,8 +32,8 @@ type Appliance interface {
 	GetOpt() Opt
 	GetCommands() []command.Command
 
-	ChangeName(Name) error
-	ChangeDeviceID(DeviceID) error
+	ChangeName(Name) Appliance
+	ChangeDeviceID(DeviceID) Appliance
 }
 
 type ID string

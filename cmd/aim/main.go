@@ -43,7 +43,6 @@ func main() {
 	apps, err := d.GetAppList()
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 	for _, app := range apps {
 		fmt.Println(app.GetName())
