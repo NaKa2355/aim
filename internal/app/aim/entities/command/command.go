@@ -2,19 +2,34 @@ package command
 
 import "github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
 
+type Name string
+
+func NewName(name string) (Name, error) {
+	return Name(name), nil
+}
+
+type ID string
+
+func NewID(id string) (ID, error) {
+	return ID(id), nil
+}
+
 type CommandData struct {
-	name   string
+	id     ID
+	name   Name
 	irdata irdata.RawIRData
 }
 
 type Command interface {
-	GetName() string
+	GetID() ID
+	GetName() Name
 	GetRawIRData() irdata.RawIRData
 	SetRawIRData(irdata.RawIRData)
 }
 
-func New(name string) Command {
+func New(id ID, name Name) Command {
 	c := &CommandData{
+		id:   id,
 		name: name,
 	}
 	return c
@@ -24,7 +39,11 @@ func (c *CommandData) SetRawIRData(irdata irdata.RawIRData) {
 	c.irdata = irdata
 }
 
-func (c *CommandData) GetName() string {
+func (c *CommandData) GetID() ID {
+	return c.id
+}
+
+func (c *CommandData) GetName() Name {
 	return c.name
 }
 

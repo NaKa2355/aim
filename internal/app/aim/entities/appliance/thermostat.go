@@ -98,27 +98,27 @@ func validateInput(s float64, miht int, maht int, mict int, mact int) error {
 }
 
 func getCommands(s float64, miht int, maht int, mict int, mact int) []command.Command {
-	var name string
+	var name command.Name
 	var temp float64
 	var size int = int(float64(mact-mict)/s + 1 + float64(maht-miht)/s + 1 + 1)
 	var commands = make([]command.Command, 0, size)
 
 	temp = float64(miht)
 	for temp <= float64(maht) {
-		name = fmt.Sprintf("h%.1f", temp)
-		commands = append(commands, command.New(name))
+		name, _ = command.NewName(fmt.Sprintf("h%.1f", temp))
+		commands = append(commands, command.New("", name))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
 
 	temp = float64(mict)
 	for temp <= float64(mact) {
-		name = fmt.Sprintf("c%.1f", temp)
-		commands = append(commands, command.New(name))
+		name, _ = command.NewName(fmt.Sprintf("h%.1f", temp))
+		commands = append(commands, command.New("", name))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
-	commands = append(commands, command.New("off"))
+	commands = append(commands, command.New("", "off"))
 	return commands
 }
 

@@ -11,7 +11,7 @@ func NewSwitch(name Name, deviceID DeviceID) (Appliance, error) {
 		return a, err
 	}
 
-	a.commands = append(a.commands, command.New("on"))
-	a.commands = append(a.commands, command.New("off"))
+	a.commands = append(a.commands, command.New("", "on"))
+	a.commands = append(a.commands, command.New("", "off"))
 	return a, nil
 }

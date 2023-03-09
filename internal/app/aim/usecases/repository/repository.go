@@ -11,6 +11,8 @@ type Repository interface {
 	SaveApp(appliance.Appliance) error
 	RemoveApp(appliance.Appliance) error //remove appliances data and commands
 
-	SetIRData(*command.Command) error                     //save command with irdata
-	GetIRData(*command.Command) (*command.Command, error) //get command with irdata
+	GetCommand(appliance.Appliance, command.Command) (command.Command, error)
+	SaveCommand(appliance.Appliance, command.Command) error
+	RemoveCommand(appliance.Appliance, command.Command) error
+	RenameCommand(appliance.Appliance, command.Name, command.Name) error
 }

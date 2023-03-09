@@ -15,9 +15,10 @@ CREATE TABLE IF NOT EXISTS appliances (
 );
 
 CREATE TABLE IF NOT EXISTS commands (
-	app_id TEXT NOT NULL,
+	com_id TEXT PRIMARY KEY NOT NULL,
 	name TEXT NOT NULL,
+	app_id TEXT NOT NULL,
 	irdata BLOB,
-	PRIMARY KEY (name, app_id)
+	UNIQUE (name, app_id),
 	FOREIGN KEY (app_id) REFERENCES appliances (app_id) ON DELETE CASCADE
 );

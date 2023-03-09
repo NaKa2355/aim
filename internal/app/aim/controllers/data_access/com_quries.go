@@ -12,10 +12,12 @@ import (
 
 func saveCommands(a appliance.Appliance) database.Query {
 	return database.Query{
-		Statement: "INSERT INTO commands VALUES(?, ?, NULL)",
+		Statement: "INSERT INTO commands VALUES(?, ?, ?, NULL)",
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			for _, com := range a.GetCommands() {
-				_, err := stmt.Exec(a.GetID(), com.GetName())
+				id, _ := command.NewID(genID())
+				fmt.Println(a.GetID(), " ", com.GetName())
+				_, err := stmt.Exec(id, a.GetID(), com.GetName())
 				if err != nil {
 					return err
 				}
@@ -25,37 +27,27 @@ func saveCommands(a appliance.Appliance) database.Query {
 	}
 }
 
-func deleteCommands(a appliance.Appliance) database.Query {
-	return database.Query{
-		Statement: "DELETE FROM commands WHERE app_id=?",
-		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.Exec(a.GetID())
-			if err != nil {
-				return err
-			}
-			fmt.Println("deleting")
-			return nil
-		},
-	}
-}
-
 func getCommandsLists(appID appliance.ID) database.Query {
 	q := database.Query{
 		Statement: "SELECT name FROM commands WHERE commands.app_id=?",
 		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
-			var name string
+			var name command.Name
+			var id command.ID
 			var coms []command.Command = make([]command.Command, 0, 2)
+
 			rows, err := stmt.Query(appID)
 			if err != nil {
 				return nil, err
 			}
 			defer rows.Close()
+
 			for rows.Next() {
-				if err := rows.Scan(&name); err != nil {
+				if err := rows.Scan(&id, &name); err != nil {
 					return nil, err
 				}
-				coms = append(coms, command.New(name))
+				coms = append(coms, command.New(id, name))
 			}
+
 			return coms, nil
 		},
 	}
