@@ -68,7 +68,7 @@ func (d *DataAccess) SaveApp(a appliance.Appliance) error {
 		if err != nil {
 			return err
 		}
-		a = appliance.CloneAppliance(id, a.GetName(), a.GetType(), a.GetDeviceID(), a.GetCommands(), a.GetOpt())
+		a = appliance.NewAppliance(id, a.GetName(), a.GetType(), a.GetDeviceID(), a.GetOpt(), a.GetCommands())
 	}
 
 	if err != nil {

@@ -60,7 +60,7 @@ func getCommand(id command.ID) database.Query {
 				return c, err
 			}
 			defer rows.Close()
-
+			rows.Next()
 			if err := rows.Scan(&name, &irdata); err != nil {
 				return nil, err
 			}

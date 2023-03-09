@@ -15,21 +15,15 @@ type ApplianceData struct {
 	opt      Opt
 }
 
-func NewAppliance(name Name, appType ApplianceType, deviceID DeviceID, opt Opt) ApplianceData {
+func NewAppliance(id ID, name Name, appType ApplianceType, deviceID DeviceID, opt Opt, commands []command.Command) ApplianceData {
 	return ApplianceData{
+		id:       id,
 		name:     name,
 		appType:  appType,
 		deviceID: deviceID,
 		opt:      opt,
+		commands: commands,
 	}
-}
-
-func CloneAppliance(id ID, name Name, appType ApplianceType,
-	deviceID DeviceID, commands []command.Command, opt Opt) ApplianceData {
-	a := NewAppliance(name, appType, deviceID, opt)
-	a.id = id
-	a.commands = commands
-	return a
 }
 
 func (a ApplianceData) GetID() ID {
@@ -57,11 +51,11 @@ func (a ApplianceData) GetOpt() Opt {
 }
 
 func (a ApplianceData) ChangeName(name Name) Appliance {
-	return CloneAppliance(a.id, name, a.appType, a.deviceID, a.commands, a.opt)
+	return NewAppliance(a.id, a.name, a.appType, a.deviceID, a.opt, a.commands)
 }
 
 func (a ApplianceData) ChangeDeviceID(devID DeviceID) Appliance {
-	return CloneAppliance(a.id, a.name, a.appType, devID, a.commands, a.opt)
+	return NewAppliance(a.id, a.name, a.appType, devID, a.opt, a.commands)
 }
 
 func (a ApplianceData) ChangeCommandName() error {

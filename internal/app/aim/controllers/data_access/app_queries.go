@@ -59,7 +59,7 @@ func getAppsList() database.Query {
 					return nil, err
 				}
 
-				a := appliance.CloneAppliance(id, name, appType, deviceID, make([]command.Command, 0), opt)
+				a := appliance.NewAppliance(id, name, appType, deviceID, opt, make([]command.Command, 0))
 				apps = append(apps, a)
 			}
 			return apps, err
@@ -91,9 +91,9 @@ func getApp(id appliance.ID) database.Query {
 				if err := rows.Scan(&appID, &appName, &appType, &deviceID, &opt, &comID, &comName); err != nil {
 					return nil, err
 				}
-				commands = append(commands, command.New(comID, comName))
+				commands = append(commands, command.New(comID, comName, nil))
 			}
-			a = appliance.CloneAppliance(appID, appName, appType, deviceID, commands, opt)
+			a = appliance.NewAppliance(appID, appName, appType, deviceID, opt, commands)
 			return a, err
 		},
 	}
