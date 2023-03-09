@@ -3,16 +3,17 @@ package repository
 import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
 )
 
 type Repository interface {
 	GetAppsList() ([]appliance.Appliance, error) //get only appliances data without commands data
-	GetApp(appliance.Appliance) (appliance.Appliance, error)
+	GetApp(appliance.ID) (appliance.Appliance, error)
 	SaveApp(appliance.Appliance) error
-	RemoveApp(appliance.Appliance) error //remove appliances data and commands
+	RemoveApp(appliance.ID) error //remove appliances data and commands
 
-	GetCommand(appliance.Appliance, command.Command) (command.Command, error)
-	SaveCommand(appliance.Appliance, command.Command) error
-	RemoveCommand(appliance.Appliance, command.Command) error
-	RenameCommand(appliance.Appliance, command.Name, command.Name) error
+	GetCommand(command.ID) (command.Command, error)  //get command with irdata
+	SaveCommand(appliance.ID, command.Command) error //save command
+	SetRawIRData(command.ID, irdata.RawIRData) error //set irdata
+	RemoveCommand(command.ID) error                  //remove command
 }

@@ -35,6 +35,15 @@ func New(id ID, name Name) Command {
 	return c
 }
 
+func Clone(id ID, name Name, irdata irdata.RawIRData) Command {
+	c := &CommandData{
+		id:     id,
+		name:   name,
+		irdata: irdata,
+	}
+	return c
+}
+
 func (c *CommandData) SetRawIRData(irdata irdata.RawIRData) {
 	c.irdata = irdata
 }

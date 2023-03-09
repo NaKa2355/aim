@@ -24,11 +24,11 @@ func saveApp(a appliance.Appliance) database.Query {
 	}
 }
 
-func deleteApp(a appliance.Appliance) database.Query {
+func deleteApp(id appliance.ID) database.Query {
 	return database.Query{
 		Statement: "DELETE FROM appliances WHERE app_id=?",
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.ExecContext(ctx, a.GetID())
+			_, err := stmt.ExecContext(ctx, id)
 			if err != nil {
 				return err
 			}
@@ -63,6 +63,38 @@ func getAppsList() database.Query {
 				apps = append(apps, a)
 			}
 			return apps, err
+		},
+	}
+}
+
+func getApp(id appliance.ID) database.Query {
+	return database.Query{
+		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, a.opt, c.com_id, c.name 
+		FROM appliances a INNER JOIN commands c on a.app_id = c.app_id WHERE a.app_id=?;`,
+		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
+			var appID appliance.ID
+			var appName appliance.Name
+			var appType appliance.ApplianceType
+			var deviceID appliance.DeviceID
+			var opt appliance.Opt
+			var comID command.ID
+			var comName command.Name
+			var commands = make([]command.Command, 0, 10)
+			var a appliance.Appliance
+
+			rows, err := stmt.QueryContext(ctx, id)
+			if err != nil {
+				return a, err
+			}
+			defer rows.Close()
+			for rows.Next() {
+				if err := rows.Scan(&appID, &appName, &appType, &deviceID, &opt, &comID, &comName); err != nil {
+					return nil, err
+				}
+				commands = append(commands, command.New(comID, comName))
+			}
+			a = appliance.CloneAppliance(appID, appName, appType, deviceID, commands, opt)
+			return a, err
 		},
 	}
 }
