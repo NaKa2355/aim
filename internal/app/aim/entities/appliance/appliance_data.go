@@ -1,6 +1,8 @@
 package appliance
 
 import (
+	"fmt"
+
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
 
@@ -60,4 +62,25 @@ func (a ApplianceData) ChangeName(name Name) Appliance {
 
 func (a ApplianceData) ChangeDeviceID(devID DeviceID) Appliance {
 	return CloneAppliance(a.id, a.name, a.appType, devID, a.commands, a.opt)
+}
+
+func (a ApplianceData) ChangeCommandName() error {
+	if a.appType != AppTypeCustom {
+		return fmt.Errorf("this appliance does not support changing command name")
+	}
+	return nil
+}
+
+func (a ApplianceData) AddCommand() error {
+	if a.appType != AppTypeCustom {
+		return fmt.Errorf("this appliance does not support adding command name")
+	}
+	return nil
+}
+
+func (a ApplianceData) RemoveCommand() error {
+	if a.appType != AppTypeCustom {
+		return fmt.Errorf("this appliance does not support removing command name")
+	}
+	return nil
 }

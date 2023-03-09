@@ -29,18 +29,20 @@ func main() {
 		fmt.Println(err)
 		//return
 	}
-
-	t, err := appliance.NewThermostat("エアコ", "10", 0.5, 10, 20, 10, 20)
+	to, err := appliance.NewThermostatOpt(0.5, 10, 20, 10, 20)
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+	t, err := appliance.NewThermostat("エアコ", "10", to)
+	if err != nil {
+		fmt.Println(err)
 	}
 	err = d.SaveApp(t)
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	apps, err := d.GetAppList()
+	apps, err := d.GetAppsList()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -48,11 +50,13 @@ func main() {
 		fmt.Println(app.GetName())
 	}
 	d.SaveApp(apps[0])
-	a, err := d.GetApp(apps[0])
+	a, err := d.GetApp(apps[0].GetID())
 	if err != nil {
 		fmt.Println(err)
 	}
 	for _, c := range a.GetCommands() {
 		fmt.Println(c.GetName())
 	}
+
+	//d.RemoveApp(apps[0])
 }
