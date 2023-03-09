@@ -80,9 +80,8 @@ func NewThermostat(name Name, deviceID DeviceID, t ThermostatOpt) (Appliance, er
 		return a, err
 	}
 
-	a = NewAppliance(name, AppTypeThermostat, deviceID, opt)
-
-	a.commands = getCommands(t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp)
+	a = NewAppliance("", name, AppTypeThermostat, deviceID, opt,
+		getCommands(t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp))
 	return a, nil
 }
 
@@ -95,7 +94,7 @@ func getCommands(s float64, miht int, maht int, mict int, mact int) []command.Co
 	temp = float64(miht)
 	for temp <= float64(maht) {
 		name, _ = command.NewName(fmt.Sprintf("h%.1f", temp))
-		commands = append(commands, command.New("", name))
+		commands = append(commands, command.New("", name, nil))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
@@ -103,11 +102,11 @@ func getCommands(s float64, miht int, maht int, mict int, mact int) []command.Co
 	temp = float64(mict)
 	for temp <= float64(mact) {
 		name, _ = command.NewName(fmt.Sprintf("c%.1f", temp))
-		commands = append(commands, command.New("", name))
+		commands = append(commands, command.New("", name, nil))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
-	commands = append(commands, command.New("", "off"))
+	commands = append(commands, command.New("", "off", nil))
 	return commands
 }
 

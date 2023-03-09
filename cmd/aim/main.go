@@ -50,13 +50,4 @@ func main() {
 		fmt.Println(app.GetName())
 	}
 	d.SaveApp(apps[0])
-	a, err := d.GetApp(apps[0].GetID())
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, c := range a.GetCommands() {
-		fmt.Println(c.GetName())
-	}
-
-	//d.RemoveApp(apps[0])
 }

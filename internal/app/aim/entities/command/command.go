@@ -27,15 +27,7 @@ type Command interface {
 	SetRawIRData(irdata.RawIRData)
 }
 
-func New(id ID, name Name) Command {
-	c := &CommandData{
-		id:   id,
-		name: name,
-	}
-	return c
-}
-
-func Clone(id ID, name Name, irdata irdata.RawIRData) Command {
+func New(id ID, name Name, irdata irdata.RawIRData) Command {
 	c := &CommandData{
 		id:     id,
 		name:   name,
