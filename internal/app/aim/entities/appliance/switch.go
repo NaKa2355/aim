@@ -5,7 +5,7 @@ import (
 )
 
 func NewSwitch(name Name, deviceID DeviceID) Appliance {
-	return NewAppliance("", name, AppTypeSwitch, deviceID, "", []command.Command{
+	return NewAppliance("", name, TypeSwitch, deviceID, "", []command.Command{
 		command.New("", "on", nil),
 		command.New("", "off", nil),
 	})

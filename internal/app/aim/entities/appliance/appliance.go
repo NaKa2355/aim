@@ -5,19 +5,19 @@ import "github.com/NaKa2355/aim/internal/app/aim/entities/command"
 type ApplianceType int
 
 const (
-	AppTypeCustom ApplianceType = iota
-	AppTypeButton
-	AppTypeSwitch
-	AppTypeThermostat
-	AppTypeTelevision
+	TypeCustom ApplianceType = iota
+	TypeButton
+	TypeSwitch
+	TypeThermostat
+	TypeTelevision
 )
 
 var ApplianceTypeMap map[ApplianceType]string = map[ApplianceType]string{
-	AppTypeCustom:     "Custom",
-	AppTypeButton:     "Button",
-	AppTypeSwitch:     "Switch",
-	AppTypeThermostat: "Thermostat",
-	AppTypeTelevision: "Television",
+	TypeCustom:     "Custom",
+	TypeButton:     "Button",
+	TypeSwitch:     "Switch",
+	TypeThermostat: "Thermostat",
+	TypeTelevision: "Television",
 }
 
 func (a ApplianceType) String() string {

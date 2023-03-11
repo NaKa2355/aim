@@ -59,21 +59,21 @@ func (a ApplianceData) ChangeDeviceID(devID DeviceID) Appliance {
 }
 
 func (a ApplianceData) ChangeCommandName() error {
-	if a.appType != AppTypeCustom {
+	if a.appType != TypeCustom {
 		return fmt.Errorf("this appliance does not support changing command name")
 	}
 	return nil
 }
 
 func (a ApplianceData) AddCommand() error {
-	if a.appType != AppTypeCustom {
+	if a.appType != TypeCustom {
 		return fmt.Errorf("this appliance does not support adding command name")
 	}
 	return nil
 }
 
 func (a ApplianceData) RemoveCommand() error {
-	if a.appType != AppTypeCustom {
+	if a.appType != TypeCustom {
 		return fmt.Errorf("this appliance does not support removing command name")
 	}
 	return nil
