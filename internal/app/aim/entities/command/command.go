@@ -25,6 +25,7 @@ type Command interface {
 	GetName() Name
 	GetRawIRData() irdata.RawIRData
 	SetRawIRData(irdata.RawIRData)
+	ChangeName(Name) Command
 }
 
 func New(id ID, name Name, irdata irdata.RawIRData) Command {
@@ -50,4 +51,8 @@ func (c *CommandData) GetName() Name {
 
 func (c *CommandData) GetRawIRData() irdata.RawIRData {
 	return c.irdata
+}
+
+func (c *CommandData) ChangeName(name Name) Command {
+	return New(c.id, name, c.irdata)
 }

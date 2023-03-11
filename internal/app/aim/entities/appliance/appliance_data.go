@@ -51,7 +51,7 @@ func (a ApplianceData) GetOpt() Opt {
 }
 
 func (a ApplianceData) ChangeName(name Name) Appliance {
-	return NewAppliance(a.id, a.name, a.appType, a.deviceID, a.opt, a.commands)
+	return NewAppliance(a.id, name, a.appType, a.deviceID, a.opt, a.commands)
 }
 
 func (a ApplianceData) ChangeDeviceID(devID DeviceID) Appliance {

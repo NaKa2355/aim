@@ -30,9 +30,19 @@ func New(dbFile string) (*DataAccess, error) {
 	if err != nil {
 		return d, err
 	}
+
 	d = &DataAccess{
 		db: db,
 	}
+
+	if err := d.CreateTable(); err != nil {
+		return d, err
+	}
+
+	if err := d.AddAppTypeQuery(); err != nil {
+		return d, err
+	}
+
 	return d, nil
 }
 
@@ -40,8 +50,8 @@ func (d *DataAccess) Close() error {
 	return d.db.Close()
 }
 
-func (d *DataAccess) GetAppsList() ([]appliance.Appliance, error) {
-	r, err := d.db.Query(context.Background(), getAppsList())
+func (d *DataAccess) GetAppsList(ctx context.Context) ([]appliance.Appliance, error) {
+	r, err := d.db.Query(ctx, getAppsList())
 	if err != nil {
 		return nil, err
 	}
@@ -49,9 +59,9 @@ func (d *DataAccess) GetAppsList() ([]appliance.Appliance, error) {
 	return apps, nil
 }
 
-func (d *DataAccess) GetApp(id appliance.ID) (appliance.Appliance, error) {
+func (d *DataAccess) GetApp(ctx context.Context, id appliance.ID) (appliance.Appliance, error) {
 	var a appliance.Appliance
-	r, err := d.db.Query(context.Background(), getApp(id))
+	r, err := d.db.Query(ctx, getApp(id))
 	if err != nil {
 		return a, err
 	}
@@ -59,24 +69,14 @@ func (d *DataAccess) GetApp(id appliance.ID) (appliance.Appliance, error) {
 	return a, nil
 }
 
-func (d *DataAccess) SaveApp(a appliance.Appliance) error {
-	var id appliance.ID
-	var err error = nil
-
+func (d *DataAccess) SaveApp(ctx context.Context, a appliance.Appliance) (appliance.Appliance, error) {
 	if a.GetID() == "" {
-		id, err = appliance.NewID(genID())
-		if err != nil {
-			return err
-		}
+		id, _ := appliance.NewID(genID())
 		a = appliance.NewAppliance(id, a.GetName(), a.GetType(), a.GetDeviceID(), a.GetOpt(), a.GetCommands())
 	}
 
-	if err != nil {
-		return err
-	}
-
-	return d.db.Exec(
-		context.Background(),
+	return a, d.db.Exec(
+		ctx,
 		[]database.Query{
 			saveApp(a),
 			saveCommands(a),
@@ -84,18 +84,28 @@ func (d *DataAccess) SaveApp(a appliance.Appliance) error {
 	)
 }
 
-func (d *DataAccess) RemoveApp(id appliance.ID) error {
+func (d *DataAccess) RemoveApp(ctx context.Context, id appliance.ID) error {
 	return d.db.Exec(
-		context.Background(),
+		ctx,
 		[]database.Query{
 			deleteApp(id),
 		},
 	)
 }
 
-func (d *DataAccess) GetCommand(id command.ID) (command.Command, error) {
+func (d *DataAccess) GetCommands(ctx context.Context, id appliance.ID) ([]command.Command, error) {
+	var coms []command.Command
+	r, err := d.db.Query(ctx, getComamnds(id))
+	if err != nil {
+		return coms, err
+	}
+	coms = r.([]command.Command)
+	return coms, nil
+}
+
+func (d *DataAccess) GetCommand(ctx context.Context, id command.ID) (command.Command, error) {
 	var c command.Command
-	r, err := d.db.Query(context.Background(), getCommand(id))
+	r, err := d.db.Query(ctx, getCommand(id))
 	if err != nil {
 		return c, err
 	}
@@ -103,27 +113,33 @@ func (d *DataAccess) GetCommand(id command.ID) (command.Command, error) {
 	return c, nil
 }
 
-func (d *DataAccess) SaveCommand(id appliance.ID, c command.Command) error {
-	return d.db.Exec(
-		context.Background(),
+func (d *DataAccess) SaveCommand(ctx context.Context, id appliance.ID, c command.Command) (command.Command, error) {
+	if c.GetID() == "" {
+		id, _ := command.NewID(genID())
+		c = command.New(id, c.GetName(), c.GetRawIRData())
+	}
+
+	err := d.db.Exec(
+		ctx,
 		[]database.Query{
 			saveCommand(id, c),
 		},
 	)
+	return c, err
 }
 
-func (d *DataAccess) SetRawIRData(id command.ID, irdata irdata.RawIRData) error {
+func (d *DataAccess) SetRawIRData(ctx context.Context, id command.ID, irdata irdata.RawIRData) error {
 	return d.db.Exec(
-		context.Background(),
+		ctx,
 		[]database.Query{
 			setRawIRData(id, irdata),
 		},
 	)
 }
 
-func (d *DataAccess) RemoveCommand(id command.ID) error {
+func (d *DataAccess) RemoveCommand(ctx context.Context, id command.ID) error {
 	return d.db.Exec(
-		context.Background(),
+		ctx,
 		[]database.Query{
 			removeCommand(id),
 		},

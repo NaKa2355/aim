@@ -69,8 +69,10 @@ func getAppsList() database.Query {
 
 func getApp(id appliance.ID) database.Query {
 	return database.Query{
+
 		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, a.opt, c.com_id, c.name 
-		FROM appliances a INNER JOIN commands c on a.app_id = c.app_id WHERE a.app_id=?;`,
+		FROM appliances a INNER JOIN commands c ON a.app_id = c.app_id 
+		WHERE a.app_id=?;`,
 		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
 			var appID appliance.ID
 			var appName appliance.Name
@@ -93,7 +95,7 @@ func getApp(id appliance.ID) database.Query {
 				}
 				commands = append(commands, command.New(comID, comName, nil))
 			}
-			a = appliance.NewAppliance(appID, appName, appType, deviceID, opt, commands)
+			a = appliance.NewAppliance(appID, appName, appType, deviceID, opt, nil)
 			return a, err
 		},
 	}

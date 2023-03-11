@@ -48,6 +48,31 @@ func saveCommand(appID appliance.ID, c command.Command) database.Query {
 	}
 }
 
+func getCommands(appID appliance.ID) database.Query {
+	return database.Query{
+		Statement: "SELECT com_id, name FROM commands WHERE app_id = ?",
+		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
+			var comID command.ID
+			var name command.Name
+
+			var coms []command.Command = make([]command.Command, 0, 2)
+			rows, err := stmt.QueryContext(ctx, appID)
+			if err != nil {
+				return coms, err
+			}
+			defer rows.Close()
+			for rows.Next() {
+				if err := rows.Scan(&comID, &name); err != nil {
+					return nil, err
+				}
+				coms = append(coms, command.New(comID, name, nil))
+			}
+
+			return coms, err
+		},
+	}
+}
+
 func getCommand(id command.ID) database.Query {
 	return database.Query{
 		Statement: "SELECT name, irdata FROM commands WHERE com_id = ?;",
@@ -65,7 +90,7 @@ func getCommand(id command.ID) database.Query {
 				return nil, err
 			}
 
-			c = command.Clone(id, name, irdata)
+			c = command.New(id, name, irdata)
 			return c, err
 		},
 	}
@@ -87,6 +112,30 @@ func removeCommand(id command.ID) database.Query {
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.Exec(id)
 			return err
+		},
+	}
+}
+
+func getComamnds(id appliance.ID) database.Query {
+	return database.Query{
+		Statement: `SELECT com_id, name FROM commands WHERE app_id=?;`,
+		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
+			var comID command.ID
+			var comName command.Name
+			var commands = make([]command.Command, 0, 10)
+
+			rows, err := stmt.QueryContext(ctx, id)
+			if err != nil {
+				return commands, err
+			}
+			defer rows.Close()
+			for rows.Next() {
+				if err := rows.Scan(&comID, &comName); err != nil {
+					return nil, err
+				}
+				commands = append(commands, command.New(comID, comName, nil))
+			}
+			return commands, err
 		},
 	}
 }
