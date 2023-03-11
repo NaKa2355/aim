@@ -67,22 +67,15 @@ func NewThermostatOpt(s float64, miht int, maht int, mict int, mact int) (Thermo
 	return t, nil
 }
 
-func NewThermostat(name Name, deviceID DeviceID, t ThermostatOpt) (Appliance, error) {
+func NewThermostat(name Name, deviceID DeviceID, t ThermostatOpt) Appliance {
 	var a ApplianceData
 
-	rawOpt, err := json.Marshal(t)
-	if err != nil {
-		return a, err
-	}
-
-	opt, err := NewOpt(*(*string)(unsafe.Pointer(&rawOpt)))
-	if err != nil {
-		return a, err
-	}
+	rawOpt, _ := json.Marshal(t)
+	opt, _ := NewOpt(*(*string)(unsafe.Pointer(&rawOpt)))
 
 	a = NewAppliance("", name, AppTypeThermostat, deviceID, opt,
 		getCommands(t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp))
-	return a, nil
+	return a
 }
 
 func getCommands(s float64, miht int, maht int, mict int, mact int) []command.Command {

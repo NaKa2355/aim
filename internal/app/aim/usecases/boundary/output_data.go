@@ -12,16 +12,15 @@ const (
 )
 
 type Appliance struct {
-	id            string
-	name          string
-	deviceID      string
-	applianceType ApplianceType
+	ID            string
+	Name          string
+	DeviceID      string
+	ApplianceType ApplianceType
 }
 
 type Command struct {
-	id          string
-	name        string
-	commandType string
+	ID   string
+	Name string
 }
 
 type RawIrData []byte
