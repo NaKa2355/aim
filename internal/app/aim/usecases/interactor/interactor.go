@@ -4,316 +4,294 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
+	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
+	com "github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
-	"github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
+	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 )
 
 type Interactor struct {
-	rep repository.Repository
+	repo repository.Repository
 }
 
-var _ boundary.Boundary = &Interactor{}
+var _ bdy.Boundary = &Interactor{}
 
 func New(r repository.Repository) *Interactor {
 	i := &Interactor{
-		rep: r,
+		repo: r,
 	}
 	return i
 }
 
-func (i *Interactor) AddSwitch(ctx context.Context, d boundary.AddSwitch) (boundary.Appliance, error) {
-	var a = boundary.Appliance{}
-	name, err := appliance.NewName(d.Name)
+func (i *Interactor) AddSwitch(ctx context.Context, d bdy.AddSwitch) (bdy.Appliance, error) {
+	var r bdy.Appliance
+	name, err := app.NewName(d.Name)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	devID, err := appliance.NewDeviceID(d.DeviceID)
+	devID, err := app.NewDeviceID(d.DeviceID)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	s := appliance.NewSwitch(name, devID)
-	app, err := i.rep.SaveApp(ctx, s)
+	s := app.NewSwitch(name, devID)
+	app, err := i.repo.SaveApp(ctx, s)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	a.Name = string(app.GetName())
-	a.ID = string(app.GetID())
-	a.ApplianceType = boundary.ApplianceType(app.GetType())
-	a.DeviceID = string(app.GetDeviceID())
-	return a, nil
+	return convertApp(app), nil
 }
 
-func (i *Interactor) AddButton(ctx context.Context, name string, deviceID string) (boundary.Appliance, error) {
-	var a = boundary.Appliance{}
-	n, err := appliance.NewName(name)
+func (i *Interactor) AddButton(ctx context.Context, d bdy.AddButton) (bdy.Appliance, error) {
+	var r bdy.Appliance
+
+	name, err := app.NewName(d.Name)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	d, err := appliance.NewDeviceID(deviceID)
+	devID, err := app.NewDeviceID(d.DeviceID)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	b := appliance.NewButton(n, d)
-	app, err := i.rep.SaveApp(ctx, b)
+	b := app.NewButton(name, devID)
+
+	app, err := i.repo.SaveApp(ctx, b)
 	if err != nil {
-		return a, err
+		return r, err
 	}
-	a.Name = string(app.GetName())
-	a.ID = string(app.GetID())
-	a.ApplianceType = boundary.ApplianceType(app.GetType())
-	a.DeviceID = string(app.GetDeviceID())
-	return a, nil
+
+	return convertApp(app), nil
 }
 
-func (i *Interactor) AddThermostat(ctx context.Context, name string, deviceID string,
-	scale float64,
-	minimumHeatingTemp int,
-	maximumHeatingTemp int,
-	minimumCoolingTemp int,
-	maximumCoolingTemp int) (boundary.Appliance, error) {
-
-	var a = boundary.Appliance{}
-	tOpt, err := appliance.NewThermostatOpt(scale, minimumHeatingTemp, maximumHeatingTemp, minimumCoolingTemp, maximumCoolingTemp)
+func (i *Interactor) AddThermostat(ctx context.Context, d bdy.AddThermostat) (bdy.Appliance, error) {
+	var r bdy.Appliance
+	tOpt, err := app.NewThermostatOpt(d.Scale, d.MinimumHeatingTemp, d.MaximumHeatingTemp, d.MinimumCoolingTemp, d.MaximumCoolingTemp)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	n, err := appliance.NewName(name)
+	name, err := app.NewName(d.Name)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	d, err := appliance.NewDeviceID(deviceID)
+	devID, err := app.NewDeviceID(d.DeviceID)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	t := appliance.NewThermostat(n, d, tOpt)
+	t := app.NewThermostat(name, devID, tOpt)
 
-	app, err := i.rep.SaveApp(ctx, t)
+	app, err := i.repo.SaveApp(ctx, t)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	a.Name = string(app.GetName())
-	a.ID = string(app.GetID())
-	a.ApplianceType = boundary.ApplianceType(app.GetType())
-	a.DeviceID = string(app.GetDeviceID())
-	return a, nil
+	return convertApp(app), nil
 }
 
-func (i *Interactor) AddCustom(ctx context.Context, name string, deviceID string) (boundary.Appliance, error) {
-	var a = boundary.Appliance{}
-	n, err := appliance.NewName(name)
+func (i *Interactor) AddCustom(ctx context.Context, d bdy.AddCustom) (bdy.Appliance, error) {
+	var r bdy.Appliance
+	name, err := app.NewName(d.Name)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	d, err := appliance.NewDeviceID(deviceID)
+	devID, err := app.NewDeviceID(d.DeviceID)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	c := appliance.NewCustom(n, d)
-	app, err := i.rep.SaveApp(ctx, c)
+	c := app.NewCustom(name, devID)
+	app, err := i.repo.SaveApp(ctx, c)
 	if err != nil {
-		return a, err
+		return r, err
 	}
 
-	a.Name = string(app.GetName())
-	a.ID = string(app.GetID())
-	a.ApplianceType = boundary.ApplianceType(app.GetType())
-	a.DeviceID = string(app.GetDeviceID())
-	return a, nil
+	return convertApp(app), nil
 }
 
-func (i *Interactor) GetAppliances(ctx context.Context) ([]boundary.Appliance, error) {
-	var boundaryApps []boundary.Appliance
-	apps, err := i.rep.GetAppsList(ctx)
+func (i *Interactor) GetAppliances(ctx context.Context) ([]bdy.Appliance, error) {
+	var boundaryApps []bdy.Appliance
+	apps, err := i.repo.GetAppsList(ctx)
 	if err != nil {
 		return boundaryApps, err
 	}
-	boundaryApps = make([]boundary.Appliance, len(apps))
+	boundaryApps = make([]bdy.Appliance, len(apps))
 	for i, app := range apps {
-		boundaryApps[i].Name = string(app.GetName())
-		boundaryApps[i].ID = string(app.GetID())
-		boundaryApps[i].DeviceID = string(app.GetDeviceID())
-		boundaryApps[i].ApplianceType = boundary.ApplianceType(app.GetType())
+		boundaryApps[i] = convertApp(app)
 	}
 	return boundaryApps, nil
 }
 
-func (i *Interactor) RenameAppliance(ctx context.Context, appID string, name string) error {
-	id, err := appliance.NewID(appID)
+func (i *Interactor) RenameAppliance(ctx context.Context, d bdy.RenameApp) error {
+	id, err := app.NewID(d.AppID)
 	if err != nil {
 		return err
 	}
 
-	app, err := i.rep.GetApp(ctx, id)
+	a, err := i.repo.GetApp(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	n, err := appliance.NewName(name)
+	name, err := app.NewName(d.Name)
 	if err != nil {
 		return err
 	}
 
-	app = app.ChangeName(n)
+	a = a.ChangeName(name)
 
-	_, err = i.rep.SaveApp(ctx, app)
+	_, err = i.repo.SaveApp(ctx, a)
 	return err
 }
 
-func (i *Interactor) ChangeIRDevice(ctx context.Context, appID string, irDevID string) error {
-	id, err := appliance.NewID(appID)
+func (i *Interactor) ChangeIRDevice(ctx context.Context, d bdy.ChangeIRDev) error {
+	id, err := app.NewID(d.AppID)
 	if err != nil {
 		return err
 	}
 
-	app, err := i.rep.GetApp(ctx, id)
+	a, err := i.repo.GetApp(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	d, err := appliance.NewDeviceID(irDevID)
+	devID, err := app.NewDeviceID(d.DeviceID)
 	if err != nil {
 		return err
 	}
 
-	app = app.ChangeDeviceID(d)
-	_, err = i.rep.SaveApp(ctx, app)
+	a = a.ChangeDeviceID(devID)
+	_, err = i.repo.SaveApp(ctx, a)
 	return err
 }
 
-func (i *Interactor) DeleteAppliance(ctx context.Context, appID string) error {
-	id, err := appliance.NewID(appID)
+func (i *Interactor) DeleteAppliance(ctx context.Context, d bdy.DeleteApp) error {
+	id, err := app.NewID(d.AppID)
 	if err != nil {
 		return err
 	}
-	return i.rep.RemoveApp(ctx, id)
+	return i.repo.RemoveApp(ctx, id)
 }
 
-func (i *Interactor) GetCommands(ctx context.Context, appID string) ([]boundary.Command, error) {
-	var bCom []boundary.Command
+func (i *Interactor) GetCommands(ctx context.Context, d bdy.GetCommands) ([]bdy.Command, error) {
+	var bCom []bdy.Command
 
-	id, err := appliance.NewID(appID)
+	id, err := app.NewID(d.AppID)
 	if err != nil {
 		return bCom, err
 	}
 
-	coms, err := i.rep.GetCommands(ctx, id)
+	coms, err := i.repo.GetCommands(ctx, id)
 	if err != nil {
 		return bCom, err
 	}
-	bCom = make([]boundary.Command, len(coms))
-	for i, com := range coms {
-		bCom[i].ID = string(com.GetID())
-		bCom[i].Name = string(com.GetName())
+	bCom = make([]bdy.Command, len(coms))
+	for i, c := range coms {
+		bCom[i].ID = string(c.GetID())
+		bCom[i].Name = string(c.GetName())
 	}
 	return bCom, nil
 }
 
-func (i *Interactor) RenameCommand(ctx context.Context, appID string, comID string, name string) error {
-	aID, err := appliance.NewID(appID)
+func (i *Interactor) RenameCommand(ctx context.Context, d bdy.RenameCommand) error {
+	appID, err := app.NewID(d.AppID)
 	if err != nil {
 		return err
 	}
 
-	cID, err := command.NewID(comID)
+	comID, err := com.NewID(d.ComID)
 	if err != nil {
 		return err
 	}
 
-	cName, err := command.NewName(name)
+	name, err := com.NewName(d.Name)
 	if err != nil {
 		return err
 	}
 
-	app, err := i.rep.GetApp(ctx, aID)
+	a, err := i.repo.GetApp(ctx, appID)
 	if err != nil {
 		return err
 	}
 
-	if app.GetType() != appliance.AppTypeCustom {
-		return fmt.Errorf("this appliance is not support renaming")
+	if a.GetType() != app.TypeCustom {
+		return fmt.Errorf("this appliance is not support renaming command(s)")
 	}
 
-	com, err := i.rep.GetCommand(ctx, cID)
+	c, err := i.repo.GetCommand(ctx, comID)
 	if err != nil {
 		return err
 	}
-	com = com.ChangeName(cName)
+	c = c.ChangeName(name)
 
-	_, err = i.rep.SaveCommand(ctx, aID, com)
+	_, err = i.repo.SaveCommand(ctx, appID, c)
 	return err
 }
 
-func (i *Interactor) AddCommand(ctx context.Context, appID string, name string) error {
-	id, err := appliance.NewID(appID)
+func (i *Interactor) AddCommand(ctx context.Context, d bdy.AddCommand) error {
+	id, err := app.NewID(d.AppID)
 	if err != nil {
 		return err
 	}
 
-	n, err := command.NewName(name)
+	name, err := com.NewName(d.Name)
 	if err != nil {
 		return err
 	}
-	_, err = i.rep.SaveCommand(ctx, id, command.New("", n, nil))
+	_, err = i.repo.SaveCommand(ctx, id, com.New("", name, nil))
 	return err
 }
 
-func (i *Interactor) RemoveCommand(ctx context.Context, appID string, comID string) error {
-	aID, err := appliance.NewID(appID)
+func (i *Interactor) RemoveCommand(ctx context.Context, d bdy.RemoveCommand) error {
+	aID, err := app.NewID(d.AppID)
 	if err != nil {
 		return err
 	}
 
-	cID, err := command.NewID(comID)
+	cID, err := com.NewID(d.ComID)
 	if err != nil {
 		return err
 	}
 
-	app, err := i.rep.GetApp(ctx, aID)
+	a, err := i.repo.GetApp(ctx, aID)
 	if err != nil {
 		return err
 	}
 
-	if app.GetType() != appliance.AppTypeCustom {
-		return fmt.Errorf("this appliance is not support renaming")
+	if a.GetType() != app.TypeCustom {
+		return fmt.Errorf("this appliance is not support removing command(s)")
 	}
 
-	return i.rep.RemoveCommand(ctx, cID)
+	return i.repo.RemoveCommand(ctx, cID)
 }
 
-func (i *Interactor) GetRawIRData(ctx context.Context, comID string) (boundary.RawIrData, error) {
-	var irdata boundary.RawIrData
-	id, err := command.NewID(comID)
+func (i *Interactor) GetRawIRData(ctx context.Context, d bdy.GetRawIRData) (bdy.RawIRData, error) {
+	var irdata bdy.RawIRData
+	id, err := com.NewID(d.ComID)
 	if err != nil {
 		return irdata, err
 	}
 
-	com, err := i.rep.GetCommand(ctx, id)
+	c, err := i.repo.GetCommand(ctx, id)
 	if err != nil {
 		return irdata, err
 	}
 
-	irdata = boundary.RawIrData(com.GetRawIRData())
+	irdata = bdy.RawIRData(c.GetRawIRData())
 	return irdata, nil
 }
 
-func (i *Interactor) SetRawIRData(ctx context.Context, comID string, rawIRData boundary.RawIrData) error {
-	id, err := command.NewID(comID)
+func (i *Interactor) SetRawIRData(ctx context.Context, d bdy.SetRawIRData) error {
+	id, err := com.NewID(d.ComID)
 	if err != nil {
 		return err
 	}
-	return i.rep.SetRawIRData(ctx, id, irdata.RawIRData(rawIRData))
+	return i.repo.SetRawIRData(ctx, id, irdata.RawIRData(d.Data))
 }

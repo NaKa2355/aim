@@ -44,6 +44,7 @@ type GetCommands struct {
 
 type RenameCommand struct {
 	AppID string
+	ComID string
 	Name  string
 }
 
@@ -62,6 +63,6 @@ type GetRawIRData struct {
 }
 
 type SetRawIRData struct {
-	ComID  string
-	IRData RawIrData
+	ComID string
+	Data  RawIRData
 }

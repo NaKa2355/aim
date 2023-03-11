@@ -73,7 +73,7 @@ func NewThermostat(name Name, deviceID DeviceID, t ThermostatOpt) Appliance {
 	rawOpt, _ := json.Marshal(t)
 	opt, _ := NewOpt(*(*string)(unsafe.Pointer(&rawOpt)))
 
-	a = NewAppliance("", name, AppTypeThermostat, deviceID, opt,
+	a = NewAppliance("", name, TypeThermostat, deviceID, opt,
 		getCommands(t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp))
 	return a
 }
