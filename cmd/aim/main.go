@@ -5,7 +5,6 @@ import (
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {

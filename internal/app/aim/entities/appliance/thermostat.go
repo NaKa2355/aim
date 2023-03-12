@@ -59,11 +59,13 @@ func NewThermostatOpt(s float64, miht int, maht int, mict int, mact int) (Thermo
 		return t, fmt.Errorf("maximum cooling tempature need to be in between 10 to 35")
 	}
 
-	t.Scale = s
-	t.MaximumHeatingTemp = maht
-	t.MinimumHeatingTemp = miht
-	t.MaximumCoolingTemp = mact
-	t.MinimumCoolingTemp = mict
+	t = ThermostatOpt{
+		Scale:              s,
+		MaximumHeatingTemp: maht,
+		MinimumHeatingTemp: miht,
+		MaximumCoolingTemp: mact,
+		MinimumCoolingTemp: mict,
+	}
 	return t, nil
 }
 
