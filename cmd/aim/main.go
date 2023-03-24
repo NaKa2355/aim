@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
+	"github.com/NaKa2355/aim/internal/app/aim/controllers/presenter"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
 )
 
@@ -15,5 +17,6 @@ func main() {
 		return
 	}
 	defer d.Close()
-	interactor.New(d)
+	i := interactor.New(d, presenter.StdOut{})
+	i.GetAppliances(context.Background())
 }

@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 )
 
 func (d *DataAccess) CreateTable() error {
-	query, err := queries.ReadFile("sql/create_table.sql")
+	query, err := createTableQueries.ReadFile("sql/create_table.sql")
 	if err != nil {
 		return err
 	}
