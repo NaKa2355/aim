@@ -1,21 +1,21 @@
 package boundary
 
-type AddCustom struct {
+type AddCustomInput struct {
 	Name     string
 	DeviceID string
 }
 
-type AddSwitch struct {
+type AddToggleInput struct {
 	Name     string
 	DeviceID string
 }
 
-type AddButton struct {
+type AddButtonInput struct {
 	Name     string
 	DeviceID string
 }
 
-type AddThermostat struct {
+type AddThermostatInput struct {
 	Name               string
 	DeviceID           string
 	Scale              float64
@@ -25,44 +25,51 @@ type AddThermostat struct {
 	MinimumCoolingTemp int
 }
 
-type RenameApp struct {
+type GetAppInput struct {
+	AppID string
+}
+
+type RenameAppInput struct {
 	AppID string
 	Name  string
 }
 
-type ChangeIRDev struct {
+type ChangeIRDevInput struct {
 	AppID    string
 	DeviceID string
 }
-type DeleteApp struct {
+
+type DeleteAppInput struct {
 	AppID string
 }
 
-type GetCommands struct {
+type GetCommandsInput struct {
 	AppID string
 }
 
-type RenameCommand struct {
+type RenameCommandInput struct {
 	AppID string
 	ComID string
 	Name  string
 }
 
-type AddCommand struct {
+type AddCommandInput struct {
 	AppID string
 	Name  string
 }
 
-type RemoveCommand struct {
+type RemoveCommandInput struct {
 	AppID string
 	ComID string
 }
 
-type GetRawIRData struct {
+type GetRawIRDataInput struct {
+	AppID string
 	ComID string
 }
 
-type SetRawIRData struct {
+type SetRawIRDataInput struct {
+	AppID string
 	ComID string
-	Data  RawIRData
+	Data  IRData
 }

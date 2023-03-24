@@ -4,55 +4,50 @@ import "github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
 
 type Name string
 
-func NewName(name string) (Name, error) {
-	return Name(name), nil
+func NewName(name string) Name {
+	return Name(name)
 }
 
 type ID string
 
-func NewID(id string) (ID, error) {
-	return ID(id), nil
+func NewID(id string) ID {
+	return ID(id)
 }
 
-type CommandData struct {
-	id     ID
-	name   Name
-	irdata irdata.RawIRData
+type Command struct {
+	ID     ID
+	Name   Name
+	IRData irdata.IRData
 }
 
-type Command interface {
-	GetID() ID
-	GetName() Name
-	GetRawIRData() irdata.RawIRData
-	SetRawIRData(irdata.RawIRData)
-	ChangeName(Name) Command
-}
-
-func New(id ID, name Name, irdata irdata.RawIRData) Command {
-	c := &CommandData{
-		id:     id,
-		name:   name,
-		irdata: irdata,
+func New(id ID, name Name, irdata irdata.IRData) Command {
+	return Command{
+		ID:     id,
+		Name:   name,
+		IRData: irdata,
 	}
-	return c
 }
 
-func (c *CommandData) SetRawIRData(irdata irdata.RawIRData) {
-	c.irdata = irdata
+func (c *Command) GetID() ID {
+	return c.ID
 }
 
-func (c *CommandData) GetID() ID {
-	return c.id
+func (c *Command) SetID(id ID) {
+	c.ID = id
 }
 
-func (c *CommandData) GetName() Name {
-	return c.name
+func (c *Command) GetName() Name {
+	return c.Name
 }
 
-func (c *CommandData) GetRawIRData() irdata.RawIRData {
-	return c.irdata
+func (c *Command) SetName(name Name) {
+	c.Name = name
 }
 
-func (c *CommandData) ChangeName(name Name) Command {
-	return New(c.id, name, c.irdata)
+func (c *Command) GetRawIRData() irdata.IRData {
+	return c.IRData
+}
+
+func (c *Command) SetRawIRData(irdata irdata.IRData) {
+	c.IRData = irdata
 }
