@@ -2,9 +2,11 @@ package presenter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
+	"github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 )
 
 type StdOut struct{}
@@ -18,6 +20,7 @@ func (o StdOut) AddToggle(ctx context.Context, out bdy.AddAppOutput, err error) 
 }
 
 func (o StdOut) AddButton(ctx context.Context, out bdy.AddAppOutput, err error) {
+	fmt.Println(errors.Is(err, repository.ErrInvaildArgs))
 	fmt.Println(out, " ", err)
 }
 

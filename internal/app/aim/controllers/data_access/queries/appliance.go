@@ -3,14 +3,17 @@ package queries
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/custom"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/thermostat"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/toggle"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
+	"github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
+	"github.com/mattn/go-sqlite3"
 )
 
 func InsertApp(a app.Appliance) database.Query {
@@ -18,6 +21,11 @@ func InsertApp(a app.Appliance) database.Query {
 		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID())
+			if sqlErr, ok := err.(sqlite3.Error); ok {
+				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+					return fmt.Errorf("%w: %w", repository.ErrInvaildArgs, err)
+				}
+			}
 			return err
 		},
 	}
@@ -65,9 +73,8 @@ func InsertIntoThermostats(t thermostat.Thermostat) database.Query {
 
 func SelectFromCustomsWhere(id app.ID) database.Query {
 	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, c.com_id, c.name
+		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id
 		FROM appliances a 
-		JOIN commands c ON a.app_id = c.app_id
 		JOIN customs ON a.app_id = customs.app_id
 		WHERE a.app_id = ?`,
 		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
@@ -77,13 +84,12 @@ func SelectFromCustomsWhere(id app.ID) database.Query {
 				return c, err
 			}
 			defer rows.Close()
-			for rows.Next() {
-				var com = command.Command{}
-				err = rows.Scan(&c.ID, &c.Name, &c.Type, &c.DeviceID, &com.ID, &com.Name)
-				if err != nil {
-					return c, err
-				}
-				c.Commands = append(c.Commands, com)
+			if rows.Next() {
+				return c, repository.ErrNotFound
+			}
+			err = rows.Scan(&c.ID, &c.Name, &c.Type, &c.DeviceID)
+			if err != nil {
+				return c, err
 			}
 			return c, err
 		},
@@ -92,9 +98,8 @@ func SelectFromCustomsWhere(id app.ID) database.Query {
 
 func SelectFromButtonsWhere(id app.ID) database.Query {
 	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, c.com_id, c.name
+		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id
 		FROM appliances a 
-		JOIN commands c ON a.app_id = c.app_id
 		JOIN buttons b ON a.app_id = b.app_id
 		WHERE a.app_id = ?`,
 		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
@@ -105,13 +110,12 @@ func SelectFromButtonsWhere(id app.ID) database.Query {
 			}
 			defer rows.Close()
 
-			for rows.Next() {
-				var com = command.Command{}
-				err = rows.Scan(&b.ID, &b.Name, &b.Type, &b.DeviceID, &com.ID, &com.Name)
-				if err != nil {
-					return b, err
-				}
-				b.Commands = append(b.Commands, com)
+			if !rows.Next() {
+				return b, repository.ErrNotFound
+			}
+			err = rows.Scan(&b.ID, &b.Name, &b.Type, &b.DeviceID)
+			if err != nil {
+				return b, err
 			}
 
 			return b, err
@@ -121,9 +125,8 @@ func SelectFromButtonsWhere(id app.ID) database.Query {
 
 func SelectFromTogglesWhere(id app.ID) database.Query {
 	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, c.com_id, c.name
+		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id
 		FROM appliances a 
-		JOIN commands c ON a.app_id = c.app_id
 		JOIN toggles t ON a.app_id = t.app_id
 		WHERE a.app_id = ?`,
 		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
@@ -134,13 +137,13 @@ func SelectFromTogglesWhere(id app.ID) database.Query {
 			}
 			defer rows.Close()
 
-			for rows.Next() {
-				var com = command.Command{}
-				err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID, &com.ID, &com.Name)
-				if err != nil {
-					return t, err
-				}
-				t.Commands = append(t.Commands, com)
+			if !rows.Next() {
+				return t, repository.ErrNotFound
+			}
+
+			err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID)
+			if err != nil {
+				return t, err
 			}
 			return t, err
 		},
@@ -149,9 +152,8 @@ func SelectFromTogglesWhere(id app.ID) database.Query {
 
 func SelectFromThermostatWhere(id app.ID) database.Query {
 	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, c.com_id, c.name, t.scale, t.minimum_heating_temp, t.maximum_heating_temp, t.minimum_cooling_temp, t.maximum_cooling_temp
+		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, t.scale, t.minimum_heating_temp, t.maximum_heating_temp, t.minimum_cooling_temp, t.maximum_cooling_temp
 		FROM appliances a 
-		JOIN commands c ON a.app_id = c.app_id 
 		JOIN thermostats t ON a.app_id = t.app_id 
 		WHERE a.app_id = ?`,
 		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
@@ -161,14 +163,13 @@ func SelectFromThermostatWhere(id app.ID) database.Query {
 				return t, err
 			}
 			defer rows.Close()
-			for rows.Next() {
-				var com = command.Command{}
-				err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID, &com.ID, &com.Name,
-					&t.Scale, &t.MinimumHeatingTemp, &t.MaximumHeatingTemp, &t.MinimumCoolingTemp, &t.MaximumCoolingTemp)
-				if err != nil {
-					return t, err
-				}
-				t.Commands = append(t.Commands, com)
+			if !rows.Next() {
+				return t, repository.ErrNotFound
+			}
+			err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID,
+				&t.Scale, &t.MinimumHeatingTemp, &t.MaximumHeatingTemp, &t.MinimumCoolingTemp, &t.MaximumCoolingTemp)
+			if err != nil {
+				return t, err
 			}
 
 			return t, err
@@ -186,7 +187,9 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 				return a, err
 			}
 			defer rows.Close()
-			rows.Next()
+			if !rows.Next() {
+				return a, repository.ErrNotFound
+			}
 			err = rows.Scan(&a.ID, &a.Name, &a.Type, &a.DeviceID)
 			if err != nil {
 				return a, err
@@ -225,6 +228,12 @@ func UpdateApp(a app.Appliance) database.Query {
 		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?;",
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.ExecContext(ctx, a.GetName(), a.GetDeviceID(), a.GetID())
+			if err, ok := err.(sqlite3.Error); ok {
+				if errors.Is(err.ExtendedCode, sqlite3.ErrConstraintUnique) {
+					return fmt.Errorf("%v: same name already exists",
+						repository.ErrInvaildArgs)
+				}
+			}
 			return err
 		},
 	}

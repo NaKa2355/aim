@@ -137,6 +137,13 @@ func (d *DataAccess) ReadCustom(ctx context.Context, id app.ID) (custom.Custom, 
 		return c, err
 	}
 	c = res.(custom.Custom)
+
+	res, err = d.db.Query(ctx, queries.SelectCommands(id))
+	if err != nil {
+		return c, err
+	}
+	coms := res.([]command.Command)
+	c.Commands = coms
 	return c, err
 }
 
@@ -147,6 +154,13 @@ func (d *DataAccess) ReadToggle(ctx context.Context, id app.ID) (toggle.Toggle, 
 		return t, err
 	}
 	t = res.(toggle.Toggle)
+
+	res, err = d.db.Query(ctx, queries.SelectCommands(id))
+	if err != nil {
+		return t, err
+	}
+	coms := res.([]command.Command)
+	t.Commands = coms
 	return t, err
 }
 
@@ -157,6 +171,13 @@ func (d *DataAccess) ReadButton(ctx context.Context, id app.ID) (button.Button, 
 		return b, err
 	}
 	b = res.(button.Button)
+
+	res, err = d.db.Query(ctx, queries.SelectCommands(id))
+	if err != nil {
+		return b, err
+	}
+	coms := res.([]command.Command)
+	b.Commands = coms
 	return b, err
 }
 
@@ -167,6 +188,13 @@ func (d *DataAccess) ReadThermostat(ctx context.Context, id app.ID) (thermostat.
 		return t, err
 	}
 	t = res.(thermostat.Thermostat)
+
+	res, err = d.db.Query(ctx, queries.SelectCommands(id))
+	if err != nil {
+		return t, err
+	}
+	coms := res.([]command.Command)
+	t.Commands = coms
 	return t, err
 }
 
