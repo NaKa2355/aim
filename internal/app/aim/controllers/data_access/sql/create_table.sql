@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS commands (
 	irdata BLOB NOT NULL,
 	FOREIGN KEY (app_id) REFERENCES appliances (app_id) ON DELETE CASCADE,
 	PRIMARY KEY (com_id, app_id)
-	--UNIQUE (name, app_id)
+	UNIQUE (name, app_id)
 );
 
 CREATE TABLE IF NOT EXISTS customs (
