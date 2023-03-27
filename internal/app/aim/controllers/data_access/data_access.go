@@ -15,7 +15,7 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/toggle"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
-	"github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
+	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 	"github.com/oklog/ulid"
 )
 
@@ -26,7 +26,7 @@ type DataAccess struct {
 	db *database.DataBase
 }
 
-var _ repository.Repository = &DataAccess{}
+var _ repo.Repository = &DataAccess{}
 
 func New(dbFile string) (*DataAccess, error) {
 	var d *DataAccess
@@ -68,6 +68,7 @@ func (d *DataAccess) CreateCustom(ctx context.Context, c custom.Custom) (custom.
 			queries.InsertIntoCommands(c.ID, c.Commands),
 		},
 	)
+
 	return c, err
 }
 
@@ -84,6 +85,7 @@ func (d *DataAccess) CreateToggle(ctx context.Context, t toggle.Toggle) (toggle.
 			queries.InsertIntoCommands(t.ID, t.Commands),
 		},
 	)
+
 	return t, err
 
 }

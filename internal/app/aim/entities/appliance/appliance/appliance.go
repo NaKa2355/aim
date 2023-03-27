@@ -3,6 +3,7 @@ package appliance
 import (
 	"fmt"
 
+	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
 
@@ -78,21 +79,30 @@ func (a *Appliance) SetDeviceID(devID DeviceID) {
 
 func (a *Appliance) ChangeCommandName() error {
 	if a.Type != TypeCustom {
-		return fmt.Errorf("this appliance does not support changing command name")
+		return entities.NewError(
+			entities.CodeInvaildOperation,
+			fmt.Errorf("this appliance does not support changing command name"),
+		)
 	}
 	return nil
 }
 
 func (a *Appliance) AddCommand() error {
 	if a.Type != TypeCustom {
-		return fmt.Errorf("this appliance does not support adding command")
+		return entities.NewError(
+			entities.CodeInvaildOperation,
+			fmt.Errorf("this appliance does not support adding command"),
+		)
 	}
 	return nil
 }
 
 func (a *Appliance) RemoveCommand() error {
 	if a.Type != TypeCustom {
-		return fmt.Errorf("this appliance does not support removing command")
+		return entities.NewError(
+			entities.CodeInvaildOperation,
+			fmt.Errorf("this appliance does not support removing command"),
+		)
 	}
 	return nil
 }

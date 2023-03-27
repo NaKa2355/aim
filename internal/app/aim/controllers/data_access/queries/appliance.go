@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
@@ -12,7 +11,7 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/thermostat"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/toggle"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
-	"github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
+	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 	"github.com/mattn/go-sqlite3"
 )
 
@@ -21,11 +20,13 @@ func InsertApp(a app.Appliance) database.Query {
 		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.ExecContext(ctx, a.ID, a.Name, a.Type, a.DeviceID)
+
 			if sqlErr, ok := err.(sqlite3.Error); ok {
 				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-					return fmt.Errorf("%w: %w", repository.ErrInvaildArgs, err)
+					return repo.NewError(repo.CodeInvaildInput, err)
 				}
 			}
+
 			return err
 		},
 	}
@@ -36,6 +37,7 @@ func InsertIntoCustoms(c custom.Custom) database.Query {
 		Statement: `INSERT INTO customs VALUES(?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.ExecContext(ctx, c.ID)
+
 			return err
 		},
 	}
@@ -46,6 +48,7 @@ func InsertIntoButtons(b button.Button) database.Query {
 		Statement: `INSERT INTO buttons VALUES(?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.ExecContext(ctx, b.ID)
+
 			return err
 		},
 	}
@@ -56,6 +59,7 @@ func InsertIntoToggles(t toggle.Toggle) database.Query {
 		Statement: `INSERT INTO toggles VALUES(?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.ExecContext(ctx, t.ID)
+
 			return err
 		},
 	}
@@ -67,6 +71,7 @@ func InsertIntoThermostats(t thermostat.Thermostat) database.Query {
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
 			_, err := stmt.ExecContext(ctx, t.ID,
 				t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp)
+
 			return err
 		},
 	}
@@ -80,14 +85,17 @@ func SelectFromCustomsWhere(id app.ID) database.Query {
 		WHERE a.app_id = ?`,
 		Query: func(ctx context.Context, stmt *sql.Stmt) (any, error) {
 			var c = custom.Custom{}
+
 			rows, err := stmt.QueryContext(ctx, id)
 			if err != nil {
 				return c, err
 			}
 			defer rows.Close()
+
 			if rows.Next() {
-				return c, repository.ErrNotFound
+				return c, repo.NewError(repo.CodeNotFound, errors.New("custom not found"))
 			}
+
 			err = rows.Scan(&c.ID, &c.Name, &c.Type, &c.DeviceID)
 			if err != nil {
 				return c, err
@@ -112,8 +120,9 @@ func SelectFromButtonsWhere(id app.ID) database.Query {
 			defer rows.Close()
 
 			if !rows.Next() {
-				return b, repository.ErrNotFound
+				return b, repo.NewError(repo.CodeNotFound, errors.New("button not found"))
 			}
+
 			err = rows.Scan(&b.ID, &b.Name, &b.Type, &b.DeviceID)
 			if err != nil {
 				return b, err
@@ -139,7 +148,7 @@ func SelectFromTogglesWhere(id app.ID) database.Query {
 			defer rows.Close()
 
 			if !rows.Next() {
-				return t, repository.ErrNotFound
+				return t, repo.NewError(repo.CodeNotFound, errors.New("toggle not found"))
 			}
 
 			err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID)
@@ -165,7 +174,7 @@ func SelectFromThermostatWhere(id app.ID) database.Query {
 			}
 			defer rows.Close()
 			if !rows.Next() {
-				return t, repository.ErrNotFound
+				return t, repo.NewError(repo.CodeNotFound, errors.New("thermostat not found"))
 			}
 			err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID,
 				&t.Scale, &t.MinimumHeatingTemp, &t.MaximumHeatingTemp, &t.MinimumCoolingTemp, &t.MaximumCoolingTemp)
@@ -189,7 +198,7 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 			}
 			defer rows.Close()
 			if !rows.Next() {
-				return a, repository.ErrNotFound
+				return a, repo.NewError(repo.CodeNotFound, errors.New("appiance not found"))
 			}
 			err = rows.Scan(&a.ID, &a.Name, &a.Type, &a.DeviceID)
 			if err != nil {
@@ -231,7 +240,7 @@ func UpdateApp(a app.Appliance) database.Query {
 			_, err := stmt.ExecContext(ctx, a.Name, a.DeviceID, a.ID)
 			if sqlErr, ok := err.(sqlite3.Error); ok {
 				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-					return fmt.Errorf("%w: %w", repository.ErrInvaildArgs, err)
+					return repo.NewError(repo.CodeInvaildInput, err)
 				}
 			}
 			return err
