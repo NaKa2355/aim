@@ -2,6 +2,7 @@ package interactor
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
@@ -33,7 +34,7 @@ func wrapErr(err error) error {
 		case entities.CodeInvaildInput:
 			code = bdy.CodeInvaildInput
 		case entities.CodeInvaildOperation:
-			code = bdy.CodeInvaildInput
+			code = bdy.CodeInvaildOperation
 		}
 	}
 
@@ -43,6 +44,8 @@ func wrapErr(err error) error {
 			code = bdy.CodeInvaildInput
 		case repository.CodeNotFound:
 			code = bdy.CodeNotFound
+		case repository.CodeDataBase:
+			code = bdy.CodeDatabase
 		}
 	}
 	return bdy.NewError(code, err)
@@ -122,12 +125,11 @@ func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) {
 		i.output.AddCommand(ctx, wrapErr(err))
 		return
 	}
-
 	if err = a.AddCommand(); err != nil {
+		fmt.Println("hello")
 		i.output.AddCommand(ctx, wrapErr(err))
 		return
 	}
-
 	com := command.New("", command.Name(in.Name), irdata.IRData{})
 	_, err = i.repo.CreateCommand(ctx, app.ID(in.AppID), com)
 
