@@ -29,6 +29,8 @@ type OutputBoundary interface {
 	//Delete
 	DeleteAppliance(ctx context.Context, err error)
 	DeleteCommand(ctx context.Context, err error)
+
+	ChangeNotify(o ChangeNotifyOutput)
 }
 
 type InputBoundary interface {

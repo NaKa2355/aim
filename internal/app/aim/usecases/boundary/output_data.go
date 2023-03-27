@@ -70,3 +70,15 @@ type GetCommandOutput struct {
 }
 
 type IRData []byte
+
+type ChangeType int
+
+const (
+	ChangeTypeAdd ChangeType = iota
+	ChangeTypeDelete
+)
+
+type ChangeNotifyOutput struct {
+	AppID string
+	Type  ChangeType
+}
