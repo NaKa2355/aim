@@ -5,9 +5,10 @@ import "fmt"
 type ErrCode string
 
 const (
-	CodeNotFound     = ErrCode("not found")
-	CodeInvaildInput = ErrCode("invaild input")
-	CodeDatabase     = ErrCode("database error")
+	CodeNotFound         = ErrCode("not found")
+	CodeInvaildInput     = ErrCode("invaild input")
+	CodeInvaildOperation = ErrCode("invaild operation")
+	CodeDatabase         = ErrCode("database error")
 )
 
 type Error struct {
