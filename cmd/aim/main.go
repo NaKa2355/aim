@@ -20,7 +20,6 @@ func main() {
 	defer d.Close()
 	i := interactor.New(d, presenter.StdOut{})
 	i.AddButton(context.Background(), boundary.AddButtonInput{Name: "hello", DeviceID: "wawawa"})
-	i.DeleteAppliance(context.Background(), boundary.DeleteAppInput{AppID: "01GW8REDZFS5WNR99FB85MDHHB"})
-	i.GetButton(context.Background(), boundary.GetAppInput{AppID: "01GW8REDZFS5WNR99FB85MDHHB"})
+	i.AddCommand(context.Background(), boundary.AddCommandInput{AppID: "01GW9ZF4CXPJ89S95KZW3MHDZF", Name: "Hello"})
 	i.GetAppliances(context.Background())
 }

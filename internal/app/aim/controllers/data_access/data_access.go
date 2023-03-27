@@ -65,7 +65,7 @@ func (d *DataAccess) CreateCustom(ctx context.Context, c custom.Custom) (custom.
 		[]database.Query{
 			queries.InsertApp(c.Appliance),
 			queries.InsertIntoCustoms(c),
-			queries.InsertIntoCommands(c.GetID(), c.GetCommands()),
+			queries.InsertIntoCommands(c.ID, c.Commands),
 		},
 	)
 	return c, err
@@ -81,7 +81,7 @@ func (d *DataAccess) CreateToggle(ctx context.Context, t toggle.Toggle) (toggle.
 		[]database.Query{
 			queries.InsertApp(t.Appliance),
 			queries.InsertIntoToggles(t),
-			queries.InsertIntoCommands(t.GetID(), t.GetCommands()),
+			queries.InsertIntoCommands(t.ID, t.Commands),
 		},
 	)
 	return t, err
@@ -98,7 +98,7 @@ func (d *DataAccess) CreateButton(ctx context.Context, b button.Button) (button.
 		[]database.Query{
 			queries.InsertApp(b.Appliance),
 			queries.InsertIntoButtons(b),
-			queries.InsertIntoCommands(b.GetID(), b.GetCommands()),
+			queries.InsertIntoCommands(b.ID, b.Commands),
 		},
 	)
 	return b, err
@@ -114,7 +114,7 @@ func (d *DataAccess) CreateThermostat(ctx context.Context, t thermostat.Thermost
 		[]database.Query{
 			queries.InsertApp(t.Appliance),
 			queries.InsertIntoThermostats(t),
-			queries.InsertIntoCommands(t.GetID(), t.GetCommands()),
+			queries.InsertIntoCommands(t.ID, t.Commands),
 		},
 	)
 	return t, err
