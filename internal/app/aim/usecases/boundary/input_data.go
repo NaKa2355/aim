@@ -58,7 +58,7 @@ type AddCommandInput struct {
 	Name  string
 }
 
-type RemoveCommandInput struct {
+type DeleteCommandInput struct {
 	AppID string
 	ComID string
 }

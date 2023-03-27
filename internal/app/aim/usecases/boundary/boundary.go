@@ -55,5 +55,5 @@ type InputBoundary interface {
 
 	//Delete
 	DeleteAppliance(ctx context.Context, i DeleteAppInput)
-	DeleteCommand(ctx context.Context, i RemoveCommandInput)
+	DeleteCommand(ctx context.Context, i DeleteCommandInput)
 }
