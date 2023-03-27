@@ -3,9 +3,10 @@ package repository
 type ErrCode string
 
 const (
-	CodeNotFound     = ErrCode("not found")
-	CodeInvaildInput = ErrCode("invaild input")
-	CodeDataBase     = ErrCode("database error")
+	CodeNotFound      = ErrCode("not found")
+	CodeInvaildInput  = ErrCode("invaild input")
+	CodeAlreadyExists = ErrCode("already exists")
+	CodeDataBase      = ErrCode("database error")
 )
 
 type Error struct {

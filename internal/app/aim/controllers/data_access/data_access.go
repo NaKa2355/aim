@@ -3,6 +3,7 @@ package data_access
 import (
 	"context"
 	"embed"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -41,10 +42,12 @@ func New(dbFile string) (*DataAccess, error) {
 	}
 
 	if err := d.CreateTable(); err != nil {
+		err = fmt.Errorf("faild to setup database: %w", err)
 		return d, err
 	}
 
 	if err := d.AddAppTypeQuery(); err != nil {
+		err = fmt.Errorf("faild to setup database: %w", err)
 		return d, err
 	}
 
@@ -68,7 +71,6 @@ func (d *DataAccess) CreateCustom(ctx context.Context, c custom.Custom) (custom.
 			queries.InsertIntoCommands(c.ID, c.Commands),
 		},
 	)
-
 	return c, err
 }
 
@@ -85,7 +87,6 @@ func (d *DataAccess) CreateToggle(ctx context.Context, t toggle.Toggle) (toggle.
 			queries.InsertIntoCommands(t.ID, t.Commands),
 		},
 	)
-
 	return t, err
 
 }
