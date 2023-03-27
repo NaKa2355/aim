@@ -64,36 +64,16 @@ func NewAppliance(id ID, name Name, appType ApplianceType, deviceID DeviceID, co
 	}
 }
 
-func (a *Appliance) GetID() ID {
-	return a.ID
-}
-
 func (a *Appliance) SetID(id ID) {
 	a.ID = id
-}
-
-func (a *Appliance) GetName() Name {
-	return a.Name
 }
 
 func (a *Appliance) SetName(name Name) {
 	a.Name = name
 }
 
-func (a *Appliance) GetType() ApplianceType {
-	return a.Type
-}
-
 func (a *Appliance) SetDeviceID(devID DeviceID) {
 	a.DeviceID = devID
-}
-
-func (a *Appliance) GetDeviceID() DeviceID {
-	return a.DeviceID
-}
-
-func (a *Appliance) GetCommands() []command.Command {
-	return a.Commands
 }
 
 func (a *Appliance) ChangeCommandName() error {
@@ -105,14 +85,14 @@ func (a *Appliance) ChangeCommandName() error {
 
 func (a *Appliance) AddCommand() error {
 	if a.Type != TypeCustom {
-		return fmt.Errorf("this appliance does not support adding command name")
+		return fmt.Errorf("this appliance does not support adding command")
 	}
 	return nil
 }
 
 func (a *Appliance) RemoveCommand() error {
 	if a.Type != TypeCustom {
-		return fmt.Errorf("this appliance does not support removing command name")
+		return fmt.Errorf("this appliance does not support removing command")
 	}
 	return nil
 }

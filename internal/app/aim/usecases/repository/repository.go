@@ -12,7 +12,7 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
 
-var ErrInvaildArgs = errors.New("invaild argument(s)")
+var ErrInvaildArgs = errors.New("database invaild argument(s)")
 var ErrNotFound = errors.New("not found")
 
 type Repository interface {

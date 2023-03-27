@@ -20,7 +20,7 @@ func InsertApp(a app.Appliance) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID())
+			_, err := stmt.ExecContext(ctx, a.ID, a.Name, a.Type, a.DeviceID)
 			if sqlErr, ok := err.(sqlite3.Error); ok {
 				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
 					return fmt.Errorf("%w: %w", repository.ErrInvaildArgs, err)
@@ -35,7 +35,7 @@ func InsertIntoCustoms(c custom.Custom) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO customs VALUES(?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.ExecContext(ctx, c.GetID())
+			_, err := stmt.ExecContext(ctx, c.ID)
 			return err
 		},
 	}
@@ -45,7 +45,7 @@ func InsertIntoButtons(b button.Button) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO buttons VALUES(?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.ExecContext(ctx, b.GetID())
+			_, err := stmt.ExecContext(ctx, b.ID)
 			return err
 		},
 	}
@@ -55,7 +55,7 @@ func InsertIntoToggles(t toggle.Toggle) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO toggles VALUES(?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.ExecContext(ctx, t.GetID())
+			_, err := stmt.ExecContext(ctx, t.ID)
 			return err
 		},
 	}
@@ -65,7 +65,8 @@ func InsertIntoThermostats(t thermostat.Thermostat) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO thermostats VALUES(?, ?, ?, ?, ?, ?)`,
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.ExecContext(ctx, t.GetID(), t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp)
+			_, err := stmt.ExecContext(ctx, t.ID,
+				t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp)
 			return err
 		},
 	}
@@ -227,11 +228,10 @@ func UpdateApp(a app.Appliance) database.Query {
 	return database.Query{
 		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?;",
 		Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-			_, err := stmt.ExecContext(ctx, a.GetName(), a.GetDeviceID(), a.GetID())
-			if err, ok := err.(sqlite3.Error); ok {
-				if errors.Is(err.ExtendedCode, sqlite3.ErrConstraintUnique) {
-					return fmt.Errorf("%v: same name already exists",
-						repository.ErrInvaildArgs)
+			_, err := stmt.ExecContext(ctx, a.Name, a.DeviceID, a.ID)
+			if sqlErr, ok := err.(sqlite3.Error); ok {
+				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+					return fmt.Errorf("%w: %w", repository.ErrInvaildArgs, err)
 				}
 			}
 			return err
