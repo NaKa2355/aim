@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
@@ -19,8 +18,7 @@ func (o StdOut) AddToggle(ctx context.Context, out bdy.AddAppOutput, err error) 
 }
 
 func (o StdOut) AddButton(ctx context.Context, out bdy.AddAppOutput, err error) {
-	fmt.Println(errors.Is(err, bdy.ErrInvaildArgs))
-	fmt.Println(out, " ", err)
+	fmt.Println(out, err)
 }
 
 func (o StdOut) AddThermostat(ctx context.Context, out bdy.AddAppOutput, err error) {

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
@@ -11,9 +10,6 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/toggle"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
-
-var ErrInvaildArgs = errors.New("database invaild argument(s)")
-var ErrNotFound = errors.New("not found")
 
 type Repository interface {
 	CreateCustom(context.Context, custom.Custom) (custom.Custom, error)

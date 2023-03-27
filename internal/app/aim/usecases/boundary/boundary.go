@@ -2,12 +2,7 @@ package boundary
 
 import (
 	"context"
-	"errors"
 )
-
-var ErrInvaildArgs = errors.New("invaild argument(s)")
-var ErrDatabase = errors.New("database error")
-var ErrNotFound = errors.New("not found")
 
 type OutputBoundary interface {
 	//Create

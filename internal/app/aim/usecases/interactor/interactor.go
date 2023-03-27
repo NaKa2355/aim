@@ -2,9 +2,8 @@ package interactor
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
+	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/custom"
@@ -27,13 +26,26 @@ func wrapErr(err error) error {
 	if err == nil {
 		return nil
 	}
-	if errors.Is(err, repository.ErrInvaildArgs) {
-		return fmt.Errorf("%w: %w", bdy.ErrInvaildArgs, err)
+	var code bdy.ErrCode
+
+	if entityErr, ok := err.(entities.Error); ok {
+		switch entityErr.Code {
+		case entities.CodeInvaildInput:
+			code = bdy.CodeInvaildInput
+		case entities.CodeInvaildOperation:
+			code = bdy.CodeInvaildInput
+		}
 	}
-	if errors.Is(err, repository.ErrNotFound) {
-		return fmt.Errorf("%w: %w", bdy.ErrNotFound, err)
+
+	if repoErr, ok := err.(repository.Error); ok {
+		switch repoErr.Code {
+		case repository.CodeInvaildInput:
+			code = bdy.CodeInvaildInput
+		case repository.CodeNotFound:
+			code = bdy.CodeNotFound
+		}
 	}
-	return fmt.Errorf("%w: %w", bdy.ErrDatabase, err)
+	return bdy.NewError(code, err)
 }
 
 func New(in repository.Repository, o bdy.OutputBoundary) *Interactor {
@@ -110,10 +122,12 @@ func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) {
 		i.output.AddCommand(ctx, wrapErr(err))
 		return
 	}
+
 	if err = a.AddCommand(); err != nil {
 		i.output.AddCommand(ctx, wrapErr(err))
 		return
 	}
+
 	com := command.New("", command.Name(in.Name), irdata.IRData{})
 	_, err = i.repo.CreateCommand(ctx, app.ID(in.AppID), com)
 
@@ -192,6 +206,7 @@ func (i *Interactor) GetThermostat(ctx context.Context, in bdy.GetAppInput) {
 		MaximumCoolingTemp: t.MaximumCoolingTemp,
 		MinimumCoolingTemp: t.MinimumCoolingTemp,
 	}
+
 	i.output.GetThermostat(ctx, out, wrapErr(err))
 }
 

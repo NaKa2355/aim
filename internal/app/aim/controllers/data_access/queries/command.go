@@ -9,7 +9,7 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
-	"github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
+	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 	"github.com/mattn/go-sqlite3"
 )
 
@@ -30,8 +30,7 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 				sqliteErr = err.(sqlite3.Error)
 
 				if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-					return fmt.Errorf("%v: same name already exists",
-						repository.ErrInvaildArgs)
+					return repo.NewError(repo.CodeInvaildInput, fmt.Errorf("same name already exists: %w", err))
 				}
 			}
 			return nil
@@ -46,8 +45,7 @@ func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
 			_, err := stmt.Exec(c.GetName(), c.GetRawIRData(), c.GetID(), appID)
 			if err, ok := err.(sqlite3.Error); ok {
 				if errors.Is(err.ExtendedCode, sqlite3.ErrConstraintUnique) {
-					return fmt.Errorf("%v: same name already exists",
-						repository.ErrInvaildArgs)
+					return repo.NewError(repo.CodeInvaildInput, fmt.Errorf("same name already exists: %w", err))
 				}
 			}
 			return err
@@ -91,7 +89,7 @@ func SelectFromCommandsWhere(appID appliance.ID, comID command.ID) database.Quer
 			defer rows.Close()
 
 			if !rows.Next() {
-				return c, repository.ErrNotFound
+				return c, repo.NewError(repo.CodeNotFound, errors.New("command not found"))
 			}
 
 			if err := rows.Scan(&c.Name, &c.IRData); err != nil {
