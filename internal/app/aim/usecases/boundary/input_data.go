@@ -63,12 +63,12 @@ type DeleteCommandInput struct {
 	ComID string
 }
 
-type GetRawIRDataInput struct {
+type GetIRDataInput struct {
 	AppID string
 	ComID string
 }
 
-type SetRawIRDataInput struct {
+type SetIRDataInput struct {
 	AppID string
 	ComID string
 	Data  IRData

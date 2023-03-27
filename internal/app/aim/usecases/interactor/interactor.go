@@ -22,10 +22,7 @@ type Interactor struct {
 
 var _ bdy.InputBoundary = &Interactor{}
 
-func wrapErr(err error) error {
-	if err == nil {
-		return nil
-	}
+func convertErrCode(err error) bdy.ErrCode {
 	var code bdy.ErrCode
 
 	if entityErr, ok := err.(entities.Error); ok {
@@ -49,6 +46,15 @@ func wrapErr(err error) error {
 			code = bdy.CodeAlreadyExists
 		}
 	}
+	return code
+}
+
+func wrapErr(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	code := convertErrCode(err)
 	return bdy.NewError(code, err)
 }
 
@@ -70,13 +76,14 @@ func (i *Interactor) AddCustom(ctx context.Context, in bdy.AddCustomInput) {
 	}
 
 	out.ID = string(c.ID)
-	i.output.AddCustom(ctx, out, wrapErr(err))
+	i.output.AddCustom(ctx, out, nil)
 }
 
 func (i *Interactor) AddToggle(ctx context.Context, in bdy.AddToggleInput) {
 	var out = bdy.AddAppOutput{}
 
 	t := toggle.New("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+
 	t, err := i.repo.CreateToggle(ctx, t)
 	if err != nil {
 		i.output.AddToggle(ctx, out, wrapErr(err))
@@ -84,13 +91,14 @@ func (i *Interactor) AddToggle(ctx context.Context, in bdy.AddToggleInput) {
 	}
 
 	out.ID = string(t.ID)
-	i.output.AddToggle(ctx, out, wrapErr(err))
+	i.output.AddToggle(ctx, out, nil)
 }
 
 func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) {
 	var out = bdy.AddAppOutput{}
 
 	b := button.New("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+
 	b, err := i.repo.CreateButton(ctx, b)
 	if err != nil {
 		i.output.AddButton(ctx, out, wrapErr(err))
@@ -98,7 +106,7 @@ func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) {
 	}
 
 	out.ID = string(b.ID)
-	i.output.AddButton(ctx, out, wrapErr(err))
+	i.output.AddButton(ctx, out, nil)
 }
 
 func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInput) {
@@ -117,7 +125,7 @@ func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInpu
 	}
 
 	out.ID = string(t.ID)
-	i.output.AddThermostat(ctx, out, wrapErr(err))
+	i.output.AddThermostat(ctx, out, nil)
 }
 
 func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) {
@@ -126,10 +134,12 @@ func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) {
 		i.output.AddCommand(ctx, wrapErr(err))
 		return
 	}
+
 	if err = a.AddCommand(); err != nil {
 		i.output.AddCommand(ctx, wrapErr(err))
 		return
 	}
+
 	com := command.New("", command.Name(in.Name), irdata.IRData{})
 	_, err = i.repo.CreateCommand(ctx, app.ID(in.AppID), com)
 
@@ -152,7 +162,7 @@ func (i *Interactor) GetCustom(ctx context.Context, in bdy.GetAppInput) {
 		Command:  convertComs(c.Commands),
 	}
 
-	i.output.GetCustom(ctx, out, wrapErr(err))
+	i.output.GetCustom(ctx, out, nil)
 }
 
 func (i *Interactor) GetToggle(ctx context.Context, in bdy.GetAppInput) {
@@ -169,7 +179,7 @@ func (i *Interactor) GetToggle(ctx context.Context, in bdy.GetAppInput) {
 		DeviceID: string(t.DeviceID),
 		Command:  convertComs(t.Commands),
 	}
-	i.output.GetToggle(ctx, out, wrapErr(err))
+	i.output.GetToggle(ctx, out, nil)
 }
 
 func (i *Interactor) GetButton(ctx context.Context, in bdy.GetAppInput) {
@@ -186,7 +196,7 @@ func (i *Interactor) GetButton(ctx context.Context, in bdy.GetAppInput) {
 		Command:  convertComs(b.Commands),
 	}
 
-	i.output.GetButton(ctx, out, wrapErr(err))
+	i.output.GetButton(ctx, out, nil)
 }
 
 func (i *Interactor) GetThermostat(ctx context.Context, in bdy.GetAppInput) {
@@ -209,7 +219,7 @@ func (i *Interactor) GetThermostat(ctx context.Context, in bdy.GetAppInput) {
 		MinimumCoolingTemp: t.MinimumCoolingTemp,
 	}
 
-	i.output.GetThermostat(ctx, out, wrapErr(err))
+	i.output.GetThermostat(ctx, out, nil)
 }
 
 func (i *Interactor) GetAppliances(ctx context.Context) {
@@ -229,10 +239,11 @@ func (i *Interactor) GetAppliances(ctx context.Context) {
 			ApplianceType: bdy.ApplianceType(a.Type),
 		}
 	}
-	i.output.GetAppliances(ctx, out, wrapErr(err))
+
+	i.output.GetAppliances(ctx, out, nil)
 }
 
-func (i *Interactor) GetCommand(ctx context.Context, in bdy.GetRawIRDataInput) {
+func (i *Interactor) GetCommand(ctx context.Context, in bdy.GetIRDataInput) {
 	var out bdy.GetCommandOutput
 	com, err := i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
 	if err != nil {
@@ -246,7 +257,7 @@ func (i *Interactor) GetCommand(ctx context.Context, in bdy.GetRawIRDataInput) {
 		Data: bdy.IRData(com.IRData),
 	}
 
-	i.output.GetCommand(ctx, out, wrapErr(err))
+	i.output.GetCommand(ctx, out, nil)
 }
 
 // Update
@@ -297,15 +308,15 @@ func (i *Interactor) RenameCommand(ctx context.Context, in bdy.RenameCommandInpu
 	i.output.RenameCommand(ctx, wrapErr(err))
 }
 
-func (i *Interactor) SetRawIRData(ctx context.Context, in bdy.SetRawIRDataInput) {
+func (i *Interactor) SetIRData(ctx context.Context, in bdy.SetIRDataInput) {
 	c, err := i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
 	if err != nil {
-		i.output.SetRawIRData(ctx, wrapErr(err))
+		i.output.SetIRData(ctx, wrapErr(err))
 		return
 	}
 	c.SetRawIRData(irdata.IRData(in.Data))
 	err = i.repo.UpdateCommand(ctx, app.ID(in.AppID), c)
-	i.output.SetRawIRData(ctx, wrapErr(err))
+	i.output.SetIRData(ctx, wrapErr(err))
 }
 
 // Delete

@@ -24,7 +24,7 @@ type OutputBoundary interface {
 	RenameAppliance(ctx context.Context, err error)
 	ChangeIRDevice(ctx context.Context, err error)
 	RenameCommand(ctx context.Context, err error)
-	SetRawIRData(ctx context.Context, err error)
+	SetIRData(ctx context.Context, err error)
 
 	//Delete
 	DeleteAppliance(ctx context.Context, err error)
@@ -45,13 +45,13 @@ type InputBoundary interface {
 	GetButton(ctx context.Context, i GetAppInput)
 	GetThermostat(ctx context.Context, i GetAppInput)
 	GetAppliances(ctx context.Context)
-	GetCommand(ctx context.Context, i GetRawIRDataInput)
+	GetCommand(ctx context.Context, i GetIRDataInput)
 
 	//Update
 	RenameAppliance(ctx context.Context, i RenameAppInput)
 	ChangeIRDevice(ctx context.Context, i ChangeIRDevInput)
 	RenameCommand(ctx context.Context, i RenameCommandInput)
-	SetRawIRData(ctx context.Context, i SetRawIRDataInput)
+	SetIRData(ctx context.Context, i SetIRDataInput)
 
 	//Delete
 	DeleteAppliance(ctx context.Context, i DeleteAppInput)

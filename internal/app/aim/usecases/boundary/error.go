@@ -17,6 +17,10 @@ type Error struct {
 	Err  error
 }
 
+func (e Error) Wrap(message string) Error {
+	return NewError(e.Code, fmt.Errorf("%s: %w", message, e))
+}
+
 func (e Error) Error() string {
 	return fmt.Sprintf("Code(%s) %s", e.Code, e.Err)
 }

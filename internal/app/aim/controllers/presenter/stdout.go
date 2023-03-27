@@ -111,7 +111,7 @@ func (o StdOut) RenameCommand(ctx context.Context, err error) {
 		return
 	}
 }
-func (o StdOut) SetRawIRData(ctx context.Context, err error) {
+func (o StdOut) SetIRData(ctx context.Context, err error) {
 	if err != nil {
 		fmt.Println("error: ", err)
 		return
