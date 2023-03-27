@@ -7,6 +7,7 @@ type ErrCode string
 const (
 	CodeNotFound         = ErrCode("not found")
 	CodeInvaildInput     = ErrCode("invaild input")
+	CodeAlreadyExists    = ErrCode("already exists")
 	CodeInvaildOperation = ErrCode("invaild operation")
 	CodeDatabase         = ErrCode("database error")
 )

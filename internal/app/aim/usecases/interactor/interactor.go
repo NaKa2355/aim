@@ -2,7 +2,6 @@ package interactor
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
@@ -46,6 +45,8 @@ func wrapErr(err error) error {
 			code = bdy.CodeNotFound
 		case repository.CodeDataBase:
 			code = bdy.CodeDatabase
+		case repository.CodeAlreadyExists:
+			code = bdy.CodeAlreadyExists
 		}
 	}
 	return bdy.NewError(code, err)
@@ -126,7 +127,6 @@ func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) {
 		return
 	}
 	if err = a.AddCommand(); err != nil {
-		fmt.Println("hello")
 		i.output.AddCommand(ctx, wrapErr(err))
 		return
 	}

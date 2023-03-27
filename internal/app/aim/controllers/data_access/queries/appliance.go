@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
@@ -36,7 +37,10 @@ func InsertApp(a app.Appliance) database.Query {
 
 			if sqlErr, ok := err.(sqlite3.Error); ok {
 				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-					err = repo.NewError(repo.CodeInvaildInput, err)
+					err = repo.NewError(
+						repo.CodeAlreadyExists,
+						fmt.Errorf("same name appliance already exists: %w", err),
+					)
 					return
 				}
 			}
@@ -97,6 +101,7 @@ func SelectFromCustomsWhere(id app.ID) database.Query {
 		FROM appliances a 
 		JOIN customs ON a.app_id = customs.app_id
 		WHERE a.app_id = ?`,
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var c = custom.Custom{}
@@ -108,7 +113,10 @@ func SelectFromCustomsWhere(id app.ID) database.Query {
 			defer rows.Close()
 
 			if rows.Next() {
-				err = repo.NewError(repo.CodeNotFound, errors.New("custom not found"))
+				err = repo.NewError(
+					repo.CodeNotFound,
+					errors.New("appliance(custom) not found"),
+				)
 				return
 			}
 
@@ -125,6 +133,7 @@ func SelectFromButtonsWhere(id app.ID) database.Query {
 		FROM appliances a 
 		JOIN buttons b ON a.app_id = b.app_id
 		WHERE a.app_id = ?`,
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var b = button.Button{}
@@ -138,7 +147,7 @@ func SelectFromButtonsWhere(id app.ID) database.Query {
 			if !rows.Next() {
 				err = repo.NewError(
 					repo.CodeNotFound,
-					errors.New("button not found"),
+					errors.New("appliance(button) not found"),
 				)
 				return
 			}
@@ -156,6 +165,7 @@ func SelectFromTogglesWhere(id app.ID) database.Query {
 		FROM appliances a 
 		JOIN toggles t ON a.app_id = t.app_id
 		WHERE a.app_id = ?`,
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var t = toggle.Toggle{}
@@ -169,7 +179,7 @@ func SelectFromTogglesWhere(id app.ID) database.Query {
 			if !rows.Next() {
 				err = repo.NewError(
 					repo.CodeNotFound,
-					errors.New("toggle not found"),
+					errors.New("appliance(toggle) not found"),
 				)
 				return
 			}
@@ -187,6 +197,7 @@ func SelectFromThermostatWhere(id app.ID) database.Query {
 		FROM appliances a 
 		JOIN thermostats t ON a.app_id = t.app_id 
 		WHERE a.app_id = ?`,
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var t = thermostat.Thermostat{}
@@ -200,7 +211,7 @@ func SelectFromThermostatWhere(id app.ID) database.Query {
 			if !rows.Next() {
 				err = repo.NewError(
 					repo.CodeNotFound,
-					errors.New("thermostat not found"),
+					errors.New("appliance(thermostat) not found"),
 				)
 				return
 			}
@@ -216,6 +227,7 @@ func SelectFromThermostatWhere(id app.ID) database.Query {
 func SelectFromAppsWhere(id app.ID) database.Query {
 	return database.Query{
 		Statement: "SELECT app_id, name, app_type, device_id FROM appliances WHERE app_id = ?",
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var a = app.Appliance{}
@@ -244,6 +256,7 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 func SelectFromApps() database.Query {
 	return database.Query{
 		Statement: "SELECT app_id, name, app_type, device_id FROM appliances",
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var a = app.Appliance{}
@@ -272,12 +285,17 @@ func SelectFromApps() database.Query {
 func UpdateApp(a app.Appliance) database.Query {
 	return database.Query{
 		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?;",
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, a.Name, a.DeviceID, a.ID)
 
 			if sqlErr, ok := err.(sqlite3.Error); ok {
 				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+					err = repo.NewError(
+						repo.CodeAlreadyExists,
+						fmt.Errorf("same name appliance already exists: %w", err),
+					)
 					return
 				}
 			}
@@ -290,14 +308,10 @@ func UpdateApp(a app.Appliance) database.Query {
 func DeleteApp(id app.ID) database.Query {
 	return database.Query{
 		Statement: "DELETE FROM appliances WHERE app_id=?",
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, id)
-
-			if err != nil {
-				return
-			}
-
 			return
 		},
 	}

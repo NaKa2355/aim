@@ -6,6 +6,7 @@ import (
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/presenter"
+	"github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
 )
 
@@ -18,5 +19,6 @@ func main() {
 	}
 	defer d.Close()
 	i := interactor.New(d, presenter.StdOut{})
+	i.AddButton(context.Background(), boundary.AddButtonInput{Name: "test", DeviceID: "wawawa"})
 	i.GetAppliances(context.Background())
 }

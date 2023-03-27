@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
@@ -29,7 +30,7 @@ func New(id app.ID, name app.Name, deviceID app.DeviceID,
 	var t Thermostat
 	err := validate(s, miht, maht, mict, mact)
 	if err != nil {
-		return t, err
+		return t, entities.NewError(entities.CodeInvaildInput, err)
 	}
 	a := app.NewAppliance(id, name, app.TypeThermostat, deviceID,
 		getCommands(s, miht, maht, mict, mact))
