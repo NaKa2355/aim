@@ -314,7 +314,7 @@ func (i *Interactor) DeleteAppliance(ctx context.Context, in bdy.DeleteAppInput)
 	i.output.DeleteAppliance(ctx, wrapErr(err))
 }
 
-func (i *Interactor) DeleteCommand(ctx context.Context, in bdy.RemoveCommandInput) {
+func (i *Interactor) DeleteCommand(ctx context.Context, in bdy.DeleteCommandInput) {
 	a, err := i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
 		i.output.DeleteCommand(ctx, wrapErr(err))
