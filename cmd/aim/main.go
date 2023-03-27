@@ -19,7 +19,7 @@ func main() {
 	}
 	defer d.Close()
 	i := interactor.New(d, presenter.StdOut{})
-	i.AddCustom(context.Background(), boundary.AddCustomInput{Name: "test", DeviceID: "wawawa"})
+	i.AddCustom(context.Background(), boundary.AddCustomInput{Name: "uuu", DeviceID: "wawawa"})
 	i.GetToggle(context.Background(), boundary.GetAppInput{AppID: "adadaa"})
 	i.GetAppliances(context.Background())
 }

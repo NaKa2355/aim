@@ -77,6 +77,13 @@ func (i *Interactor) AddCustom(ctx context.Context, in bdy.AddCustomInput) {
 
 	out.ID = string(c.ID)
 	i.output.AddCustom(ctx, out, nil)
+
+	i.output.ChangeNotify(
+		bdy.ChangeNotifyOutput{
+			AppID: string(c.ID),
+			Type:  bdy.ChangeTypeAdd,
+		},
+	)
 }
 
 func (i *Interactor) AddToggle(ctx context.Context, in bdy.AddToggleInput) {
@@ -92,6 +99,12 @@ func (i *Interactor) AddToggle(ctx context.Context, in bdy.AddToggleInput) {
 
 	out.ID = string(t.ID)
 	i.output.AddToggle(ctx, out, nil)
+
+	i.output.ChangeNotify(
+		bdy.ChangeNotifyOutput{
+			AppID: string(t.ID), Type: bdy.ChangeTypeAdd,
+		},
+	)
 }
 
 func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) {
@@ -107,6 +120,13 @@ func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) {
 
 	out.ID = string(b.ID)
 	i.output.AddButton(ctx, out, nil)
+
+	i.output.ChangeNotify(
+		bdy.ChangeNotifyOutput{
+			AppID: string(b.ID),
+			Type:  bdy.ChangeTypeAdd,
+		},
+	)
 }
 
 func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInput) {
@@ -126,6 +146,13 @@ func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInpu
 
 	out.ID = string(t.ID)
 	i.output.AddThermostat(ctx, out, nil)
+
+	i.output.ChangeNotify(
+		bdy.ChangeNotifyOutput{
+			AppID: string(t.ID),
+			Type:  bdy.ChangeTypeAdd,
+		},
+	)
 }
 
 func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) {
@@ -322,6 +349,9 @@ func (i *Interactor) SetIRData(ctx context.Context, in bdy.SetIRDataInput) {
 // Delete
 func (i *Interactor) DeleteAppliance(ctx context.Context, in bdy.DeleteAppInput) {
 	err := i.repo.DeleteApp(ctx, app.ID(in.AppID))
+	if err != nil {
+		i.output.ChangeNotify(bdy.ChangeNotifyOutput{AppID: in.AppID, Type: bdy.ChangeTypeDelete})
+	}
 	i.output.DeleteAppliance(ctx, wrapErr(err))
 }
 
