@@ -47,7 +47,7 @@ type InputBoundary interface {
 	GetButton(ctx context.Context, i GetAppInput)
 	GetThermostat(ctx context.Context, i GetAppInput)
 	GetAppliances(ctx context.Context)
-	GetCommand(ctx context.Context, i GetIRDataInput)
+	GetCommand(ctx context.Context, i GetCommandInput)
 
 	//Update
 	RenameAppliance(ctx context.Context, i RenameAppInput)

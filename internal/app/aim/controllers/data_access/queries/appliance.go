@@ -1,5 +1,7 @@
 package queries
 
+//SQL database query wrapper
+
 import (
 	"context"
 	"database/sql"
@@ -31,6 +33,7 @@ func wrapErr(err *error) {
 func InsertApp(a app.Appliance) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, a.ID, a.Name, a.Type, a.DeviceID)
@@ -53,6 +56,7 @@ func InsertApp(a app.Appliance) database.Query {
 func InsertIntoCustoms(c custom.Custom) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO customs VALUES(?)`,
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, c.ID)
@@ -64,6 +68,7 @@ func InsertIntoCustoms(c custom.Custom) database.Query {
 func InsertIntoButtons(b button.Button) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO buttons VALUES(?)`,
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, b.ID)
@@ -75,6 +80,7 @@ func InsertIntoButtons(b button.Button) database.Query {
 func InsertIntoToggles(t toggle.Toggle) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO toggles VALUES(?)`,
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, t.ID)
@@ -86,6 +92,7 @@ func InsertIntoToggles(t toggle.Toggle) database.Query {
 func InsertIntoThermostats(t thermostat.Thermostat) database.Query {
 	return database.Query{
 		Statement: `INSERT INTO thermostats VALUES(?, ?, ?, ?, ?, ?)`,
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, t.ID,
@@ -284,7 +291,7 @@ func SelectFromApps() database.Query {
 
 func UpdateApp(a app.Appliance) database.Query {
 	return database.Query{
-		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?;",
+		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?",
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
