@@ -3,85 +3,90 @@ package web
 import (
 	"context"
 
-	"github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
+	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 	aim_api "github.com/NaKa2355/irdeck-proto/gen/go/aim/api/v1"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/protobuf/proto"
 )
 
+type Boundary interface {
+	bdy.CustomAdder
+	bdy.ButtonAdder
+	bdy.ToggleAdder
+	bdy.ThermostatAdder
+	bdy.CommandAdder
+	bdy.CustomGetter
+	bdy.ToggleGetter
+	bdy.ButtonGetter
+	bdy.ThermostatGetter
+	bdy.AppliancesGetter
+	bdy.CommandGetter
+	bdy.ApplianceRenamer
+	bdy.IRDeviceChanger
+	bdy.CommandRenamer
+	bdy.IRDataSetter
+	bdy.ApplianceDeleter
+	bdy.CommandDeleter
+}
+
 type Handler struct {
 	aim_api.UnimplementedAimServiceServer
-	c *Controller
-	i boundary.InputBoundary
+	i Boundary
 }
 
 var _ aim_api.AimServiceServer = &Handler{}
 
-func NewHandler(c *Controller, i boundary.InputBoundary) *Handler {
+func NewHandler(i Boundary) *Handler {
 	return &Handler{
-		c: c,
 		i: i,
 	}
 }
 
 func (h *Handler) AddCustom(ctx context.Context, req *aim_api.AddCustomRequest) (*aim_api.AddAppResponse, error) {
 	res := aim_api.AddAppResponse{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.AddCustom(ctx, boundary.AddCustomInput{
+	_res, err := h.i.AddCustom(ctx, bdy.AddCustomInput{
 		Name:     req.Name,
 		DeviceID: req.DeviceId,
 	})
 
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
-
-	data := _res.Data.(boundary.AddAppOutput)
-	res.ApplianceId = data.ID
-	return &res, _res.Err
+	res.ApplianceId = _res.ID
+	return &res, nil
 }
 
 func (h *Handler) AddToggle(ctx context.Context, req *aim_api.AddToggleRequest) (*aim_api.AddAppResponse, error) {
 	res := aim_api.AddAppResponse{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.AddToggle(ctx, boundary.AddToggleInput{
+	_res, err := h.i.AddToggle(ctx, bdy.AddToggleInput{
 		Name:     req.Name,
 		DeviceID: req.DeviceId,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.AddAppOutput)
-	res.ApplianceId = data.ID
-	return &res, _res.Err
+	res.ApplianceId = _res.ID
+	return &res, nil
 }
 
 func (h *Handler) AddButton(ctx context.Context, req *aim_api.AddButtonRequest) (*aim_api.AddAppResponse, error) {
 	res := aim_api.AddAppResponse{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.AddButton(ctx, boundary.AddButtonInput{
+	_res, err := h.i.AddButton(ctx, bdy.AddButtonInput{
 		Name:     req.Name,
 		DeviceID: req.DeviceId,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.AddAppOutput)
-	res.ApplianceId = data.ID
-	return &res, _res.Err
+	res.ApplianceId = _res.ID
+	return &res, nil
 }
 
 func (h *Handler) AddThermostat(ctx context.Context, req *aim_api.AddThermostatRequest) (*aim_api.AddAppResponse, error) {
 	res := aim_api.AddAppResponse{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.AddThermostat(ctx, boundary.AddThermostatInput{
+	_res, err := h.i.AddThermostat(ctx, bdy.AddThermostatInput{
 		Name:               req.Name,
 		DeviceID:           req.DeviceId,
 		Scale:              float64(req.TempScale),
@@ -90,131 +95,105 @@ func (h *Handler) AddThermostat(ctx context.Context, req *aim_api.AddThermostatR
 		MaximumCoolingTemp: int(req.MaximumCoolingTemp),
 		MinimumCoolingTemp: int(req.MinimumCoolingTemp),
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.AddAppOutput)
-	res.ApplianceId = data.ID
-	return &res, _res.Err
+	res.ApplianceId = _res.ID
+	return &res, nil
 }
 
 func (h *Handler) AddCommand(ctx context.Context, req *aim_api.AddCommandRequest) (*empty.Empty, error) {
 	res := empty.Empty{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.AddCommand(ctx, boundary.AddCommandInput{
+	err := h.i.AddCommand(ctx, bdy.AddCommandInput{
 		AppID: req.ApplianceId,
 		Name:  req.Name,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
-	}
-
-	return &res, _res.Err
+	return &res, err
 }
 
 func (h *Handler) GetCustom(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Custom, error) {
 	res := aim_api.Custom{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.GetCustom(ctx, boundary.GetAppInput{
+	_res, err := h.i.GetCustom(ctx, bdy.GetAppInput{
 		AppID: req.ApplianceId,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.GetCustomOutput)
-	res.Name = data.Name
-	res.DeviceId = data.DeviceID
-	res.Id = data.ID
-	res.Commands = convertCommands(data.Commands)
+	res.Name = _res.Name
+	res.DeviceId = _res.DeviceID
+	res.Id = _res.ID
+	res.Commands = convertCommands(_res.Commands)
 	return &res, nil
 }
 
 func (h *Handler) GetToggle(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Toggle, error) {
 	res := aim_api.Toggle{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.GetToggle(ctx, boundary.GetAppInput{
+
+	_res, err := h.i.GetToggle(ctx, bdy.GetAppInput{
 		AppID: req.ApplianceId,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.GetToggleOutput)
-	res.Name = data.Name
-	res.DeviceId = data.DeviceID
-	res.Id = data.ID
-	res.Commands = convertCommands(data.Commands)
+	res.Name = _res.Name
+	res.DeviceId = _res.DeviceID
+	res.Id = _res.ID
+	res.Commands = convertCommands(_res.Commands)
 	return &res, nil
 }
 
 func (h *Handler) GetButton(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Button, error) {
 	res := aim_api.Button{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.GetButton(ctx, boundary.GetAppInput{
+
+	_res, err := h.i.GetButton(ctx, bdy.GetAppInput{
 		AppID: req.ApplianceId,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.GetButtonOutput)
-	res.Name = data.Name
-	res.DeviceId = data.DeviceID
-	res.Id = data.ID
-	res.Commands = convertCommands(data.Commands)
+	res.Name = _res.Name
+	res.DeviceId = _res.DeviceID
+	res.Id = _res.ID
+	res.Commands = convertCommands(_res.Commands)
 	return &res, nil
 }
 
 func (h *Handler) GetThermostat(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Thermostat, error) {
 	res := aim_api.Thermostat{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.GetThermostat(ctx, boundary.GetAppInput{
+
+	_res, err := h.i.GetThermostat(ctx, bdy.GetAppInput{
 		AppID: req.ApplianceId,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.GetThermostatOutput)
-	res.Id = data.ID
-	res.Name = data.Name
-	res.DeviceId = data.DeviceID
-	res.TempScale = float32(data.Scale)
-	res.MaximumHeatingTemp = uint32(data.MaximumHeatingTemp)
-	res.MinimumHeatingTemp = uint32(data.MinimumHeatingTemp)
-	res.MaximumCoolingTemp = uint32(data.MaximumCoolingTemp)
-	res.MinimumCoolingTemp = uint32(data.MinimumCoolingTemp)
-	res.Commands = convertCommands(data.Commands)
+	res.Id = _res.ID
+	res.Name = _res.Name
+	res.DeviceId = _res.DeviceID
+	res.TempScale = float32(_res.Scale)
+	res.MaximumHeatingTemp = uint32(_res.MaximumHeatingTemp)
+	res.MinimumHeatingTemp = uint32(_res.MinimumHeatingTemp)
+	res.MaximumCoolingTemp = uint32(_res.MaximumCoolingTemp)
+	res.MinimumCoolingTemp = uint32(_res.MinimumCoolingTemp)
+	res.Commands = convertCommands(_res.Commands)
 	return &res, nil
 }
 
 func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (*aim_api.GetAppliancesResponse, error) {
 	res := aim_api.GetAppliancesResponse{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.GetAppliances(ctx)
 
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	_res, err := h.i.GetAppliances(ctx)
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.GetAppliancesOutput)
-	res.Appliances = make([]*aim_api.Appliance, len(data.Apps))
-	for i, a := range data.Apps {
+	res.Appliances = make([]*aim_api.Appliance, len(_res.Apps))
+	for i, a := range _res.Apps {
 		res.Appliances[i] = &aim_api.Appliance{
 			Id:       a.ID,
 			DeviceId: a.DeviceID,
@@ -222,114 +201,103 @@ func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (*aim_api.G
 			Name:     a.Name,
 		}
 	}
-
 	return &res, nil
 }
 
 func (h *Handler) GetCommand(ctx context.Context, req *aim_api.GetCommandRequest) (*aim_api.GetCommandResponse, error) {
 	res := aim_api.GetCommandResponse{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.GetCommand(ctx, boundary.GetCommandInput{
+
+	_res, err := h.i.GetCommand(ctx, bdy.GetCommandInput{
 		AppID: req.ApplianceId,
 		ComID: req.CommandId,
 	})
-
-	_res := (<-ch)
-	if _res.Err != nil {
-		return &res, _res.Err
+	if err != nil {
+		return &res, err
 	}
 
-	data := _res.Data.(boundary.GetCommandOutput)
-	res.Name = data.Name
-	res.CommandId = data.ID
-	err := proto.Unmarshal(data.Data, res.Irdata)
-
+	res.Name = _res.Name
+	res.CommandId = _res.ID
+	err = proto.Unmarshal(_res.Data, res.Irdata)
 	return &res, err
 }
 
 func (h *Handler) RenameAppliance(ctx context.Context, req *aim_api.RenameApplianceRequest) (*empty.Empty, error) {
 	res := empty.Empty{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.RenameAppliance(ctx, boundary.RenameAppInput{
+
+	err := h.i.RenameAppliance(ctx, bdy.RenameAppInput{
 		AppID: req.ApplianceId,
 		Name:  req.Name,
 	})
 
-	_res := (<-ch)
-	return &res, _res.Err
+	return &res, err
 }
 
 func (h *Handler) ChangeDevice(ctx context.Context, req *aim_api.ChangeDeviceRequest) (*empty.Empty, error) {
 	res := empty.Empty{}
-	ctx, ch := h.c.NewSession(ctx)
-	h.i.ChangeIRDevice(ctx, boundary.ChangeIRDevInput{
+
+	err := h.i.ChangeIRDevice(ctx, bdy.ChangeIRDevInput{
 		AppID:    req.ApplianceId,
 		DeviceID: req.DeviceId,
 	})
 
-	_res := (<-ch)
-	return &res, _res.Err
+	return &res, err
 }
 
 func (h *Handler) RenameCommand(ctx context.Context, req *aim_api.RenameCommandRequest) (*empty.Empty, error) {
 	res := empty.Empty{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.RenameCommand(ctx, boundary.RenameCommandInput{
+
+	err := h.i.RenameCommand(ctx, bdy.RenameCommandInput{
 		AppID: req.ApplianceId,
 		ComID: req.CommandId,
 		Name:  req.Name,
 	})
 
-	_res := (<-ch)
-	return &res, _res.Err
+	return &res, err
 }
 
 func (h *Handler) SetIrData(ctx context.Context, req *aim_api.SetIRDataRequest) (*empty.Empty, error) {
 	res := empty.Empty{}
-	ctx, ch := h.c.NewSession(ctx)
 
 	irdata, err := proto.Marshal(req.Irdata)
 	if err != nil {
 		return &res, err
 	}
-	go h.i.SetIRData(ctx, boundary.SetIRDataInput{
+
+	err = h.i.SetIRData(ctx, bdy.SetIRDataInput{
 		AppID: req.ApplianceId,
 		ComID: req.CommandId,
 		Data:  irdata,
 	})
 
-	_res := (<-ch)
-	return &res, _res.Err
+	return &res, err
 }
 
 func (h *Handler) DeleteAppliance(ctx context.Context, req *aim_api.DeleteApplianceRequest) (*empty.Empty, error) {
 	res := empty.Empty{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.DeleteAppliance(ctx, boundary.DeleteAppInput{
+
+	err := h.i.DeleteAppliance(ctx, bdy.DeleteAppInput{
 		AppID: req.ApplianceId,
 	})
 
-	_res := (<-ch)
-	return &res, _res.Err
+	return &res, err
 }
 
 func (h *Handler) DeleteCommand(ctx context.Context, req *aim_api.DeleteCommandRequest) (*empty.Empty, error) {
 	res := empty.Empty{}
-	ctx, ch := h.c.NewSession(ctx)
-	go h.i.DeleteCommand(ctx, boundary.DeleteCommandInput{
+
+	err := h.i.DeleteCommand(ctx, bdy.DeleteCommandInput{
 		AppID: req.ApplianceId,
 		ComID: req.CommandId,
 	})
 
-	_res := (<-ch)
-	return &res, _res.Err
+	return &res, err
 }
 
 func (h *Handler) NotifyApplianceUpdate(*empty.Empty, aim_api.AimService_NotifyApplianceUpdateServer) error {
 	return nil
 }
 
-func convertCommands(coms []boundary.Command) []*aim_api.Command {
+func convertCommands(coms []bdy.Command) []*aim_api.Command {
 	res := make([]*aim_api.Command, len(coms))
 	for i, c := range coms {
 		res[i] = &aim_api.Command{
@@ -340,15 +308,15 @@ func convertCommands(coms []boundary.Command) []*aim_api.Command {
 	return res
 }
 
-func convertType(appType boundary.ApplianceType) aim_api.Appliance_ApplianceType {
+func convertType(appType bdy.ApplianceType) aim_api.Appliance_ApplianceType {
 	switch appType {
-	case boundary.TypeCustom:
+	case bdy.TypeCustom:
 		return aim_api.Appliance_APPLIANCE_TYPE_CUSTOM
-	case boundary.TypeButton:
+	case bdy.TypeButton:
 		return aim_api.Appliance_APPLIANCE_TYPE_BUTTON
-	case boundary.TypeToggle:
+	case bdy.TypeToggle:
 		return aim_api.Appliance_APPLIANCE_TYPE_TOGGLE
-	case boundary.TypeThermostat:
+	case bdy.TypeThermostat:
 		return aim_api.Appliance_APPLIANCE_TYPE_THERMOSTAT
 	}
 	return aim_api.Appliance_APPLIANCE_TYPE_UNSPECIFIED
