@@ -1,12 +1,14 @@
 package main
 
 import (
-	"context"
 	"fmt"
+	"net"
+	"os"
+	"os/signal"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
-	"github.com/NaKa2355/aim/internal/app/aim/controllers/presenter"
-	"github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
+	"github.com/NaKa2355/aim/internal/app/aim/controllers/web"
+	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/web/server"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
 )
 
@@ -18,7 +20,21 @@ func main() {
 		return
 	}
 	defer d.Close()
-	i := interactor.New(d, presenter.StdOut{})
-	i.GetButton(context.Background(), boundary.GetAppInput{AppID: "toggle"})
+	c := web.NewController()
+	i := interactor.New(d, c)
+	h := web.NewHandler(c, i)
+	s := server.New(h)
 
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	s.Start(listener)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	s.Stop()
+	fmt.Println("")
 }

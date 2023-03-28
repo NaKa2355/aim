@@ -108,7 +108,7 @@ func (i *Interactor) getCustom(ctx context.Context, in bdy.GetAppInput) (out bdy
 	out.ID = string(c.ID)
 	out.Name = string(c.Name)
 	out.DeviceID = string(c.DeviceID)
-	out.Command = convertComs(c.Commands)
+	out.Commands = convertComs(c.Commands)
 	return
 }
 
@@ -123,7 +123,7 @@ func (i *Interactor) getToggle(ctx context.Context, in bdy.GetAppInput) (out bdy
 	out.ID = string(t.ID)
 	out.Name = string(t.Name)
 	out.DeviceID = string(t.DeviceID)
-	out.Command = convertComs(t.Commands)
+	out.Commands = convertComs(t.Commands)
 
 	return
 }
@@ -139,7 +139,7 @@ func (i *Interactor) getButton(ctx context.Context, in bdy.GetAppInput) (out bdy
 	out.ID = string(b.ID)
 	out.Name = string(b.Name)
 	out.DeviceID = string(b.DeviceID)
-	out.Command = convertComs(b.Commands)
+	out.Commands = convertComs(b.Commands)
 
 	return
 }
@@ -155,7 +155,7 @@ func (i *Interactor) getThermostat(ctx context.Context, in bdy.GetAppInput) (out
 	out.ID = string(t.ID)
 	out.Name = string(t.Name)
 	out.DeviceID = string(t.DeviceID)
-	out.Command = convertComs(t.Commands)
+	out.Commands = convertComs(t.Commands)
 	out.Scale = t.Scale
 	out.MaximumHeatingTemp = t.MaximumHeatingTemp
 	out.MinimumHeatingTemp = t.MinimumHeatingTemp

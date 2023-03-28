@@ -19,7 +19,7 @@ import (
 	"github.com/oklog/ulid"
 )
 
-//go:embed create_table.sql
+//go:embed queries/create_table.sql
 var createTableQueries embed.FS
 
 type DataAccess struct {
