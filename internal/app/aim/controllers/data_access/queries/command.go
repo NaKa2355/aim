@@ -15,7 +15,8 @@ import (
 
 func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Query {
 	return database.Query{
-		Statement: "INSERT INTO commands VALUES(?, ?, ?, ?);",
+		Statement: "INSERT INTO commands VALUES(?, ?, ?, ?)",
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			var sqliteErr sqlite3.Error
@@ -47,7 +48,8 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 
 func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
 	return database.Query{
-		Statement: "UPDATE commands SET name=?, irdata=? WHERE com_id=? AND app_id=?;",
+		Statement: "UPDATE commands SET name=?, irdata=? WHERE com_id=? AND app_id=?",
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.Exec(c.GetName(), c.GetRawIRData(), c.GetID(), appID)
@@ -68,7 +70,8 @@ func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
 
 func SelectCommands(appID appliance.ID) database.Query {
 	return database.Query{
-		Statement: "SELECT name, irdata, com_id FROM commands WHERE app_id=?;",
+		Statement: "SELECT name, irdata, com_id FROM commands WHERE app_id=?",
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var coms []command.Command
@@ -96,7 +99,8 @@ func SelectCommands(appID appliance.ID) database.Query {
 
 func SelectFromCommandsWhere(appID appliance.ID, comID command.ID) database.Query {
 	return database.Query{
-		Statement: "SELECT name, irdata FROM commands WHERE app_id=? AND com_id=?;",
+		Statement: "SELECT name, irdata FROM commands WHERE app_id=? AND com_id=?",
+
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var c command.Command
@@ -121,6 +125,7 @@ func SelectFromCommandsWhere(appID appliance.ID, comID command.ID) database.Quer
 func DeleteFromCommand(appID appliance.ID, comID command.ID) database.Query {
 	return database.Query{
 		Statement: "DELETE FROM commands WHERE com_id = ? AND app_id = ?",
+
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
 			_, err = stmt.Exec(comID, appID)

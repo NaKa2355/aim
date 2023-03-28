@@ -43,10 +43,6 @@ type DeleteAppInput struct {
 	AppID string
 }
 
-type GetCommandsInput struct {
-	AppID string
-}
-
 type RenameCommandInput struct {
 	AppID string
 	ComID string
@@ -63,7 +59,7 @@ type DeleteCommandInput struct {
 	ComID string
 }
 
-type GetIRDataInput struct {
+type GetCommandInput struct {
 	AppID string
 	ComID string
 }

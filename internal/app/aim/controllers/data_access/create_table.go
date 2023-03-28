@@ -10,7 +10,7 @@ import (
 )
 
 func (d *DataAccess) CreateTable() error {
-	query, err := createTableQueries.ReadFile("sql/create_table.sql")
+	query, err := createTableQueries.ReadFile("create_table.sql")
 	if err != nil {
 		return err
 	}

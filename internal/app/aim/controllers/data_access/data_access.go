@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access/queries"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/custom"
@@ -20,7 +19,7 @@ import (
 	"github.com/oklog/ulid"
 )
 
-//go:embed sql/create_table.sql
+//go:embed create_table.sql
 var createTableQueries embed.FS
 
 type DataAccess struct {
@@ -59,7 +58,7 @@ func (d *DataAccess) Close() error {
 }
 
 func (d *DataAccess) CreateCustom(ctx context.Context, c custom.Custom) (custom.Custom, error) {
-	c.SetID(appliance.ID(genID()))
+	c.SetID(app.ID(genID()))
 	for i := 0; i < len(c.Commands); i++ {
 		c.Commands[i].ID = command.ID(genID())
 	}
@@ -75,7 +74,7 @@ func (d *DataAccess) CreateCustom(ctx context.Context, c custom.Custom) (custom.
 }
 
 func (d *DataAccess) CreateToggle(ctx context.Context, t toggle.Toggle) (toggle.Toggle, error) {
-	t.SetID(appliance.ID(genID()))
+	t.SetID(app.ID(genID()))
 	for i := 0; i < len(t.Commands); i++ {
 		t.Commands[i].ID = command.ID(genID())
 	}
@@ -202,22 +201,22 @@ func (d *DataAccess) ReadThermostat(ctx context.Context, id app.ID) (thermostat.
 }
 
 func (d *DataAccess) ReadApp(ctx context.Context, appID app.ID) (app.Appliance, error) {
-	var a appliance.Appliance
+	var a app.Appliance
 	res, err := d.db.Query(ctx, queries.SelectFromAppsWhere(appID))
 	if err != nil {
 		return a, err
 	}
-	a = res.(appliance.Appliance)
+	a = res.(app.Appliance)
 	return a, err
 }
 
 func (d *DataAccess) ReadApps(ctx context.Context) ([]app.Appliance, error) {
-	var apps []appliance.Appliance
+	var apps []app.Appliance
 	res, err := d.db.Query(ctx, queries.SelectFromApps())
 	if err != nil {
 		return apps, err
 	}
-	apps = res.([]appliance.Appliance)
+	apps = res.([]app.Appliance)
 	return apps, err
 }
 
