@@ -122,7 +122,7 @@ func SelectFromCustomsWhere(id app.ID) database.Query {
 			if rows.Next() {
 				err = repo.NewError(
 					repo.CodeNotFound,
-					errors.New("appliance(custom) not found"),
+					errors.New("custom appliance not found"),
 				)
 				return
 			}
@@ -154,7 +154,7 @@ func SelectFromButtonsWhere(id app.ID) database.Query {
 			if !rows.Next() {
 				err = repo.NewError(
 					repo.CodeNotFound,
-					errors.New("appliance(button) not found"),
+					errors.New("button appliance not found"),
 				)
 				return
 			}
@@ -186,7 +186,7 @@ func SelectFromTogglesWhere(id app.ID) database.Query {
 			if !rows.Next() {
 				err = repo.NewError(
 					repo.CodeNotFound,
-					errors.New("appliance(toggle) not found"),
+					errors.New("toggle appliance not found"),
 				)
 				return
 			}
@@ -218,7 +218,7 @@ func SelectFromThermostatWhere(id app.ID) database.Query {
 			if !rows.Next() {
 				err = repo.NewError(
 					repo.CodeNotFound,
-					errors.New("appliance(thermostat) not found"),
+					errors.New("thermostat appliance not found"),
 				)
 				return
 			}

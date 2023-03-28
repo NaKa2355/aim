@@ -18,21 +18,21 @@ type GetCustomOutput struct {
 	ID       string
 	Name     string
 	DeviceID string
-	Command  []Command
+	Commands []Command
 }
 
 type GetToggleOutput struct {
 	ID       string
 	Name     string
 	DeviceID string
-	Command  []Command
+	Commands []Command
 }
 
 type GetButtonOutput struct {
 	ID       string
 	Name     string
 	DeviceID string
-	Command  []Command
+	Commands []Command
 }
 
 type GetThermostatOutput struct {
@@ -44,7 +44,7 @@ type GetThermostatOutput struct {
 	MinimumHeatingTemp int
 	MaximumCoolingTemp int
 	MinimumCoolingTemp int
-	Command            []Command
+	Commands           []Command
 }
 
 type Command struct {
