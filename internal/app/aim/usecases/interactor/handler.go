@@ -9,11 +9,8 @@ import (
 )
 
 type Interactor struct {
-	repo   repository.Repository
-	output bdy.OutputBoundary
+	repo repository.Repository
 }
-
-var _ bdy.InputBoundary = &Interactor{}
 
 func convertErrCode(err error) bdy.ErrCode {
 	var code bdy.ErrCode
@@ -51,122 +48,97 @@ func wrapErr(err error) error {
 	return bdy.NewError(code, err)
 }
 
-func New(in repository.Repository, o bdy.OutputBoundary) *Interactor {
+func New(in repository.Repository) *Interactor {
 	i := &Interactor{
-		repo:   in,
-		output: o,
+		repo: in,
 	}
 	return i
 }
 
-func (i *Interactor) AddCustom(ctx context.Context, in bdy.AddCustomInput) {
+func (i *Interactor) AddCustom(ctx context.Context, in bdy.AddCustomInput) (bdy.AddAppOutput, error) {
 	out, err := i.addCustom(ctx, in)
-	i.output.AddCustom(ctx, out, wrapErr(err))
-	if err == nil {
-		i.output.ChangeNotify(bdy.ChangeNotifyOutput{
-			AppID: string(out.ID),
-			Type:  bdy.ChangeTypeAdd,
-		})
-	}
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) AddToggle(ctx context.Context, in bdy.AddToggleInput) {
+func (i *Interactor) AddToggle(ctx context.Context, in bdy.AddToggleInput) (bdy.AddAppOutput, error) {
 	out, err := i.addToggle(ctx, in)
-	i.output.AddToggle(ctx, out, wrapErr(err))
-	if err == nil {
-		i.output.ChangeNotify(bdy.ChangeNotifyOutput{
-			AppID: string(out.ID),
-			Type:  bdy.ChangeTypeAdd,
-		})
-	}
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) {
+func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) (bdy.AddAppOutput, error) {
 	out, err := i.addButton(ctx, in)
-	i.output.AddButton(ctx, out, wrapErr(err))
-	if err == nil {
-		i.output.ChangeNotify(bdy.ChangeNotifyOutput{
-			AppID: string(out.ID),
-			Type:  bdy.ChangeTypeAdd,
-		})
-	}
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInput) {
+func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInput) (bdy.AddAppOutput, error) {
 	out, err := i.addThermostat(ctx, in)
-	i.output.AddThermostat(ctx, out, wrapErr(err))
-	if err == nil {
-		i.output.ChangeNotify(bdy.ChangeNotifyOutput{
-			AppID: string(out.ID),
-			Type:  bdy.ChangeTypeAdd,
-		})
-	}
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) {
+func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) error {
 	err := i.addCommand(ctx, in)
-	i.output.AddCommand(ctx, wrapErr(err))
+	return wrapErr(err)
 }
 
 // Read
-func (i *Interactor) GetCustom(ctx context.Context, in bdy.GetAppInput) {
+func (i *Interactor) GetCustom(ctx context.Context, in bdy.GetAppInput) (bdy.GetCustomOutput, error) {
 	out, err := i.getCustom(ctx, in)
-	i.output.GetCustom(ctx, out, wrapErr(err))
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetToggle(ctx context.Context, in bdy.GetAppInput) {
+func (i *Interactor) GetToggle(ctx context.Context, in bdy.GetAppInput) (bdy.GetToggleOutput, error) {
 	out, err := i.getToggle(ctx, in)
-	i.output.GetToggle(ctx, out, wrapErr(err))
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetButton(ctx context.Context, in bdy.GetAppInput) {
+func (i *Interactor) GetButton(ctx context.Context, in bdy.GetAppInput) (bdy.GetButtonOutput, error) {
 	out, err := i.getButton(ctx, in)
-	i.output.GetButton(ctx, out, wrapErr(err))
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetThermostat(ctx context.Context, in bdy.GetAppInput) {
+func (i *Interactor) GetThermostat(ctx context.Context, in bdy.GetAppInput) (bdy.GetThermostatOutput, error) {
 	out, err := i.getThermostat(ctx, in)
-	i.output.GetThermostat(ctx, out, wrapErr(err))
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetAppliances(ctx context.Context) {
+func (i *Interactor) GetAppliances(ctx context.Context) (bdy.GetAppliancesOutput, error) {
 	out, err := i.getAppliances(ctx)
-	i.output.GetAppliances(ctx, out, wrapErr(err))
+	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetCommand(ctx context.Context, in bdy.GetCommandInput) {
+func (i *Interactor) GetCommand(ctx context.Context, in bdy.GetCommandInput) (bdy.GetCommandOutput, error) {
 	out, err := i.getCommand(ctx, in)
-	i.output.GetCommand(ctx, out, wrapErr(err))
+	return out, wrapErr(err)
 }
 
 // Update
-func (i *Interactor) RenameAppliance(ctx context.Context, in bdy.RenameAppInput) {
+func (i *Interactor) RenameAppliance(ctx context.Context, in bdy.RenameAppInput) error {
 	err := i.renameAppliance(ctx, in)
-	i.output.RenameAppliance(ctx, wrapErr(err))
+	return wrapErr(err)
 }
 
-func (i *Interactor) ChangeIRDevice(ctx context.Context, in bdy.ChangeIRDevInput) {
+func (i *Interactor) ChangeIRDevice(ctx context.Context, in bdy.ChangeIRDevInput) error {
 	err := i.changeIRDevice(ctx, in)
-	i.output.ChangeIRDevice(ctx, wrapErr(err))
+	return wrapErr(err)
 }
 
-func (i *Interactor) RenameCommand(ctx context.Context, in bdy.RenameCommandInput) {
+func (i *Interactor) RenameCommand(ctx context.Context, in bdy.RenameCommandInput) error {
 	err := i.renameCommand(ctx, in)
-	i.output.RenameCommand(ctx, wrapErr(err))
+	return wrapErr(err)
 }
 
-func (i *Interactor) SetIRData(ctx context.Context, in bdy.SetIRDataInput) {
+func (i *Interactor) SetIRData(ctx context.Context, in bdy.SetIRDataInput) error {
 	err := i.setIRData(ctx, in)
-	i.output.SetIRData(ctx, wrapErr(err))
+	return wrapErr(err)
 }
 
 // Delete
-func (i *Interactor) DeleteAppliance(ctx context.Context, in bdy.DeleteAppInput) {
+func (i *Interactor) DeleteAppliance(ctx context.Context, in bdy.DeleteAppInput) error {
 	err := i.deleteAppliance(ctx, in)
-	i.output.DeleteAppliance(ctx, wrapErr(err))
+	return wrapErr(err)
 }
 
-func (i *Interactor) DeleteCommand(ctx context.Context, in bdy.DeleteCommandInput) {
+func (i *Interactor) DeleteCommand(ctx context.Context, in bdy.DeleteCommandInput) error {
 	err := i.deleteCommand(ctx, in)
-	i.output.DeleteCommand(ctx, wrapErr(err))
+	return wrapErr(err)
 }
