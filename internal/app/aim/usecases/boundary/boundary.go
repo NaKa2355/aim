@@ -4,48 +4,28 @@ import (
 	"context"
 )
 
-type CustomAdder interface {
-	AddCustom(ctx context.Context, i AddCustomInput) (AddAppOutput, error)
-}
-
-type ToggleAdder interface {
-	AddToggle(ctx context.Context, i AddToggleInput) (AddAppOutput, error)
-}
-
-type ButtonAdder interface {
-	AddButton(ctx context.Context, i AddButtonInput) (AddAppOutput, error)
-}
-
-type ThermostatAdder interface {
-	AddThermostat(ctx context.Context, i AddThermostatInput) (AddAppOutput, error)
+type ApplianceAdder interface {
+	AddAppliance(ctx context.Context, i AddApplianceInput) (AddAppOutput, error)
 }
 
 type CommandAdder interface {
 	AddCommand(ctx context.Context, i AddCommandInput) error
 }
 
-type CustomGetter interface {
-	GetCustom(ctx context.Context, i GetAppInput) (GetCustomOutput, error)
-}
-
-type ToggleGetter interface {
-	GetToggle(ctx context.Context, i GetAppInput) (GetToggleOutput, error)
-}
-
-type ButtonGetter interface {
-	GetButton(ctx context.Context, i GetAppInput) (GetButtonOutput, error)
-}
-
-type ThermostatGetter interface {
-	GetThermostat(ctx context.Context, i GetAppInput) (GetThermostatOutput, error)
-}
-
 type AppliancesGetter interface {
 	GetAppliances(ctx context.Context) (GetAppliancesOutput, error)
 }
 
+type CommandsGetter interface {
+	GetCommands(ctx context.Context, i GetCommandsInput) (GetCommandsOutput, error)
+}
+
 type CommandGetter interface {
 	GetCommand(ctx context.Context, i GetCommandInput) (GetCommandOutput, error)
+}
+
+type IRDataGetter interface {
+	GetIRData(ctx context.Context, i GetIRDataInput) (IRData, error)
 }
 
 type ApplianceRenamer interface {

@@ -2,39 +2,38 @@ package web
 
 import (
 	"context"
+	"errors"
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
-	aim_api "github.com/NaKa2355/irdeck-proto/gen/go/aim/api/v1"
+	aimv1 "github.com/NaKa2355/irdeck-proto/gen/go/aim/api/v1"
+	v1 "github.com/NaKa2355/irdeck-proto/gen/go/common/irdata/v1"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/protobuf/proto"
 )
 
 type Boundary interface {
-	bdy.CustomAdder
-	bdy.ButtonAdder
-	bdy.ToggleAdder
-	bdy.ThermostatAdder
+	bdy.ApplianceAdder
 	bdy.CommandAdder
-	bdy.CustomGetter
-	bdy.ToggleGetter
-	bdy.ButtonGetter
-	bdy.ThermostatGetter
+
 	bdy.AppliancesGetter
 	bdy.CommandGetter
+	bdy.CommandsGetter
+
 	bdy.ApplianceRenamer
 	bdy.IRDeviceChanger
 	bdy.CommandRenamer
 	bdy.IRDataSetter
+
 	bdy.ApplianceDeleter
 	bdy.CommandDeleter
 }
 
 type Handler struct {
-	aim_api.UnimplementedAimServiceServer
+	aimv1.UnimplementedAimServiceServer
 	i Boundary
 }
 
-var _ aim_api.AimServiceServer = &Handler{}
+var _ aimv1.AimServiceServer = &Handler{}
 
 func NewHandler(i Boundary) *Handler {
 	return &Handler{
@@ -42,282 +41,240 @@ func NewHandler(i Boundary) *Handler {
 	}
 }
 
-func (h *Handler) AddCustom(ctx context.Context, req *aim_api.AddCustomRequest) (*aim_api.AddAppResponse, error) {
-	res := aim_api.AddAppResponse{}
-	_res, err := h.i.AddCustom(ctx, bdy.AddCustomInput{
-		Name:     req.Name,
-		DeviceID: req.DeviceId,
-	})
+func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequest) (res *aimv1.AddAppResponse, err error) {
+	var in bdy.AddApplianceInput
+	var out bdy.AddAppOutput
 
-	if err != nil {
-		return &res, err
-	}
-	res.ApplianceId = _res.ID
-	return &res, nil
-}
-
-func (h *Handler) AddToggle(ctx context.Context, req *aim_api.AddToggleRequest) (*aim_api.AddAppResponse, error) {
-	res := aim_api.AddAppResponse{}
-	_res, err := h.i.AddToggle(ctx, bdy.AddToggleInput{
-		Name:     req.Name,
-		DeviceID: req.DeviceId,
-	})
-	if err != nil {
-		return &res, err
-	}
-
-	res.ApplianceId = _res.ID
-	return &res, nil
-}
-
-func (h *Handler) AddButton(ctx context.Context, req *aim_api.AddButtonRequest) (*aim_api.AddAppResponse, error) {
-	res := aim_api.AddAppResponse{}
-	_res, err := h.i.AddButton(ctx, bdy.AddButtonInput{
-		Name:     req.Name,
-		DeviceID: req.DeviceId,
-	})
-	if err != nil {
-		return &res, err
-	}
-
-	res.ApplianceId = _res.ID
-	return &res, nil
-}
-
-func (h *Handler) AddThermostat(ctx context.Context, req *aim_api.AddThermostatRequest) (*aim_api.AddAppResponse, error) {
-	res := aim_api.AddAppResponse{}
-	_res, err := h.i.AddThermostat(ctx, bdy.AddThermostatInput{
-		Name:               req.Name,
-		DeviceID:           req.DeviceId,
-		Scale:              float64(req.TempScale),
-		MaximumHeatingTemp: int(req.MaximumHeatingTemp),
-		MinimumHeatingTemp: int(req.MinimumHeatingTemp),
-		MaximumCoolingTemp: int(req.MaximumCoolingTemp),
-		MinimumCoolingTemp: int(req.MinimumCoolingTemp),
-	})
-	if err != nil {
-		return &res, err
-	}
-
-	res.ApplianceId = _res.ID
-	return &res, nil
-}
-
-func (h *Handler) AddCommand(ctx context.Context, req *aim_api.AddCommandRequest) (*empty.Empty, error) {
-	res := empty.Empty{}
-	err := h.i.AddCommand(ctx, bdy.AddCommandInput{
-		AppID: req.ApplianceId,
-		Name:  req.Name,
-	})
-	return &res, err
-}
-
-func (h *Handler) GetCustom(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Custom, error) {
-	res := aim_api.Custom{}
-	_res, err := h.i.GetCustom(ctx, bdy.GetAppInput{
-		AppID: req.ApplianceId,
-	})
-	if err != nil {
-		return &res, err
-	}
-
-	res.Name = _res.Name
-	res.DeviceId = _res.DeviceID
-	res.Id = _res.ID
-	res.Commands = convertCommands(_res.Commands)
-	return &res, nil
-}
-
-func (h *Handler) GetToggle(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Toggle, error) {
-	res := aim_api.Toggle{}
-
-	_res, err := h.i.GetToggle(ctx, bdy.GetAppInput{
-		AppID: req.ApplianceId,
-	})
-	if err != nil {
-		return &res, err
-	}
-
-	res.Name = _res.Name
-	res.DeviceId = _res.DeviceID
-	res.Id = _res.ID
-	res.Commands = convertCommands(_res.Commands)
-	return &res, nil
-}
-
-func (h *Handler) GetButton(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Button, error) {
-	res := aim_api.Button{}
-
-	_res, err := h.i.GetButton(ctx, bdy.GetAppInput{
-		AppID: req.ApplianceId,
-	})
-	if err != nil {
-		return &res, err
-	}
-
-	res.Name = _res.Name
-	res.DeviceId = _res.DeviceID
-	res.Id = _res.ID
-	res.Commands = convertCommands(_res.Commands)
-	return &res, nil
-}
-
-func (h *Handler) GetThermostat(ctx context.Context, req *aim_api.GetApplianceRequest) (*aim_api.Thermostat, error) {
-	res := aim_api.Thermostat{}
-
-	_res, err := h.i.GetThermostat(ctx, bdy.GetAppInput{
-		AppID: req.ApplianceId,
-	})
-	if err != nil {
-		return &res, err
-	}
-
-	res.Id = _res.ID
-	res.Name = _res.Name
-	res.DeviceId = _res.DeviceID
-	res.TempScale = float32(_res.Scale)
-	res.MaximumHeatingTemp = uint32(_res.MaximumHeatingTemp)
-	res.MinimumHeatingTemp = uint32(_res.MinimumHeatingTemp)
-	res.MaximumCoolingTemp = uint32(_res.MaximumCoolingTemp)
-	res.MinimumCoolingTemp = uint32(_res.MinimumCoolingTemp)
-	res.Commands = convertCommands(_res.Commands)
-	return &res, nil
-}
-
-func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (*aim_api.GetAppliancesResponse, error) {
-	res := aim_api.GetAppliancesResponse{}
-
-	_res, err := h.i.GetAppliances(ctx)
-	if err != nil {
-		return &res, err
-	}
-
-	res.Appliances = make([]*aim_api.Appliance, len(_res.Apps))
-	for i, a := range _res.Apps {
-		res.Appliances[i] = &aim_api.Appliance{
-			Id:       a.ID,
-			DeviceId: a.DeviceID,
-			Type:     convertType(a.ApplianceType),
-			Name:     a.Name,
+	switch r := _req.GetAppliance().(type) {
+	case *aimv1.AddApplianceRequest_Custom:
+		in = bdy.AddCustomInput{
+			Name:     r.Custom.Name,
+			DeviceID: r.Custom.DeviceId,
+		}
+	case *aimv1.AddApplianceRequest_Button:
+		in = bdy.AddButtonInput{
+			Name:     r.Button.Name,
+			DeviceID: r.Button.DeviceId,
+		}
+	case *aimv1.AddApplianceRequest_Toggle:
+		in = bdy.AddToggleInput{
+			Name:     r.Toggle.Name,
+			DeviceID: r.Toggle.DeviceId,
+		}
+	case *aimv1.AddApplianceRequest_Thermostat:
+		in = bdy.AddThermostatInput{
+			Name:               r.Thermostat.Name,
+			DeviceID:           r.Thermostat.DeviceId,
+			Scale:              float64(r.Thermostat.TempScale),
+			MinimumHeatingTemp: int(r.Thermostat.MinimumHeatingTemp),
+			MaximumHeatingTemp: int(r.Thermostat.MaximumHeatingTemp),
+			MinimumCoolingTemp: int(r.Thermostat.MinimumCoolingTemp),
+			MaximumCoolingTemp: int(r.Thermostat.MaximumCoolingTemp),
 		}
 	}
-	return &res, nil
-}
 
-func (h *Handler) GetCommand(ctx context.Context, req *aim_api.GetCommandRequest) (*aim_api.GetCommandResponse, error) {
-	res := aim_api.GetCommandResponse{}
-
-	_res, err := h.i.GetCommand(ctx, bdy.GetCommandInput{
-		AppID: req.ApplianceId,
-		ComID: req.CommandId,
-	})
+	out, err = h.i.AddAppliance(ctx, in)
 	if err != nil {
-		return &res, err
+		return
 	}
 
-	res.Name = _res.Name
-	res.CommandId = _res.ID
-	err = proto.Unmarshal(_res.Data, res.Irdata)
-	return &res, err
+	res = &aimv1.AddAppResponse{
+		ApplianceId: out.ID,
+	}
+	return
 }
 
-func (h *Handler) RenameAppliance(ctx context.Context, req *aim_api.RenameApplianceRequest) (*empty.Empty, error) {
-	res := empty.Empty{}
+func (h *Handler) AddCommand(ctx context.Context, req *aimv1.AddCommandRequest) (e *empty.Empty, err error) {
+	e = &empty.Empty{}
 
-	err := h.i.RenameAppliance(ctx, bdy.RenameAppInput{
+	in := bdy.AddCommandInput{
 		AppID: req.ApplianceId,
 		Name:  req.Name,
-	})
-
-	return &res, err
+	}
+	err = h.i.AddCommand(ctx, in)
+	return
 }
 
-func (h *Handler) ChangeDevice(ctx context.Context, req *aim_api.ChangeDeviceRequest) (*empty.Empty, error) {
-	res := empty.Empty{}
+func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (res *aimv1.GetAppliancesResponse, err error) {
+	var out bdy.GetAppliancesOutput
+	res = &aimv1.GetAppliancesResponse{}
 
-	err := h.i.ChangeIRDevice(ctx, bdy.ChangeIRDevInput{
-		AppID:    req.ApplianceId,
-		DeviceID: req.DeviceId,
-	})
-
-	return &res, err
-}
-
-func (h *Handler) RenameCommand(ctx context.Context, req *aim_api.RenameCommandRequest) (*empty.Empty, error) {
-	res := empty.Empty{}
-
-	err := h.i.RenameCommand(ctx, bdy.RenameCommandInput{
-		AppID: req.ApplianceId,
-		ComID: req.CommandId,
-		Name:  req.Name,
-	})
-
-	return &res, err
-}
-
-func (h *Handler) SetIrData(ctx context.Context, req *aim_api.SetIRDataRequest) (*empty.Empty, error) {
-	res := empty.Empty{}
-
-	irdata, err := proto.Marshal(req.Irdata)
+	out, err = h.i.GetAppliances(ctx)
 	if err != nil {
-		return &res, err
+		return
 	}
 
-	err = h.i.SetIRData(ctx, bdy.SetIRDataInput{
-		AppID: req.ApplianceId,
-		ComID: req.CommandId,
-		Data:  irdata,
-	})
+	res.Appliances = make([]*aimv1.Appliance, len(out.Apps))
+	for i, _a := range out.Apps {
+		res.Appliances[i] = &aimv1.Appliance{}
+		app := res.Appliances[i]
 
-	return &res, err
+		switch a := _a.(type) {
+		case bdy.Custom:
+			app.Appliance = &aimv1.Appliance_Custom{
+				Custom: &aimv1.Custom{
+					Id:       a.ID,
+					Name:     a.Name,
+					DeviceId: a.DeviceID,
+				},
+			}
+
+		case bdy.Button:
+			app.Appliance = &aimv1.Appliance_Button{
+				Button: &aimv1.Button{
+					Id:       a.ID,
+					Name:     a.Name,
+					DeviceId: a.DeviceID,
+				},
+			}
+
+		case bdy.Toggle:
+			app.Appliance = &aimv1.Appliance_Toggle{
+				Toggle: &aimv1.Toggle{
+					Id:       a.ID,
+					Name:     a.Name,
+					DeviceId: a.DeviceID,
+				},
+			}
+
+		case bdy.Thermostat:
+			app.Appliance = &aimv1.Appliance_Thermostat{
+				Thermostat: &aimv1.Thermostat{
+					Id:                 a.ID,
+					Name:               a.Name,
+					DeviceId:           a.DeviceID,
+					TempScale:          float32(a.Scale),
+					MinimumHeatingTemp: uint32(a.MinimumHeatingTemp),
+					MaximumHeatingTemp: uint32(a.MaximumHeatingTemp),
+					MinimumCoolingTemp: uint32(a.MinimumCoolingTemp),
+					MaximumCoolingTemp: uint32(a.MaximumCoolingTemp),
+				},
+			}
+
+		default:
+			err = errors.New("undefined appliance type")
+		}
+	}
+	return
 }
 
-func (h *Handler) DeleteAppliance(ctx context.Context, req *aim_api.DeleteApplianceRequest) (*empty.Empty, error) {
-	res := empty.Empty{}
+func (h *Handler) GetCommands(ctx context.Context, req *aimv1.GetCommandsRequest) (res *aimv1.GetCommandsResponse, err error) {
+	var in = bdy.GetCommandsInput{}
+	var out bdy.GetCommandsOutput
+	res = &aimv1.GetCommandsResponse{}
 
-	err := h.i.DeleteAppliance(ctx, bdy.DeleteAppInput{
-		AppID: req.ApplianceId,
-	})
+	in.AppID = req.ApplianceId
 
-	return &res, err
+	out, err = h.i.GetCommands(ctx, in)
+	if err != nil {
+		return
+	}
+
+	res.Commands = make([]*aimv1.Command, len(out.Commands))
+	for i, c := range out.Commands {
+		res.Commands[i] = &aimv1.Command{
+			Id:   c.ID,
+			Name: c.Name,
+		}
+	}
+
+	return
 }
 
-func (h *Handler) DeleteCommand(ctx context.Context, req *aim_api.DeleteCommandRequest) (*empty.Empty, error) {
-	res := empty.Empty{}
+func (h *Handler) GetIrData(ctx context.Context, req *aimv1.GetIrDataRequest) (res *v1.IrData, err error) {
+	var in bdy.GetCommandInput
+	var out bdy.GetCommandOutput
+	res = &v1.IrData{}
 
-	err := h.i.DeleteCommand(ctx, bdy.DeleteCommandInput{
-		AppID: req.ApplianceId,
-		ComID: req.CommandId,
-	})
+	in.AppID = req.ApplianceId
+	in.ComID = req.CommandId
+	out, err = h.i.GetCommand(ctx, in)
+	if err != nil {
+		return
+	}
 
-	return &res, err
+	proto.Unmarshal(out.Data, res)
+	return
 }
 
-func (h *Handler) NotifyApplianceUpdate(*empty.Empty, aim_api.AimService_NotifyApplianceUpdateServer) error {
+func (h *Handler) RenameAppliance(ctx context.Context, req *aimv1.RenameApplianceRequest) (e *empty.Empty, err error) {
+	var in bdy.RenameAppInput
+	e = &empty.Empty{}
+
+	in.AppID = req.ApplianceId
+	in.Name = req.Name
+	err = h.i.RenameAppliance(ctx, in)
+	return
+}
+
+func (h *Handler) ChangeDevice(ctx context.Context, req *aimv1.ChangeDeviceRequest) (e *empty.Empty, err error) {
+	var in bdy.ChangeIRDevInput
+	e = &empty.Empty{}
+
+	in.AppID = req.ApplianceId
+	in.DeviceID = req.DeviceId
+	err = h.i.ChangeIRDevice(ctx, in)
+	return
+}
+
+func (h *Handler) RenameCommand(ctx context.Context, req *aimv1.RenameCommandRequest) (e *empty.Empty, err error) {
+	var in bdy.RenameCommandInput
+	e = &empty.Empty{}
+
+	in.AppID = req.ApplianceId
+	in.ComID = req.CommandId
+	in.Name = req.Name
+	err = h.i.RenameCommand(ctx, in)
+	return
+}
+
+func (h *Handler) SetIrData(ctx context.Context, req *aimv1.SetIRDataRequest) (e *empty.Empty, err error) {
+	var in bdy.SetIRDataInput
+	e = &empty.Empty{}
+
+	in.AppID = req.ApplianceId
+	in.ComID = req.CommandId
+	in.Data, err = proto.Marshal(req.Irdata)
+	if err != nil {
+		return
+	}
+
+	err = h.i.SetIRData(ctx, in)
+	return
+}
+
+func (h *Handler) DeleteAppliance(ctx context.Context, req *aimv1.DeleteApplianceRequest) (e *empty.Empty, err error) {
+	var in bdy.DeleteAppInput
+	e = &empty.Empty{}
+
+	in.AppID = req.ApplianceId
+
+	err = h.i.DeleteAppliance(ctx, in)
+	return
+}
+
+func (h *Handler) DeleteCommand(ctx context.Context, req *aimv1.DeleteCommandRequest) (e *empty.Empty, err error) {
+	var in bdy.DeleteCommandInput
+	e = &empty.Empty{}
+
+	in.AppID = req.ApplianceId
+	in.ComID = req.CommandId
+
+	err = h.i.DeleteCommand(ctx, in)
+	return
+}
+
+func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, req aimv1.AimService_NotifyApplianceUpdateServer) error {
 	return nil
 }
 
-func convertCommands(coms []bdy.Command) []*aim_api.Command {
-	res := make([]*aim_api.Command, len(coms))
+func convertCommands(coms []bdy.Command) []*aimv1.Command {
+	res := make([]*aimv1.Command, len(coms))
 	for i, c := range coms {
-		res[i] = &aim_api.Command{
+		res[i] = &aimv1.Command{
 			Id:   c.ID,
 			Name: c.Name,
 		}
 	}
 	return res
-}
-
-func convertType(appType bdy.ApplianceType) aim_api.Appliance_ApplianceType {
-	switch appType {
-	case bdy.TypeCustom:
-		return aim_api.Appliance_APPLIANCE_TYPE_CUSTOM
-	case bdy.TypeButton:
-		return aim_api.Appliance_APPLIANCE_TYPE_BUTTON
-	case bdy.TypeToggle:
-		return aim_api.Appliance_APPLIANCE_TYPE_TOGGLE
-	case bdy.TypeThermostat:
-		return aim_api.Appliance_APPLIANCE_TYPE_THERMOSTAT
-	}
-	return aim_api.Appliance_APPLIANCE_TYPE_UNSPECIFIED
 }

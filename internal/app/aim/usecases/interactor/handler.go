@@ -55,6 +55,12 @@ func New(in repository.Repository) *Interactor {
 	return i
 }
 
+func (i *Interactor) AddAppliance(ctx context.Context, in bdy.AddApplianceInput) (bdy.AddAppOutput, error) {
+	out, err := i.addAppliance(ctx, in)
+	return out, wrapErr(err)
+}
+
+/*
 func (i *Interactor) AddCustom(ctx context.Context, in bdy.AddCustomInput) (bdy.AddAppOutput, error) {
 	out, err := i.addCustom(ctx, in)
 	return out, wrapErr(err)
@@ -74,12 +80,14 @@ func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInpu
 	out, err := i.addThermostat(ctx, in)
 	return out, wrapErr(err)
 }
+*/
 
 func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) error {
 	err := i.addCommand(ctx, in)
 	return wrapErr(err)
 }
 
+/*
 // Read
 func (i *Interactor) GetCustom(ctx context.Context, in bdy.GetAppInput) (bdy.GetCustomOutput, error) {
 	out, err := i.getCustom(ctx, in)
@@ -100,9 +108,15 @@ func (i *Interactor) GetThermostat(ctx context.Context, in bdy.GetAppInput) (bdy
 	out, err := i.getThermostat(ctx, in)
 	return out, wrapErr(err)
 }
+*/
 
 func (i *Interactor) GetAppliances(ctx context.Context) (bdy.GetAppliancesOutput, error) {
 	out, err := i.getAppliances(ctx)
+	return out, wrapErr(err)
+}
+
+func (i *Interactor) GetCommands(ctx context.Context, in bdy.GetCommandsInput) (bdy.GetCommandsOutput, error) {
+	out, err := i.getCommands(ctx, in)
 	return out, wrapErr(err)
 }
 

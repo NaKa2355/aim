@@ -1,11 +1,10 @@
-package thermostat
+package appliance
 
 import (
 	"fmt"
 	"math"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities"
-	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
 
@@ -16,7 +15,7 @@ const COOLING_THRESHOLD_MIN = 10
 const COOLING_THRESHOLD_MAX = 35
 
 type Thermostat struct {
-	app.Appliance
+	*ApplianceData
 	Scale              float64
 	MaximumHeatingTemp int
 	MinimumHeatingTemp int
@@ -24,7 +23,7 @@ type Thermostat struct {
 	MinimumCoolingTemp int
 }
 
-func New(id app.ID, name app.Name, deviceID app.DeviceID,
+func NewThermostat(id ID, name Name, deviceID DeviceID,
 	s float64, miht int, maht int, mict int, mact int) (Thermostat, error) {
 
 	var t Thermostat
@@ -32,11 +31,11 @@ func New(id app.ID, name app.Name, deviceID app.DeviceID,
 	if err != nil {
 		return t, entities.NewError(entities.CodeInvaildInput, err)
 	}
-	a := app.NewAppliance(id, name, app.TypeThermostat, deviceID,
+	a := NewApplianceData(id, name, TypeThermostat, deviceID,
 		getCommands(s, miht, maht, mict, mact))
 
 	return Thermostat{
-		Appliance:          a,
+		ApplianceData:      a,
 		Scale:              s,
 		MinimumHeatingTemp: miht,
 		MaximumHeatingTemp: maht,
@@ -115,4 +114,25 @@ func foor2ndDiminals(f float64) float64 {
 func round2ndDiminals(f float64) float64 {
 	r := math.Round(f*10) / 10
 	return r
+}
+
+func (t Thermostat) ChangeCommandName() error {
+	return entities.NewError(
+		entities.CodeInvaildOperation,
+		fmt.Errorf("thermostat appliance does not support changing command name"),
+	)
+}
+
+func (t Thermostat) AddCommand() error {
+	return entities.NewError(
+		entities.CodeInvaildOperation,
+		fmt.Errorf("thermostat appliance does not support adding command"),
+	)
+}
+
+func (t Thermostat) RemoveCommand() error {
+	return entities.NewError(
+		entities.CodeInvaildOperation,
+		fmt.Errorf("thermostat appliance does not support removing command"),
+	)
 }

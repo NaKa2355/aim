@@ -3,16 +3,13 @@ package data_access
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access/queries"
-	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/custom"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/thermostat"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/toggle"
+	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
@@ -57,69 +54,31 @@ func (d *DataAccess) Close() error {
 	return d.db.Close()
 }
 
-func (d *DataAccess) CreateCustom(ctx context.Context, c custom.Custom) (custom.Custom, error) {
-	c.SetID(app.ID(genID()))
-	for i := 0; i < len(c.Commands); i++ {
-		c.Commands[i].ID = command.ID(genID())
+func (d *DataAccess) CreateAppliance(ctx context.Context, a app.Appliance) (app.Appliance, error) {
+	var q = [3]database.Query{}
+	a.SetID(app.ID(genID()))
+	for i := 0; i < len(a.GetCommands()); i++ {
+		a.GetCommands()[i].ID = command.ID(genID())
 	}
 
-	err := d.db.Exec(ctx,
-		[]database.Query{
-			queries.InsertApp(c.Appliance),
-			queries.InsertIntoCustoms(c),
-			queries.InsertIntoCommands(c.ID, c.Commands),
-		},
-	)
-	return c, err
-}
+	q[0] = queries.InsertApp(a)
+	q[1] = queries.InsertIntoCommands(a.GetID(), a.GetCommands())
 
-func (d *DataAccess) CreateToggle(ctx context.Context, t toggle.Toggle) (toggle.Toggle, error) {
-	t.SetID(app.ID(genID()))
-	for i := 0; i < len(t.Commands); i++ {
-		t.Commands[i].ID = command.ID(genID())
+	switch a := a.(type) {
+	case app.Custom:
+		q[2] = queries.InsertIntoCustoms(a)
+	case app.Button:
+		q[2] = queries.InsertIntoButtons(a)
+	case app.Toggle:
+		q[2] = queries.InsertIntoToggles(a)
+	case app.Thermostat:
+		q[2] = queries.InsertIntoThermostats(a)
+	default:
+		return a, errors.New("unsupported appliance")
 	}
 
-	err := d.db.Exec(ctx,
-		[]database.Query{
-			queries.InsertApp(t.Appliance),
-			queries.InsertIntoToggles(t),
-			queries.InsertIntoCommands(t.ID, t.Commands),
-		},
-	)
-	return t, err
-
-}
-
-func (d *DataAccess) CreateButton(ctx context.Context, b button.Button) (button.Button, error) {
-	b.ID = app.ID(genID())
-	for i := 0; i < len(b.Commands); i++ {
-		b.Commands[i].ID = command.ID(genID())
-	}
-
-	err := d.db.Exec(ctx,
-		[]database.Query{
-			queries.InsertApp(b.Appliance),
-			queries.InsertIntoButtons(b),
-			queries.InsertIntoCommands(b.ID, b.Commands),
-		},
-	)
-	return b, err
-}
-
-func (d *DataAccess) CreateThermostat(ctx context.Context, t thermostat.Thermostat) (thermostat.Thermostat, error) {
-	t.ID = app.ID(genID())
-	for i := 0; i < len(t.Commands); i++ {
-		t.Commands[i].ID = command.ID(genID())
-	}
-
-	err := d.db.Exec(ctx,
-		[]database.Query{
-			queries.InsertApp(t.Appliance),
-			queries.InsertIntoThermostats(t),
-			queries.InsertIntoCommands(t.ID, t.Commands),
-		},
-	)
-	return t, err
+	err := d.db.Exec(ctx, q[:])
+	return a, err
 }
 
 func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c command.Command) (command.Command, error) {
@@ -130,74 +89,6 @@ func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c command.
 		},
 	)
 	return c, err
-}
-
-func (d *DataAccess) ReadCustom(ctx context.Context, id app.ID) (custom.Custom, error) {
-	var c custom.Custom
-	res, err := d.db.Query(ctx, queries.SelectFromCustomsWhere(id))
-	if err != nil {
-		return c, err
-	}
-	c = res.(custom.Custom)
-
-	res, err = d.db.Query(ctx, queries.SelectCommands(id))
-	if err != nil {
-		return c, err
-	}
-	coms := res.([]command.Command)
-	c.Commands = coms
-	return c, err
-}
-
-func (d *DataAccess) ReadToggle(ctx context.Context, id app.ID) (toggle.Toggle, error) {
-	var t toggle.Toggle
-	res, err := d.db.Query(ctx, queries.SelectFromTogglesWhere(id))
-	if err != nil {
-		return t, err
-	}
-	t = res.(toggle.Toggle)
-
-	res, err = d.db.Query(ctx, queries.SelectCommands(id))
-	if err != nil {
-		return t, err
-	}
-	coms := res.([]command.Command)
-	t.Commands = coms
-	return t, err
-}
-
-func (d *DataAccess) ReadButton(ctx context.Context, id app.ID) (button.Button, error) {
-	var b button.Button
-	res, err := d.db.Query(ctx, queries.SelectFromButtonsWhere(id))
-	if err != nil {
-		return b, err
-	}
-	b = res.(button.Button)
-
-	res, err = d.db.Query(ctx, queries.SelectCommands(id))
-	if err != nil {
-		return b, err
-	}
-	coms := res.([]command.Command)
-	b.Commands = coms
-	return b, err
-}
-
-func (d *DataAccess) ReadThermostat(ctx context.Context, id app.ID) (thermostat.Thermostat, error) {
-	var t thermostat.Thermostat
-	res, err := d.db.Query(ctx, queries.SelectFromThermostatWhere(id))
-	if err != nil {
-		return t, err
-	}
-	t = res.(thermostat.Thermostat)
-
-	res, err = d.db.Query(ctx, queries.SelectCommands(id))
-	if err != nil {
-		return t, err
-	}
-	coms := res.([]command.Command)
-	t.Commands = coms
-	return t, err
 }
 
 func (d *DataAccess) ReadApp(ctx context.Context, appID app.ID) (app.Appliance, error) {
@@ -227,6 +118,16 @@ func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID comman
 		return c, err
 	}
 	c = res.(command.Command)
+	return c, err
+}
+
+func (d *DataAccess) ReadCommands(ctx context.Context, appID app.ID) ([]command.Command, error) {
+	var c []command.Command
+	res, err := d.db.Query(ctx, queries.SelectCommands(appID))
+	if err != nil {
+		return c, err
+	}
+	c = res.([]command.Command)
 	return c, err
 }
 

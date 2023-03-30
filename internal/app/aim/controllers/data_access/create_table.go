@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 )
 

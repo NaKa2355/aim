@@ -1,5 +1,7 @@
 package boundary
 
+type AddApplianceInput interface{}
+
 type AddCustomInput struct {
 	Name     string
 	DeviceID string
@@ -55,6 +57,15 @@ type AddCommandInput struct {
 }
 
 type DeleteCommandInput struct {
+	AppID string
+	ComID string
+}
+
+type GetCommandsInput struct {
+	AppID string
+}
+
+type GetIRDataInput struct {
 	AppID string
 	ComID string
 }

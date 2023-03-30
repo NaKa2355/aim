@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
@@ -117,7 +117,7 @@ func SelectFromCommandsWhere(appID appliance.ID, comID command.ID) database.Quer
 
 			err = rows.Scan(&c.Name, &c.IRData)
 			c.ID = comID
-			return
+			return c, err
 		},
 	}
 }
