@@ -59,39 +59,39 @@ type Appliance interface {
 }
 
 type ApplianceData struct {
-	ID       ID
-	Name     Name
-	Type     ApplianceType
-	DeviceID DeviceID
-	Commands []command.Command
+	id       ID
+	name     Name
+	appType  ApplianceType
+	deviceID DeviceID
+	commands []command.Command
 }
 
 func NewApplianceData(id ID, name Name, appType ApplianceType, deviceID DeviceID, commands []command.Command) ApplianceData {
 	return ApplianceData{
-		ID:       id,
-		Name:     name,
-		Type:     appType,
-		DeviceID: deviceID,
-		Commands: commands,
+		id:       id,
+		name:     name,
+		appType:  appType,
+		deviceID: deviceID,
+		commands: commands,
 	}
 }
 
 func (a ApplianceData) GetID() ID {
-	return a.ID
+	return a.id
 }
 
 func (a ApplianceData) GetName() Name {
-	return a.Name
+	return a.name
 }
 
 func (a ApplianceData) GetType() ApplianceType {
-	return a.Type
+	return a.appType
 }
 
 func (a ApplianceData) GetDeviceID() DeviceID {
-	return a.DeviceID
+	return a.deviceID
 }
 
 func (a ApplianceData) GetCommands() []command.Command {
-	return a.Commands
+	return a.commands
 }

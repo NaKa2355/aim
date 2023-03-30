@@ -20,8 +20,8 @@ func TestNewButton(t *testing.T) {
 		// TODO: Add test cases.
 	}
 	b := NewButton("", "hello", "test")
-	b.SetID("ok")
-	fmt.Println(b.ID)
+	b = b.SetID("ok").(Button)
+	fmt.Println(b.GetID())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewButton(tt.args.id, tt.args.name, tt.args.deviceID); !reflect.DeepEqual(got, tt.want) {

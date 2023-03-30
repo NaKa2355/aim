@@ -15,17 +15,17 @@ func NewCustom(id ID, name Name, deviceID DeviceID) Custom {
 }
 
 func (c Custom) SetID(id ID) Appliance {
-	c.ID = id
+	c.id = id
 	return c
 }
 
 func (c Custom) SetName(name Name) Appliance {
-	c.Name = name
+	c.name = name
 	return c
 }
 
 func (c Custom) SetDeviceID(deviceID DeviceID) Appliance {
-	c.DeviceID = deviceID
+	c.deviceID = deviceID
 	return c
 }
 

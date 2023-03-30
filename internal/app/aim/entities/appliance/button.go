@@ -20,17 +20,17 @@ func NewButton(id ID, name Name, deviceID DeviceID) Button {
 }
 
 func (b Button) SetID(id ID) Appliance {
-	b.ID = id
+	b.id = id
 	return b
 }
 
 func (b Button) SetName(name Name) Appliance {
-	b.Name = name
+	b.name = name
 	return b
 }
 
 func (b Button) SetDeviceID(deviceID DeviceID) Appliance {
-	b.DeviceID = deviceID
+	b.deviceID = deviceID
 	return b
 }
 

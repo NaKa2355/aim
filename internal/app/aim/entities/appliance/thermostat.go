@@ -119,17 +119,17 @@ func round2ndDiminals(f float64) float64 {
 }
 
 func (t Thermostat) SetID(id ID) Appliance {
-	t.ID = id
+	t.id = id
 	return t
 }
 
 func (t Thermostat) SetName(name Name) Appliance {
-	t.Name = name
+	t.name = name
 	return t
 }
 
 func (t Thermostat) SetDeviceID(deviceID DeviceID) Appliance {
-	t.DeviceID = deviceID
+	t.deviceID = deviceID
 	return t
 }
 

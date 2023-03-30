@@ -21,17 +21,17 @@ func NewToggle(id ID, name Name, deviceID DeviceID) Toggle {
 }
 
 func (t Toggle) SetID(id ID) Appliance {
-	t.ID = id
+	t.id = id
 	return t
 }
 
 func (t Toggle) SetName(name Name) Appliance {
-	t.Name = name
+	t.name = name
 	return t
 }
 
 func (t Toggle) SetDeviceID(deviceID DeviceID) Appliance {
-	t.DeviceID = deviceID
+	t.deviceID = deviceID
 	return t
 }
 
