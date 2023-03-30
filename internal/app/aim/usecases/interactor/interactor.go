@@ -2,21 +2,50 @@ package interactor
 
 import (
 	"context"
+	"errors"
 
-	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/button"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/custom"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/thermostat"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance/toggle"
+	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 )
 
+func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput) (out bdy.AddAppOutput, err error) {
+	var a app.Appliance
+	switch in := _in.(type) {
+	case bdy.AddCustomInput:
+		a = app.NewCustom("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+	case bdy.AddButtonInput:
+		a = app.NewButton("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+	case bdy.AddToggleInput:
+		a = app.NewToggle("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+	case bdy.AddThermostatInput:
+		a, err = app.NewThermostat("",
+			app.Name(in.Name),
+			app.DeviceID(in.DeviceID),
+			in.Scale,
+			in.MinimumHeatingTemp,
+			in.MaximumHeatingTemp,
+			in.MinimumCoolingTemp,
+			in.MaximumCoolingTemp,
+		)
+		if err != nil {
+			return
+		}
+	default:
+		return out, errors.New("invaild input")
+	}
+
+	a, err = i.repo.CreateAppliance(ctx, a)
+	out.ID = string(a.GetID())
+	return
+}
+
+/*
 func (i *Interactor) addCustom(ctx context.Context, in bdy.AddCustomInput) (bdy.AddAppOutput, error) {
 	var out = bdy.AddAppOutput{}
 	var err error = nil
-	c := custom.New("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+	c := app.NewCustom("", app.Name(in.Name), app.DeviceID(in.DeviceID))
 	c, err = i.repo.CreateCustom(ctx, c)
 	if err != nil {
 		return out, err
@@ -29,7 +58,7 @@ func (i *Interactor) addCustom(ctx context.Context, in bdy.AddCustomInput) (bdy.
 func (i *Interactor) addToggle(ctx context.Context, in bdy.AddToggleInput) (bdy.AddAppOutput, error) {
 	var out = bdy.AddAppOutput{}
 
-	t := toggle.New("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+	t := app.NewToggle("", app.Name(in.Name), app.DeviceID(in.DeviceID))
 
 	t, err := i.repo.CreateToggle(ctx, t)
 	if err != nil {
@@ -43,7 +72,7 @@ func (i *Interactor) addToggle(ctx context.Context, in bdy.AddToggleInput) (bdy.
 func (i *Interactor) addButton(ctx context.Context, in bdy.AddButtonInput) (bdy.AddAppOutput, error) {
 	var out = bdy.AddAppOutput{}
 
-	b := button.New("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+	b := app.NewButton("", app.Name(in.Name), app.DeviceID(in.DeviceID))
 
 	b, err := i.repo.CreateButton(ctx, b)
 	if err != nil {
@@ -55,9 +84,9 @@ func (i *Interactor) addButton(ctx context.Context, in bdy.AddButtonInput) (bdy.
 }
 
 func (i *Interactor) addThermostat(ctx context.Context, in bdy.AddThermostatInput) (out bdy.AddAppOutput, err error) {
-	var t thermostat.Thermostat
+	var t app.Thermostat
 
-	t, err = thermostat.New("",
+	t, err = app.NewThermostat("",
 		app.Name(in.Name),
 		app.DeviceID(in.DeviceID),
 		in.Scale,
@@ -76,6 +105,7 @@ func (i *Interactor) addThermostat(ctx context.Context, in bdy.AddThermostatInpu
 	out.ID = string(t.ID)
 	return
 }
+*/
 
 func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (err error) {
 	var a app.Appliance
@@ -96,9 +126,10 @@ func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (er
 	return
 }
 
+/*
 // Read
 func (i *Interactor) getCustom(ctx context.Context, in bdy.GetAppInput) (out bdy.GetCustomOutput, err error) {
-	var c custom.Custom
+	var c app.Custom
 
 	c, err = i.repo.ReadCustom(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -113,7 +144,7 @@ func (i *Interactor) getCustom(ctx context.Context, in bdy.GetAppInput) (out bdy
 }
 
 func (i *Interactor) getToggle(ctx context.Context, in bdy.GetAppInput) (out bdy.GetToggleOutput, err error) {
-	var t toggle.Toggle
+	var t app.Toggle
 
 	t, err = i.repo.ReadToggle(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -129,7 +160,7 @@ func (i *Interactor) getToggle(ctx context.Context, in bdy.GetAppInput) (out bdy
 }
 
 func (i *Interactor) getButton(ctx context.Context, in bdy.GetAppInput) (out bdy.GetButtonOutput, err error) {
-	var b button.Button
+	var b app.Button
 
 	b, err = i.repo.ReadButton(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -145,7 +176,7 @@ func (i *Interactor) getButton(ctx context.Context, in bdy.GetAppInput) (out bdy
 }
 
 func (i *Interactor) getThermostat(ctx context.Context, in bdy.GetAppInput) (out bdy.GetThermostatOutput, err error) {
-	var t thermostat.Thermostat
+	var t app.Thermostat
 
 	t, err = i.repo.ReadThermostat(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -164,6 +195,7 @@ func (i *Interactor) getThermostat(ctx context.Context, in bdy.GetAppInput) (out
 
 	return
 }
+*/
 
 func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOutput, err error) {
 	var apps []app.Appliance
@@ -173,12 +205,54 @@ func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOu
 		return
 	}
 
-	out.Apps = make([]bdy.Appliance, len(apps))
-	for i, a := range apps {
-		out.Apps[i].ID = string(a.ID)
-		out.Apps[i].Name = string(a.Name)
-		out.Apps[i].DeviceID = string(a.DeviceID)
-		out.Apps[i].ApplianceType = bdy.ApplianceType(a.Type)
+	out.Apps = make([]interface{}, len(apps))
+	for i, _a := range apps {
+		switch a := _a.(type) {
+		case app.Custom:
+			out.Apps[i] = bdy.Custom{
+				ID:       string(a.ID),
+				Name:     string(a.Name),
+				DeviceID: string(a.DeviceID),
+			}
+		case app.Button:
+			out.Apps[i] = bdy.Button{
+				ID:       string(a.ID),
+				Name:     string(a.Name),
+				DeviceID: string(a.DeviceID),
+			}
+		case app.Toggle:
+			out.Apps[i] = bdy.Toggle{
+				ID:       string(a.ID),
+				Name:     string(a.Name),
+				DeviceID: string(a.DeviceID),
+			}
+		case app.Thermostat:
+			out.Apps[i] = bdy.Thermostat{
+				ID:                 string(a.ID),
+				Name:               string(a.Name),
+				DeviceID:           string(a.DeviceID),
+				Scale:              a.Scale,
+				MaximumHeatingTemp: a.MaximumHeatingTemp,
+				MinimumHeatingTemp: a.MinimumHeatingTemp,
+				MaximumCoolingTemp: a.MaximumCoolingTemp,
+				MinimumCoolingTemp: a.MinimumCoolingTemp,
+			}
+		}
+	}
+	return
+}
+
+func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (out bdy.GetCommandsOutput, err error) {
+	var coms []command.Command
+	coms, err = i.repo.ReadCommands(ctx, app.ID(in.AppID))
+	if err != nil {
+		return
+	}
+
+	out.Commands = make([]bdy.Command, len(coms))
+	for i, c := range coms {
+		out.Commands[i].ID = string(c.ID)
+		out.Commands[i].Name = string(c.Name)
 	}
 
 	return
@@ -286,13 +360,4 @@ func (i *Interactor) deleteCommand(ctx context.Context, in bdy.DeleteCommandInpu
 
 	err = i.repo.DeleteCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
 	return
-}
-
-func convertComs(coms []command.Command) []bdy.Command {
-	in := make([]bdy.Command, len(coms))
-	for i, c := range coms {
-		in[i].ID = string(c.ID)
-		in[i].Name = string(c.Name)
-	}
-	return in
 }

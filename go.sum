@@ -49,6 +49,12 @@ github.com/NaKa2355/irdeck-proto v0.0.0-20230328015607-b46b6eb96c9c h1:H6ls+cJ/u
 github.com/NaKa2355/irdeck-proto v0.0.0-20230328015607-b46b6eb96c9c/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
 github.com/NaKa2355/irdeck-proto v0.0.0-20230328065013-58fa483f1a5f h1:XwQMibUyIEfP4NLtJeNm6lIkVOuxXZGDh4K//L4PBlc=
 github.com/NaKa2355/irdeck-proto v0.0.0-20230328065013-58fa483f1a5f/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230329074105-da8b954887d1 h1:VUIMPu7+LtDXsYuLc89NPahRSEX7VeDEUFtMeg9rfVc=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230329074105-da8b954887d1/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230330050626-e021bb7269d9 h1:DPjw1PmrYiHwiVbMdZLQ0MdHHhBN+h5AO/cXaoXBuuI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230330050626-e021bb7269d9/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230330070722-a1f4c4159d29 h1:oY/QkS7aEUUUfdcF8nD9im77XDKlqkkksXlY1SXDPx4=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230330070722-a1f4c4159d29/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

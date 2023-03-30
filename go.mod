@@ -10,7 +10,7 @@ require (
 require (
 	cloud.google.com/go/compute v1.15.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	github.com/NaKa2355/irdeck-proto v0.0.0-20230328065013-58fa483f1a5f // indirect
+	github.com/NaKa2355/irdeck-proto v0.0.0-20230330070722-a1f4c4159d29 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cncf/udpa/go v0.0.0-20220112060539-c52dc94e7fbe // indirect

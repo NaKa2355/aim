@@ -47,6 +47,35 @@ type GetThermostatOutput struct {
 	Commands           []Command
 }
 
+type Custom struct {
+	ID       string
+	Name     string
+	DeviceID string
+}
+
+type Toggle struct {
+	ID       string
+	Name     string
+	DeviceID string
+}
+
+type Button struct {
+	ID       string
+	Name     string
+	DeviceID string
+}
+
+type Thermostat struct {
+	ID                 string
+	Name               string
+	DeviceID           string
+	Scale              float64
+	MaximumHeatingTemp int
+	MinimumHeatingTemp int
+	MaximumCoolingTemp int
+	MinimumCoolingTemp int
+}
+
 type Command struct {
 	ID   string
 	Name string
@@ -60,13 +89,17 @@ type Appliance struct {
 }
 
 type GetAppliancesOutput struct {
-	Apps []Appliance
+	Apps []interface{} //Custom or Button or Toggle or Thermostat
 }
 
 type GetCommandOutput struct {
 	ID   string
 	Name string
 	Data IRData
+}
+
+type GetCommandsOutput struct {
+	Commands []Command
 }
 
 type IRData []byte
