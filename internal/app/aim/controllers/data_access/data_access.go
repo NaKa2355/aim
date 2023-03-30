@@ -56,7 +56,7 @@ func (d *DataAccess) Close() error {
 
 func (d *DataAccess) CreateAppliance(ctx context.Context, a app.Appliance) (app.Appliance, error) {
 	var q = [3]database.Query{}
-	a.SetID(app.ID(genID()))
+	a = a.SetID(app.ID(genID()))
 	for i := 0; i < len(a.GetCommands()); i++ {
 		a.GetCommands()[i].ID = command.ID(genID())
 	}

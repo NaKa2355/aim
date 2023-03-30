@@ -5,13 +5,28 @@ import (
 )
 
 type Custom struct {
-	*ApplianceData
+	ApplianceData
 }
 
 func NewCustom(id ID, name Name, deviceID DeviceID) Custom {
 	return Custom{
 		NewApplianceData(id, name, TypeCustom, deviceID, make([]command.Command, 0)),
 	}
+}
+
+func (c Custom) SetID(id ID) Appliance {
+	c.ID = id
+	return c
+}
+
+func (c Custom) SetName(name Name) Appliance {
+	c.Name = name
+	return c
+}
+
+func (c Custom) SetDeviceID(deviceID DeviceID) Appliance {
+	c.DeviceID = deviceID
+	return c
 }
 
 func (c Custom) ChangeCommandName() error {
