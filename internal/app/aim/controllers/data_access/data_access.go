@@ -25,6 +25,18 @@ type DataAccess struct {
 
 var _ repo.Repository = &DataAccess{}
 
+func wrapErr(err *error) {
+	if *err == nil {
+		return
+	}
+
+	if _, ok := (*err).(repo.Error); ok {
+		return
+	}
+
+	*err = repo.NewError(repo.CodeDataBase, *err)
+}
+
 func New(dbFile string) (*DataAccess, error) {
 	var d *DataAccess
 
@@ -54,9 +66,11 @@ func (d *DataAccess) Close() error {
 	return d.db.Close()
 }
 
-func (d *DataAccess) CreateAppliance(ctx context.Context, a app.Appliance) (app.Appliance, error) {
+func (d *DataAccess) CreateAppliance(ctx context.Context, _a app.Appliance) (a app.Appliance, err error) {
+	defer wrapErr(&err)
+
 	var q = [3]database.Query{}
-	a = a.SetID(app.ID(genID()))
+	a = _a.SetID(app.ID(genID()))
 	for i := 0; i < len(a.GetCommands()); i++ {
 		a.GetCommands()[i].ID = command.ID(genID())
 	}
@@ -77,13 +91,14 @@ func (d *DataAccess) CreateAppliance(ctx context.Context, a app.Appliance) (app.
 		return a, errors.New("unsupported appliance")
 	}
 
-	err := d.db.Exec(ctx, q[:])
+	err = d.db.Exec(ctx, q[:])
 	return a, err
 }
 
-func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c command.Command) (command.Command, error) {
+func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c command.Command) (_ command.Command, err error) {
+	defer wrapErr(&err)
 	c.ID = command.ID(genID())
-	err := d.db.Exec(ctx,
+	err = d.db.Exec(ctx,
 		[]database.Query{
 			queries.InsertIntoCommands(appID, []command.Command{c}),
 		},
@@ -91,8 +106,8 @@ func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c command.
 	return c, err
 }
 
-func (d *DataAccess) ReadApp(ctx context.Context, appID app.ID) (app.Appliance, error) {
-	var a app.Appliance
+func (d *DataAccess) ReadApp(ctx context.Context, appID app.ID) (a app.Appliance, err error) {
+	defer wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectFromAppsWhere(appID))
 	if err != nil {
 		return a, err
@@ -101,8 +116,8 @@ func (d *DataAccess) ReadApp(ctx context.Context, appID app.ID) (app.Appliance, 
 	return a, err
 }
 
-func (d *DataAccess) ReadApps(ctx context.Context) ([]app.Appliance, error) {
-	var apps []app.Appliance
+func (d *DataAccess) ReadApps(ctx context.Context) (apps []app.Appliance, err error) {
+	defer wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectFromApps())
 	if err != nil {
 		return apps, err
@@ -111,8 +126,8 @@ func (d *DataAccess) ReadApps(ctx context.Context) ([]app.Appliance, error) {
 	return apps, err
 }
 
-func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID command.ID) (command.Command, error) {
-	var c command.Command
+func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID command.ID) (c command.Command, err error) {
+	wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectFromCommandsWhere(appID, comID))
 	if err != nil {
 		return c, err
@@ -121,30 +136,38 @@ func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID comman
 	return c, err
 }
 
-func (d *DataAccess) ReadCommands(ctx context.Context, appID app.ID) ([]command.Command, error) {
-	var c []command.Command
+func (d *DataAccess) ReadCommands(ctx context.Context, appID app.ID) (coms []command.Command, err error) {
+	wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectCommands(appID))
 	if err != nil {
-		return c, err
+		return coms, err
 	}
-	c = res.([]command.Command)
-	return c, err
+	coms = res.([]command.Command)
+	return coms, err
 }
 
-func (d *DataAccess) UpdateApp(ctx context.Context, a app.Appliance) error {
-	return d.db.Exec(ctx, []database.Query{queries.UpdateApp(a)})
+func (d *DataAccess) UpdateApp(ctx context.Context, a app.Appliance) (err error) {
+	defer wrapErr(&err)
+	err = d.db.Exec(ctx, []database.Query{queries.UpdateApp(a)})
+	return
 }
 
-func (d *DataAccess) UpdateCommand(ctx context.Context, appID app.ID, c command.Command) error {
-	return d.db.Exec(ctx, []database.Query{queries.UpdateCommand(appID, c)})
+func (d *DataAccess) UpdateCommand(ctx context.Context, appID app.ID, c command.Command) (err error) {
+	defer wrapErr(&err)
+	err = d.db.Exec(ctx, []database.Query{queries.UpdateCommand(appID, c)})
+	return err
 }
 
-func (d *DataAccess) DeleteApp(ctx context.Context, appID app.ID) error {
-	return d.db.Exec(ctx, []database.Query{queries.DeleteApp(appID)})
+func (d *DataAccess) DeleteApp(ctx context.Context, appID app.ID) (err error) {
+	defer wrapErr(&err)
+	err = d.db.Exec(ctx, []database.Query{queries.DeleteApp(appID)})
+	return err
 }
 
-func (d *DataAccess) DeleteCommand(ctx context.Context, appID app.ID, comID command.ID) error {
-	return d.db.Exec(ctx, []database.Query{queries.DeleteFromCommand(appID, comID)})
+func (d *DataAccess) DeleteCommand(ctx context.Context, appID app.ID, comID command.ID) (err error) {
+	defer wrapErr(&err)
+	err = d.db.Exec(ctx, []database.Query{queries.DeleteFromCommand(appID, comID)})
+	return err
 }
 
 func genID() string {

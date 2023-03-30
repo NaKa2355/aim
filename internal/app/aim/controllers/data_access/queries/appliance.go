@@ -57,7 +57,6 @@ func InsertApp(a app.Appliance) database.Query {
 		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID())
 
 			if sqlErr, ok := err.(sqlite3.Error); ok {
@@ -80,8 +79,7 @@ func InsertIntoCustoms(c app.Custom) database.Query {
 		Statement: `INSERT INTO customs VALUES(?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
-			_, err = stmt.ExecContext(ctx, c.ID)
+			_, err = stmt.ExecContext(ctx, c.GetID())
 			return
 		},
 	}
@@ -92,8 +90,7 @@ func InsertIntoButtons(b app.Button) database.Query {
 		Statement: `INSERT INTO buttons VALUES(?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
-			_, err = stmt.ExecContext(ctx, b.ID)
+			_, err = stmt.ExecContext(ctx, b.GetID())
 			return
 		},
 	}
@@ -104,8 +101,7 @@ func InsertIntoToggles(t app.Toggle) database.Query {
 		Statement: `INSERT INTO toggles VALUES(?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
-			_, err = stmt.ExecContext(ctx, t.ID)
+			_, err = stmt.ExecContext(ctx, t.GetID())
 			return
 		},
 	}
@@ -116,138 +112,8 @@ func InsertIntoThermostats(t app.Thermostat) database.Query {
 		Statement: `INSERT INTO thermostats VALUES(?, ?, ?, ?, ?, ?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
-			_, err = stmt.ExecContext(ctx, t.ID,
+			_, err = stmt.ExecContext(ctx, t.GetID(),
 				t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp)
-			return
-		},
-	}
-}
-
-func SelectFromCustomsWhere(id app.ID) database.Query {
-	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id
-		FROM appliances a 
-		JOIN customs ON a.app_id = customs.app_id
-		WHERE a.app_id = ?`,
-
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
-			var c = app.Custom{}
-
-			rows, err := stmt.QueryContext(ctx, id)
-			if err != nil {
-				return
-			}
-			defer rows.Close()
-
-			if rows.Next() {
-				err = repo.NewError(
-					repo.CodeNotFound,
-					errors.New("custom appliance not found"),
-				)
-				return
-			}
-
-			err = rows.Scan(&c.ID, &c.Name, &c.Type, &c.DeviceID)
-			resp = c
-			return
-		},
-	}
-}
-
-func SelectFromButtonsWhere(id app.ID) database.Query {
-	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id
-		FROM appliances a 
-		JOIN buttons b ON a.app_id = b.app_id
-		WHERE a.app_id = ?`,
-
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
-			var b = app.Button{}
-
-			rows, err := stmt.QueryContext(ctx, id)
-			if err != nil {
-				return
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				err = repo.NewError(
-					repo.CodeNotFound,
-					errors.New("button appliance not found"),
-				)
-				return
-			}
-
-			err = rows.Scan(&b.ID, &b.Name, &b.Type, &b.DeviceID)
-			resp = b
-			return
-		},
-	}
-}
-
-func SelectFromTogglesWhere(id app.ID) database.Query {
-	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id
-		FROM appliances a 
-		JOIN toggles t ON a.app_id = t.app_id
-		WHERE a.app_id = ?`,
-
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
-			var t = app.Toggle{}
-
-			rows, err := stmt.QueryContext(ctx, id)
-			if err != nil {
-				return
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				err = repo.NewError(
-					repo.CodeNotFound,
-					errors.New("toggle appliance not found"),
-				)
-				return
-			}
-
-			err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID)
-			resp = t
-			return
-		},
-	}
-}
-
-func SelectFromThermostatWhere(id app.ID) database.Query {
-	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, t.scale, t.minimum_heating_temp, t.maximum_heating_temp, t.minimum_cooling_temp, t.maximum_cooling_temp
-		FROM appliances a 
-		JOIN thermostats t ON a.app_id = t.app_id 
-		WHERE a.app_id = ?`,
-
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
-			var t = app.Thermostat{}
-
-			rows, err := stmt.QueryContext(ctx, id)
-			if err != nil {
-				return
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				err = repo.NewError(
-					repo.CodeNotFound,
-					errors.New("thermostat appliance not found"),
-				)
-				return
-			}
-
-			err = rows.Scan(&t.ID, &t.Name, &t.Type, &t.DeviceID,
-				&t.Scale, &t.MinimumHeatingTemp, &t.MaximumHeatingTemp, &t.MinimumCoolingTemp, &t.MaximumCoolingTemp)
-			resp = t
 			return
 		},
 	}
@@ -267,7 +133,6 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 		WHERE a.app_id = ?`,
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
 			c := ApplianceColumns{}
 			rows, err := stmt.QueryContext(ctx, id)
 			if err != nil {
@@ -302,7 +167,6 @@ func SelectFromApps() database.Query {
 		LEFT JOIN thermostats th ON a.app_id = th.app_id`,
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
 			var apps []app.Appliance
 			c := ApplianceColumns{}
 			rows, err := stmt.QueryContext(ctx)
@@ -330,7 +194,6 @@ func UpdateApp(a app.Appliance) database.Query {
 		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?",
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, a.GetName(), a.GetDeviceID(), a.GetID())
 
 			if sqlErr, ok := err.(sqlite3.Error); ok {
@@ -353,7 +216,6 @@ func DeleteApp(id app.ID) database.Query {
 		Statement: "DELETE FROM appliances WHERE app_id=?",
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
 			_, err = stmt.ExecContext(ctx, id)
 			return
 		},

@@ -73,27 +73,27 @@ func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOu
 		switch a := _a.(type) {
 		case app.Custom:
 			out.Apps[i] = bdy.Custom{
-				ID:       string(a.ID),
-				Name:     string(a.Name),
-				DeviceID: string(a.DeviceID),
+				ID:       string(a.GetID()),
+				Name:     string(a.GetName()),
+				DeviceID: string(a.GetDeviceID()),
 			}
 		case app.Button:
 			out.Apps[i] = bdy.Button{
-				ID:       string(a.ID),
-				Name:     string(a.Name),
-				DeviceID: string(a.DeviceID),
+				ID:       string(a.GetID()),
+				Name:     string(a.GetName()),
+				DeviceID: string(a.GetDeviceID()),
 			}
 		case app.Toggle:
 			out.Apps[i] = bdy.Toggle{
-				ID:       string(a.ID),
-				Name:     string(a.Name),
-				DeviceID: string(a.DeviceID),
+				ID:       string(a.GetID()),
+				Name:     string(a.GetName()),
+				DeviceID: string(a.GetDeviceID()),
 			}
 		case app.Thermostat:
 			out.Apps[i] = bdy.Thermostat{
-				ID:                 string(a.ID),
-				Name:               string(a.Name),
-				DeviceID:           string(a.DeviceID),
+				ID:                 string(a.GetID()),
+				Name:               string(a.GetName()),
+				DeviceID:           string(a.GetDeviceID()),
 				Scale:              a.Scale,
 				MaximumHeatingTemp: a.MaximumHeatingTemp,
 				MinimumHeatingTemp: a.MinimumHeatingTemp,
