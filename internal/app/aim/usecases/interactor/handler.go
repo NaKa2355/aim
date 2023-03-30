@@ -60,55 +60,10 @@ func (i *Interactor) AddAppliance(ctx context.Context, in bdy.AddApplianceInput)
 	return out, wrapErr(err)
 }
 
-/*
-func (i *Interactor) AddCustom(ctx context.Context, in bdy.AddCustomInput) (bdy.AddAppOutput, error) {
-	out, err := i.addCustom(ctx, in)
-	return out, wrapErr(err)
-}
-
-func (i *Interactor) AddToggle(ctx context.Context, in bdy.AddToggleInput) (bdy.AddAppOutput, error) {
-	out, err := i.addToggle(ctx, in)
-	return out, wrapErr(err)
-}
-
-func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) (bdy.AddAppOutput, error) {
-	out, err := i.addButton(ctx, in)
-	return out, wrapErr(err)
-}
-
-func (i *Interactor) AddThermostat(ctx context.Context, in bdy.AddThermostatInput) (bdy.AddAppOutput, error) {
-	out, err := i.addThermostat(ctx, in)
-	return out, wrapErr(err)
-}
-*/
-
 func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) error {
 	err := i.addCommand(ctx, in)
 	return wrapErr(err)
 }
-
-/*
-// Read
-func (i *Interactor) GetCustom(ctx context.Context, in bdy.GetAppInput) (bdy.GetCustomOutput, error) {
-	out, err := i.getCustom(ctx, in)
-	return out, wrapErr(err)
-}
-
-func (i *Interactor) GetToggle(ctx context.Context, in bdy.GetAppInput) (bdy.GetToggleOutput, error) {
-	out, err := i.getToggle(ctx, in)
-	return out, wrapErr(err)
-}
-
-func (i *Interactor) GetButton(ctx context.Context, in bdy.GetAppInput) (bdy.GetButtonOutput, error) {
-	out, err := i.getButton(ctx, in)
-	return out, wrapErr(err)
-}
-
-func (i *Interactor) GetThermostat(ctx context.Context, in bdy.GetAppInput) (bdy.GetThermostatOutput, error) {
-	out, err := i.getThermostat(ctx, in)
-	return out, wrapErr(err)
-}
-*/
 
 func (i *Interactor) GetAppliances(ctx context.Context) (bdy.GetAppliancesOutput, error) {
 	out, err := i.getAppliances(ctx)

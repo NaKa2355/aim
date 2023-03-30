@@ -49,12 +49,12 @@ type Appliance interface {
 	AddCommand() error
 	RemoveCommand() error
 	GetID() ID
-	SetID(ID)
+	SetID(ID) Appliance
 	GetName() Name
-	SetName(Name)
+	SetName(Name) Appliance
 	GetType() ApplianceType
 	GetDeviceID() DeviceID
-	SetDeviceID(DeviceID)
+	SetDeviceID(DeviceID) Appliance
 	GetCommands() []command.Command
 }
 
@@ -66,8 +66,8 @@ type ApplianceData struct {
 	Commands []command.Command
 }
 
-func NewApplianceData(id ID, name Name, appType ApplianceType, deviceID DeviceID, commands []command.Command) *ApplianceData {
-	return &ApplianceData{
+func NewApplianceData(id ID, name Name, appType ApplianceType, deviceID DeviceID, commands []command.Command) ApplianceData {
+	return ApplianceData{
 		ID:       id,
 		Name:     name,
 		Type:     appType,
@@ -76,34 +76,22 @@ func NewApplianceData(id ID, name Name, appType ApplianceType, deviceID DeviceID
 	}
 }
 
-func (a *ApplianceData) GetID() ID {
+func (a ApplianceData) GetID() ID {
 	return a.ID
 }
 
-func (a *ApplianceData) SetID(id ID) {
-	a.ID = id
-}
-
-func (a *ApplianceData) GetName() Name {
+func (a ApplianceData) GetName() Name {
 	return a.Name
 }
 
-func (a *ApplianceData) SetName(name Name) {
-	a.Name = name
-}
-
-func (a *ApplianceData) GetType() ApplianceType {
+func (a ApplianceData) GetType() ApplianceType {
 	return a.Type
 }
 
-func (a *ApplianceData) GetDeviceID() DeviceID {
+func (a ApplianceData) GetDeviceID() DeviceID {
 	return a.DeviceID
 }
 
-func (a *ApplianceData) SetDeviceID(id DeviceID) {
-	a.DeviceID = id
-}
-
-func (a *ApplianceData) GetCommands() []command.Command {
+func (a ApplianceData) GetCommands() []command.Command {
 	return a.Commands
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type Toggle struct {
-	*ApplianceData
+	ApplianceData
 }
 
 func NewToggle(id ID, name Name, deviceID DeviceID) Toggle {
@@ -18,6 +18,21 @@ func NewToggle(id ID, name Name, deviceID DeviceID) Toggle {
 			command.New("", "off", nil),
 		}),
 	}
+}
+
+func (t Toggle) SetID(id ID) Appliance {
+	t.ID = id
+	return t
+}
+
+func (t Toggle) SetName(name Name) Appliance {
+	t.Name = name
+	return t
+}
+
+func (t Toggle) SetDeviceID(deviceID DeviceID) Appliance {
+	t.DeviceID = deviceID
+	return t
 }
 
 func (t Toggle) ChangeCommandName() error {
