@@ -37,8 +37,8 @@ func wrapErr(err *error) {
 	*err = repo.NewError(repo.CodeDataBase, *err)
 }
 
-func New(dbFile string) (*DataAccess, error) {
-	var d *DataAccess
+func New(dbFile string) (d *DataAccess, err error) {
+	defer wrapErr(&err)
 
 	db, err := database.New(dbFile)
 	if err != nil {
@@ -62,15 +62,17 @@ func New(dbFile string) (*DataAccess, error) {
 	return d, nil
 }
 
-func (d *DataAccess) Close() error {
-	return d.db.Close()
+func (d *DataAccess) Close() (err error) {
+	defer wrapErr(&err)
+	err = d.db.Close()
+	return
 }
 
-func (d *DataAccess) CreateAppliance(ctx context.Context, _a app.Appliance) (a app.Appliance, err error) {
+func (d *DataAccess) CreateAppliance(ctx context.Context, a app.Appliance) (_ app.Appliance, err error) {
 	defer wrapErr(&err)
 
 	var q = [3]database.Query{}
-	a = _a.SetID(app.ID(genID()))
+	a, _ = a.SetID(genID())
 	for i := 0; i < len(a.GetCommands()); i++ {
 		a.GetCommands()[i].ID = command.ID(genID())
 	}
@@ -127,7 +129,7 @@ func (d *DataAccess) ReadApps(ctx context.Context) (apps []app.Appliance, err er
 }
 
 func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID command.ID) (c command.Command, err error) {
-	wrapErr(&err)
+	defer wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectFromCommandsWhere(appID, comID))
 	if err != nil {
 		return c, err
@@ -137,7 +139,7 @@ func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID comman
 }
 
 func (d *DataAccess) ReadCommands(ctx context.Context, appID app.ID) (coms []command.Command, err error) {
-	wrapErr(&err)
+	defer wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectCommands(appID))
 	if err != nil {
 		return coms, err

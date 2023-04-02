@@ -27,15 +27,34 @@ type ApplianceColumns struct {
 }
 
 func (c ApplianceColumns) convert() (a app.Appliance) {
+	ad := app.ApplianceData{
+		ID:       c.ID,
+		Name:     c.Name,
+		DeviceID: c.DeviceID,
+	}
+
 	switch c.Type {
 	case app.TypeCustom:
-		a = app.NewCustom(c.ID, c.Name, c.DeviceID)
+		a = app.Custom{
+			ApplianceData: ad,
+		}
 	case app.TypeButton:
-		a = app.NewButton(c.ID, c.Name, c.DeviceID)
+		a = app.Button{
+			ApplianceData: ad,
+		}
 	case app.TypeToggle:
-		a = app.NewToggle(c.ID, c.Name, c.DeviceID)
+		a = app.Button{
+			ApplianceData: ad,
+		}
 	case app.TypeThermostat:
-		a, _ = app.NewThermostat(c.ID, c.Name, c.DeviceID, c.Scale.Float64, int(c.mict.Int16), int(c.maht.Int16), int(c.mict.Int16), int(c.mact.Int16))
+		a = app.Thermostat{
+			ApplianceData:      ad,
+			Scale:              c.Scale.Float64,
+			MaximumHeatingTemp: int(c.maht.Int16),
+			MinimumHeatingTemp: int(c.miht.Int16),
+			MaximumCoolingTemp: int(c.mact.Int16),
+			MinimumCoolingTemp: int(c.mict.Int16),
+		}
 	}
 	return
 }

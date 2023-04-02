@@ -13,25 +13,38 @@ type Button struct {
 	ApplianceData
 }
 
-func NewButton(id ID, name Name, deviceID DeviceID) Button {
+func NewButton(name string, deviceID string) (b Button, err error) {
+	a, err := NewApplianceData(name, TypeButton, deviceID, []command.Command{command.New("", "push", nil)})
 	return Button{
-		NewApplianceData(id, name, TypeButton, deviceID, []command.Command{command.New("", "push", nil)}),
+		ApplianceData: a,
+	}, err
+}
+
+func (b Button) SetID(id string) (_ Appliance, err error) {
+	b.ID, err = NewID(id)
+	if err != nil {
+		return b, err
 	}
+
+	return b, err
 }
 
-func (b Button) SetID(id ID) Appliance {
-	b.id = id
-	return b
+func (b Button) SetName(name string) (_ Appliance, err error) {
+	b.Name, err = NewName(name)
+	if err != nil {
+		return b, err
+	}
+
+	return b, nil
 }
 
-func (b Button) SetName(name Name) Appliance {
-	b.name = name
-	return b
-}
+func (b Button) SetDeviceID(deviceID string) (_ Appliance, err error) {
+	b.DeviceID, err = NewDeviceID(deviceID)
+	if err != nil {
+		return b, err
+	}
 
-func (b Button) SetDeviceID(deviceID DeviceID) Appliance {
-	b.deviceID = deviceID
-	return b
+	return b, nil
 }
 
 func (b Button) ChangeCommandName() error {

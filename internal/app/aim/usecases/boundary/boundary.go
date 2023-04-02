@@ -4,6 +4,10 @@ import (
 	"context"
 )
 
+type NotificatorApplianceUpdate interface {
+	NotificateApplianceUpdate(ctx, o Appliance)
+}
+
 type ApplianceAdder interface {
 	AddAppliance(ctx context.Context, i AddApplianceInput) (AddAppOutput, error)
 }

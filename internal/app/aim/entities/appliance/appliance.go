@@ -1,7 +1,9 @@
 package appliance
 
 import (
+	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
+	validation "github.com/go-ozzo/ozzo-validation"
 )
 
 type ApplianceType int
@@ -28,20 +30,48 @@ func (a ApplianceType) String() string {
 
 type ID string
 
-func NewID(id string) ID {
-	return ID(id)
+func NewID(id string) (ID, error) {
+	err := validation.Validate(id,
+		validation.Required,
+	)
+	if err != nil {
+		return ID(""), entities.NewError(
+			entities.CodeInvaildInput,
+			err,
+		)
+	}
+	return ID(id), err
 }
 
 type Name string
 
-func NewName(name string) Name {
-	return Name(name)
+func NewName(name string) (Name, error) {
+	err := validation.Validate(name,
+		validation.Required,
+		validation.Length(1, 20),
+	)
+	if err != nil {
+		return Name(""), entities.NewError(
+			entities.CodeInvaildInput,
+			err,
+		)
+	}
+	return Name(name), nil
 }
 
 type DeviceID string
 
-func NewDeviceID(id string) DeviceID {
-	return DeviceID(id)
+func NewDeviceID(name string) (DeviceID, error) {
+	err := validation.Validate(name,
+		validation.Required,
+	)
+	if err != nil {
+		return DeviceID(""), entities.NewError(
+			entities.CodeInvaildInput,
+			err,
+		)
+	}
+	return DeviceID(name), nil
 }
 
 type Appliance interface {
@@ -49,49 +79,59 @@ type Appliance interface {
 	AddCommand() error
 	RemoveCommand() error
 	GetID() ID
-	SetID(ID) Appliance
+	SetID(string) (Appliance, error)
 	GetName() Name
-	SetName(Name) Appliance
+	SetName(string) (Appliance, error)
 	GetType() ApplianceType
 	GetDeviceID() DeviceID
-	SetDeviceID(DeviceID) Appliance
+	SetDeviceID(string) (Appliance, error)
 	GetCommands() []command.Command
 }
 
 type ApplianceData struct {
-	id       ID
-	name     Name
-	appType  ApplianceType
-	deviceID DeviceID
-	commands []command.Command
+	ID       ID
+	Name     Name
+	Type     ApplianceType
+	DeviceID DeviceID
+	Commands []command.Command
 }
 
-func NewApplianceData(id ID, name Name, appType ApplianceType, deviceID DeviceID, commands []command.Command) ApplianceData {
-	return ApplianceData{
-		id:       id,
-		name:     name,
-		appType:  appType,
-		deviceID: deviceID,
-		commands: commands,
+func NewApplianceData(name string, appType ApplianceType, deviceID string, commands []command.Command) (a ApplianceData, err error) {
+	n, err := NewName(name)
+	if err != nil {
+		return a, err
 	}
+
+	d, err := NewDeviceID(deviceID)
+	if err != nil {
+		return a, err
+	}
+
+	return ApplianceData{
+		ID:       "",
+		Name:     n,
+		Type:     appType,
+		DeviceID: d,
+		Commands: commands,
+	}, nil
 }
 
 func (a ApplianceData) GetID() ID {
-	return a.id
+	return a.ID
 }
 
 func (a ApplianceData) GetName() Name {
-	return a.name
+	return a.Name
 }
 
 func (a ApplianceData) GetType() ApplianceType {
-	return a.appType
+	return a.Type
 }
 
 func (a ApplianceData) GetDeviceID() DeviceID {
-	return a.deviceID
+	return a.DeviceID
 }
 
 func (a ApplianceData) GetCommands() []command.Command {
-	return a.commands
+	return a.Commands
 }

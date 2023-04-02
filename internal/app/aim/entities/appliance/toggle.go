@@ -11,28 +11,44 @@ type Toggle struct {
 	ApplianceData
 }
 
-func NewToggle(id ID, name Name, deviceID DeviceID) Toggle {
+func NewToggle(name string, deviceID string) (t Toggle, err error) {
+	a, err := NewApplianceData(name, TypeToggle, deviceID, []command.Command{
+		command.New("", "on", nil),
+		command.New("", "off", nil),
+	})
 	return Toggle{
-		NewApplianceData(id, name, TypeToggle, deviceID, []command.Command{
-			command.New("", "on", nil),
-			command.New("", "off", nil),
-		}),
+		ApplianceData: a,
+	}, err
+}
+
+func (t Toggle) SetID(id string) (Appliance, error) {
+	_id, err := NewID(id)
+	if err != nil {
+		return t, err
 	}
+
+	t.ID = _id
+	return t, nil
 }
 
-func (t Toggle) SetID(id ID) Appliance {
-	t.id = id
-	return t
+func (t Toggle) SetName(name string) (Appliance, error) {
+	n, err := NewName(name)
+	if err != nil {
+		return t, err
+	}
+
+	t.Name = n
+	return t, nil
 }
 
-func (t Toggle) SetName(name Name) Appliance {
-	t.name = name
-	return t
-}
+func (t Toggle) SetDeviceID(deviceID string) (Appliance, error) {
+	d, err := NewDeviceID(deviceID)
+	if err != nil {
+		return t, err
+	}
 
-func (t Toggle) SetDeviceID(deviceID DeviceID) Appliance {
-	t.deviceID = deviceID
-	return t
+	t.DeviceID = d
+	return t, nil
 }
 
 func (t Toggle) ChangeCommandName() error {

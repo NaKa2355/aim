@@ -14,15 +14,15 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 	var a app.Appliance
 	switch in := _in.(type) {
 	case bdy.AddCustomInput:
-		a = app.NewCustom("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+		a, err = app.NewCustom(in.Name, in.DeviceID)
 	case bdy.AddButtonInput:
-		a = app.NewButton("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+		a, err = app.NewButton(in.Name, in.DeviceID)
 	case bdy.AddToggleInput:
-		a = app.NewToggle("", app.Name(in.Name), app.DeviceID(in.DeviceID))
+		a, err = app.NewToggle(in.Name, in.DeviceID)
 	case bdy.AddThermostatInput:
-		a, err = app.NewThermostat("",
-			app.Name(in.Name),
-			app.DeviceID(in.DeviceID),
+		a, err = app.NewThermostat(
+			in.Name,
+			in.DeviceID,
 			in.Scale,
 			in.MinimumHeatingTemp,
 			in.MaximumHeatingTemp,
@@ -145,7 +145,11 @@ func (i *Interactor) renameAppliance(ctx context.Context, in bdy.RenameAppInput)
 		return
 	}
 
-	a.SetName(app.Name(in.Name))
+	a, err = a.SetName(in.Name)
+	if err != nil {
+		return
+	}
+
 	err = i.repo.UpdateApp(ctx, a)
 	return
 }
@@ -158,7 +162,7 @@ func (i *Interactor) changeIRDevice(ctx context.Context, in bdy.ChangeIRDevInput
 		return
 	}
 
-	a.SetDeviceID(app.DeviceID(in.DeviceID))
+	a.SetDeviceID(in.DeviceID)
 	err = i.repo.UpdateApp(ctx, a)
 
 	return
