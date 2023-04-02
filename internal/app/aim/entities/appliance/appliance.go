@@ -1,6 +1,8 @@
 package appliance
 
 import (
+	"fmt"
+
 	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	validation "github.com/go-ozzo/ozzo-validation"
@@ -31,16 +33,7 @@ func (a ApplianceType) String() string {
 type ID string
 
 func NewID(id string) (ID, error) {
-	err := validation.Validate(id,
-		validation.Required,
-	)
-	if err != nil {
-		return ID(""), entities.NewError(
-			entities.CodeInvaildInput,
-			err,
-		)
-	}
-	return ID(id), err
+	return ID(id), nil
 }
 
 type Name string
@@ -53,7 +46,7 @@ func NewName(name string) (Name, error) {
 	if err != nil {
 		return Name(""), entities.NewError(
 			entities.CodeInvaildInput,
-			err,
+			fmt.Errorf("validation error at name: %w", err),
 		)
 	}
 	return Name(name), nil
@@ -68,7 +61,7 @@ func NewDeviceID(name string) (DeviceID, error) {
 	if err != nil {
 		return DeviceID(""), entities.NewError(
 			entities.CodeInvaildInput,
-			err,
+			fmt.Errorf("validation error at device_id: %w", err),
 		)
 	}
 	return DeviceID(name), nil
