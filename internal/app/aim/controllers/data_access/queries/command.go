@@ -34,7 +34,7 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 
 				if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
 					err = repo.NewError(
-						repo.CodeInvaildInput,
+						repo.CodeAlreadyExists,
 						fmt.Errorf("same name already exists: %w", err),
 					)
 					return
@@ -57,7 +57,7 @@ func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
 			if err, ok := err.(sqlite3.Error); ok {
 				if errors.Is(err.ExtendedCode, sqlite3.ErrConstraintUnique) {
 					return repo.NewError(
-						repo.CodeInvaildInput,
+						repo.CodeAlreadyExists,
 						fmt.Errorf("same name already exists: %w", err),
 					)
 				}

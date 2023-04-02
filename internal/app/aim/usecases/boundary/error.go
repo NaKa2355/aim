@@ -1,5 +1,7 @@
 package boundary
 
+import "fmt"
+
 type ErrCode string
 
 const (
@@ -16,7 +18,7 @@ type Error struct {
 }
 
 func (e Error) Error() string {
-	return e.Err.Error()
+	return fmt.Sprintf("Code(%s) %s", e.Code, e.Err)
 }
 
 func NewError(code ErrCode, err error) Error {

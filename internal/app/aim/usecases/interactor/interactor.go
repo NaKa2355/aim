@@ -29,16 +29,16 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 			in.MinimumCoolingTemp,
 			in.MaximumCoolingTemp,
 		)
-		if err != nil {
-			return
-		}
 	default:
 		return out, errors.New("invaild input")
+	}
+	if err != nil {
+		return out, err
 	}
 
 	a, err = i.repo.CreateAppliance(ctx, a)
 	out.ID = string(a.GetID())
-	return
+	return out, err
 }
 
 func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (err error) {
