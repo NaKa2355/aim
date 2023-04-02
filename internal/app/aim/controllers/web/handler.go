@@ -267,14 +267,3 @@ func (h *Handler) DeleteCommand(ctx context.Context, req *aimv1.DeleteCommandReq
 func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, req aimv1.AimService_NotifyApplianceUpdateServer) error {
 	return nil
 }
-
-func convertCommands(coms []bdy.Command) []*aimv1.Command {
-	res := make([]*aimv1.Command, len(coms))
-	for i, c := range coms {
-		res[i] = &aimv1.Command{
-			Id:   c.ID,
-			Name: c.Name,
-		}
-	}
-	return res
-}

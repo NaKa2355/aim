@@ -8,25 +8,41 @@ type Custom struct {
 	ApplianceData
 }
 
-func NewCustom(id ID, name Name, deviceID DeviceID) Custom {
+func NewCustom(name string, deviceID string) (c Custom, err error) {
+	a, err := NewApplianceData(name, TypeCustom, deviceID, make([]command.Command, 0))
 	return Custom{
-		NewApplianceData(id, name, TypeCustom, deviceID, make([]command.Command, 0)),
+		ApplianceData: a,
+	}, err
+}
+
+func (c Custom) SetID(id string) (Appliance, error) {
+	_id, err := NewID(id)
+	if err != nil {
+		return c, err
 	}
+
+	c.ID = _id
+	return c, nil
 }
 
-func (c Custom) SetID(id ID) Appliance {
-	c.id = id
-	return c
+func (c Custom) SetName(name string) (Appliance, error) {
+	n, err := NewName(name)
+	if err != nil {
+		return c, err
+	}
+
+	c.Name = n
+	return c, nil
 }
 
-func (c Custom) SetName(name Name) Appliance {
-	c.name = name
-	return c
-}
+func (c Custom) SetDeviceID(deviceID string) (Appliance, error) {
+	d, err := NewDeviceID(deviceID)
+	if err != nil {
+		return c, err
+	}
 
-func (c Custom) SetDeviceID(deviceID DeviceID) Appliance {
-	c.deviceID = deviceID
-	return c
+	c.DeviceID = d
+	return c, nil
 }
 
 func (c Custom) ChangeCommandName() error {

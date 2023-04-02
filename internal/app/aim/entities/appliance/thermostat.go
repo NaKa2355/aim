@@ -25,25 +25,30 @@ type Thermostat struct {
 	MinimumCoolingTemp int
 }
 
-func NewThermostat(id ID, name Name, deviceID DeviceID,
-	s float64, miht int, maht int, mict int, mact int) (Thermostat, error) {
-
-	var t Thermostat
-	err := validate(s, miht, maht, mict, mact)
+func NewThermostat(name string, deviceID string,
+	s float64, miht int, maht int, mict int, mact int) (t Thermostat, err error) {
+	err = validate(s, miht, maht, mict, mact)
 	if err != nil {
 		return t, entities.NewError(entities.CodeInvaildInput, err)
 	}
-	a := NewApplianceData(id, name, TypeThermostat, deviceID,
+
+	a, err := NewApplianceData(name, TypeThermostat, deviceID,
 		getCommands(s, miht, maht, mict, mact))
 
-	return Thermostat{
+	if err != nil {
+		return t, err
+	}
+
+	t = Thermostat{
 		ApplianceData:      a,
 		Scale:              s,
 		MinimumHeatingTemp: miht,
 		MaximumHeatingTemp: maht,
 		MinimumCoolingTemp: mict,
 		MaximumCoolingTemp: mact,
-	}, nil
+	}
+
+	return t, err
 }
 
 func validate(s float64, miht int, maht int, mict int, mact int) error {
@@ -118,19 +123,34 @@ func round2ndDiminals(f float64) float64 {
 	return r
 }
 
-func (t Thermostat) SetID(id ID) Appliance {
-	t.id = id
-	return t
+func (t Thermostat) SetID(id string) (Appliance, error) {
+	_id, err := NewID(id)
+	if err != nil {
+		return t, err
+	}
+
+	t.ID = _id
+	return t, nil
 }
 
-func (t Thermostat) SetName(name Name) Appliance {
-	t.name = name
-	return t
+func (t Thermostat) SetName(name string) (Appliance, error) {
+	n, err := NewName(name)
+	if err != nil {
+		return t, err
+	}
+
+	t.Name = n
+	return t, nil
 }
 
-func (t Thermostat) SetDeviceID(deviceID DeviceID) Appliance {
-	t.deviceID = deviceID
-	return t
+func (t Thermostat) SetDeviceID(deviceID string) (Appliance, error) {
+	d, err := NewDeviceID(deviceID)
+	if err != nil {
+		return t, err
+	}
+
+	t.DeviceID = d
+	return t, nil
 }
 
 func (t Thermostat) ChangeCommandName() error {
