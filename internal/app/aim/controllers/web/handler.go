@@ -6,9 +6,9 @@ import (
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 	aimv1 "github.com/NaKa2355/irdeck-proto/gen/go/aim/api/v1"
-	v1 "github.com/NaKa2355/irdeck-proto/gen/go/common/irdata/v1"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 type Boundary interface {
@@ -181,10 +181,10 @@ func (h *Handler) GetCommands(ctx context.Context, req *aimv1.GetCommandsRequest
 	return
 }
 
-func (h *Handler) GetIrData(ctx context.Context, req *aimv1.GetIrDataRequest) (res *v1.IrData, err error) {
+func (h *Handler) GetIrData(ctx context.Context, req *aimv1.GetIrDataRequest) (res *anypb.Any, err error) {
 	var in bdy.GetCommandInput
 	var out bdy.GetCommandOutput
-	res = &v1.IrData{}
+	res = &anypb.Any{}
 
 	in.AppID = req.ApplianceId
 	in.ComID = req.CommandId
