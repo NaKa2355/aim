@@ -10,7 +10,8 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
-	"github.com/mattn/go-sqlite3"
+	"modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Query {
@@ -19,7 +20,7 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			defer wrapErr(&err)
-			var sqliteErr sqlite3.Error
+			var sqliteErr *sqlite.Error
 
 			for _, com := range coms {
 				_, err = stmt.Exec(com.GetID(), appID, com.GetName(), []byte{})
@@ -27,12 +28,12 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 					continue
 				}
 
-				if _, ok := err.(sqlite3.Error); !ok {
+				if _, ok := err.(*sqlite.Error); !ok {
 					return err
 				}
-				sqliteErr = err.(sqlite3.Error)
+				sqliteErr = err.(*sqlite.Error)
 
-				if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+				if sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
 					err = repo.NewError(
 						repo.CodeAlreadyExists,
 						fmt.Errorf("same name already exists: %w", err),
@@ -54,8 +55,8 @@ func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
 			defer wrapErr(&err)
 			_, err = stmt.Exec(c.GetName(), c.GetRawIRData(), c.GetID(), appID)
 
-			if err, ok := err.(sqlite3.Error); ok {
-				if errors.Is(err.ExtendedCode, sqlite3.ErrConstraintUnique) {
+			if err, ok := err.(*sqlite.Error); ok {
+				if err.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
 					return repo.NewError(
 						repo.CodeAlreadyExists,
 						fmt.Errorf("same name already exists: %w", err),
