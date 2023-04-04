@@ -5,6 +5,8 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
+	"time"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/web"
@@ -13,6 +15,7 @@ import (
 )
 
 func main() {
+	var mem runtime.MemStats
 	fmt.Println("Hello, World!")
 	d, err := data_access.New("./test.db")
 	if err != nil {
@@ -30,11 +33,21 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
 	s.Start(listener)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
-	<-quit
+	t := time.NewTicker(1 * time.Second)
+L:
+	for {
+		select {
+		case <-t.C:
+			runtime.ReadMemStats(&mem)
+			fmt.Println(mem.Alloc, mem.TotalAlloc, mem.HeapAlloc, mem.HeapSys)
+		case <-quit:
+			break L
+		}
+	}
+
 	s.Stop()
 	fmt.Println("")
 }

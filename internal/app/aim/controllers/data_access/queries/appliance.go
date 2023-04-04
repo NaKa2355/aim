@@ -11,7 +11,8 @@ import (
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
-	"github.com/mattn/go-sqlite3"
+	"modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 type ApplianceColumns struct {
@@ -78,8 +79,8 @@ func InsertApp(a app.Appliance) database.Query {
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			_, err = stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID())
 
-			if sqlErr, ok := err.(sqlite3.Error); ok {
-				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+			if sqlErr, ok := err.(*sqlite.Error); ok {
+				if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
 					err = repo.NewError(
 						repo.CodeAlreadyExists,
 						fmt.Errorf("same name appliance already exists: %w", err),
@@ -215,8 +216,8 @@ func UpdateApp(a app.Appliance) database.Query {
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
 			_, err = stmt.ExecContext(ctx, a.GetName(), a.GetDeviceID(), a.GetID())
 
-			if sqlErr, ok := err.(sqlite3.Error); ok {
-				if errors.Is(sqlErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+			if sqlErr, ok := err.(*sqlite.Error); ok {
+				if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
 					err = repo.NewError(
 						repo.CodeAlreadyExists,
 						fmt.Errorf("same name appliance already exists: %w", err),
