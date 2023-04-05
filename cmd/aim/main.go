@@ -34,6 +34,7 @@ func main() {
 		return
 	}
 	s.Start(listener)
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	t := time.NewTicker(1 * time.Second)
@@ -42,7 +43,7 @@ L:
 		select {
 		case <-t.C:
 			runtime.ReadMemStats(&mem)
-			fmt.Println(mem.Alloc, mem.TotalAlloc, mem.HeapAlloc, mem.HeapSys)
+			fmt.Println(mem.StackSys, mem.HeapSys, mem.Sys, float32(mem.Alloc)/float32(mem.HeapSys))
 		case <-quit:
 			break L
 		}
