@@ -28,7 +28,7 @@ type ApplianceColumns struct {
 }
 
 func (c ApplianceColumns) convert() (a app.Appliance) {
-	ad := app.ApplianceData{
+	ad := &app.ApplianceData{
 		ID:       c.ID,
 		Name:     c.Name,
 		DeviceID: c.DeviceID,

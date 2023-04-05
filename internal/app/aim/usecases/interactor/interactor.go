@@ -145,7 +145,7 @@ func (i *Interactor) renameAppliance(ctx context.Context, in bdy.RenameAppInput)
 		return
 	}
 
-	a, err = a.SetName(in.Name)
+	err = a.SetName(in.Name)
 	if err != nil {
 		return
 	}

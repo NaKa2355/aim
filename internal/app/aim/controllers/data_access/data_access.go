@@ -72,7 +72,11 @@ func (d *DataAccess) CreateAppliance(ctx context.Context, a app.Appliance) (_ ap
 	defer wrapErr(&err)
 
 	var q = [3]database.Query{}
-	a, _ = a.SetID(genID())
+	err = a.SetID(genID())
+	if err != nil {
+		return
+	}
+
 	for i := 0; i < len(a.GetCommands()); i++ {
 		a.GetCommands()[i].ID = command.ID(genID())
 	}
