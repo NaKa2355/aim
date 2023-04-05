@@ -9,7 +9,7 @@ type Custom struct {
 }
 
 func NewCustom(name string, deviceID string) (c Custom, err error) {
-	a, err := NewApplianceData(name, TypeCustom, deviceID, make([]command.Command, 0))
+	a, err := NewApplianceData(name, deviceID, make([]command.Command, 0))
 	return Custom{
 		ApplianceData: a,
 	}, err
@@ -25,4 +25,8 @@ func (c Custom) AddCommand() error {
 
 func (c Custom) RemoveCommand() error {
 	return nil
+}
+
+func (c Custom) GetType() ApplianceType {
+	return TypeCustom
 }

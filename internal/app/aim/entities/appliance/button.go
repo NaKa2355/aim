@@ -14,7 +14,7 @@ type Button struct {
 }
 
 func NewButton(name string, deviceID string) (b *Button, err error) {
-	a, err := NewApplianceData(name, TypeButton, deviceID, []command.Command{command.New("", "push", nil)})
+	a, err := NewApplianceData(name, deviceID, []command.Command{command.New("push", nil)})
 	return &Button{
 		ApplianceData: a,
 	}, err
@@ -39,4 +39,8 @@ func (b Button) RemoveCommand() error {
 		entities.CodeInvaildOperation,
 		fmt.Errorf("button appliance does not support removing command"),
 	)
+}
+
+func (b Button) GetType() ApplianceType {
+	return TypeButton
 }

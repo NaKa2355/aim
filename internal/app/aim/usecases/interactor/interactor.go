@@ -55,7 +55,7 @@ func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (er
 		return
 	}
 
-	com = command.New("", command.Name(in.Name), irdata.IRData{})
+	com = command.New(command.Name(in.Name), irdata.IRData{})
 	_, err = i.repo.CreateCommand(ctx, app.ID(in.AppID), com)
 	return
 }

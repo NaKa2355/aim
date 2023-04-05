@@ -12,9 +12,9 @@ type Toggle struct {
 }
 
 func NewToggle(name string, deviceID string) (t Toggle, err error) {
-	a, err := NewApplianceData(name, TypeToggle, deviceID, []command.Command{
-		command.New("", "on", nil),
-		command.New("", "off", nil),
+	a, err := NewApplianceData(name, deviceID, []command.Command{
+		command.New("on", nil),
+		command.New("off", nil),
 	})
 	return Toggle{
 		ApplianceData: a,
@@ -40,4 +40,8 @@ func (t Toggle) RemoveCommand() error {
 		entities.CodeInvaildOperation,
 		fmt.Errorf("toggle appliance does not support removing command"),
 	)
+}
+
+func (t Toggle) GetType() ApplianceType {
+	return TypeToggle
 }

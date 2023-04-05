@@ -32,7 +32,7 @@ func NewThermostat(name string, deviceID string,
 		return t, entities.NewError(entities.CodeInvaildInput, err)
 	}
 
-	a, err := NewApplianceData(name, TypeThermostat, deviceID,
+	a, err := NewApplianceData(name, deviceID,
 		getCommands(s, miht, maht, mict, mact))
 
 	if err != nil {
@@ -89,27 +89,25 @@ func validate(s float64, miht int, maht int, mict int, mact int) error {
 }
 
 func getCommands(s float64, miht int, maht int, mict int, mact int) []command.Command {
-	var name command.Name
 	var temp float64
 	var size int = int(float64(mact-mict)/s + 1 + float64(maht-miht)/s + 1 + 1)
 	var commands = make([]command.Command, 0, size)
 
 	temp = float64(miht)
 	for temp <= float64(maht) {
-		name = command.NewName(fmt.Sprintf("h%.1f", temp))
-		commands = append(commands, command.New("", name, nil))
+		commands = append(commands, command.New(command.Name(fmt.Sprintf("h%.1f", temp)), nil))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
 
 	temp = float64(mict)
 	for temp <= float64(mact) {
-		name = command.NewName(fmt.Sprintf("c%.1f", temp))
-		commands = append(commands, command.New("", name, nil))
+		commands = append(commands, command.New(command.Name(fmt.Sprintf("c%.1f", temp)), nil))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
-	commands = append(commands, command.New("", "off", nil))
+
+	commands = append(commands, command.New("off", nil))
 	return commands
 }
 
@@ -142,4 +140,8 @@ func (t Thermostat) RemoveCommand() error {
 		entities.CodeInvaildOperation,
 		fmt.Errorf("thermostat appliance does not support removing command"),
 	)
+}
+
+func (t Thermostat) GetType() ApplianceType {
+	return TypeThermostat
 }

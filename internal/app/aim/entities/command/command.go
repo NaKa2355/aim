@@ -1,11 +1,27 @@
 package command
 
-import "github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
+import (
+	"fmt"
+
+	"github.com/NaKa2355/aim/internal/app/aim/entities"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
+	validation "github.com/go-ozzo/ozzo-validation"
+)
 
 type Name string
 
-func NewName(name string) Name {
-	return Name(name)
+func NewName(name string) (Name, error) {
+	err := validation.Validate(name,
+		validation.Required,
+		validation.Length(1, 20),
+	)
+	if err != nil {
+		return Name(""), entities.NewError(
+			entities.CodeInvaildInput,
+			fmt.Errorf("validation error at name: %w", err),
+		)
+	}
+	return Name(name), nil
 }
 
 type ID string
@@ -20,9 +36,8 @@ type Command struct {
 	IRData irdata.IRData
 }
 
-func New(id ID, name Name, irdata irdata.IRData) Command {
+func New(name Name, irdata irdata.IRData) Command {
 	return Command{
-		ID:     id,
 		Name:   name,
 		IRData: irdata,
 	}
