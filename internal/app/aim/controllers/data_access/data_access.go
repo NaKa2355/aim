@@ -53,12 +53,6 @@ func New(dbFile string) (d *DataAccess, err error) {
 		err = fmt.Errorf("faild to setup database: %w", err)
 		return d, err
 	}
-
-	if err := d.AddAppTypeQuery(); err != nil {
-		err = fmt.Errorf("faild to setup database: %w", err)
-		return d, err
-	}
-
 	return d, nil
 }
 

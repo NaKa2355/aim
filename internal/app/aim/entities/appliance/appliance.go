@@ -68,15 +68,15 @@ func NewDeviceID(name string) (DeviceID, error) {
 }
 
 type Appliance interface {
-	ChangeCommandName() error
-	AddCommand() error
-	RemoveCommand() error
 	GetID() ID
 	SetID(string) error
 	GetName() Name
 	SetName(string) error
-	GetType() ApplianceType
 	GetDeviceID() DeviceID
 	SetDeviceID(string) error
 	GetCommands() []command.Command
+
+	ChangeCommandName() error
+	AddCommand() error
+	RemoveCommand() error
 }
