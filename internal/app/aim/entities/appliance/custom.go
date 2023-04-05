@@ -26,7 +26,3 @@ func (c Custom) AddCommand() error {
 func (c Custom) RemoveCommand() error {
 	return nil
 }
-
-func (c Custom) GetType() ApplianceType {
-	return TypeCustom
-}

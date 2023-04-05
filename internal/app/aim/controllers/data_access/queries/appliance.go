@@ -15,10 +15,19 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
+type ApplianceType int
+
+const (
+	TypeCustom     = 0
+	TypeButton     = 1
+	TypeToggle     = 2
+	TypeThermostat = 3
+)
+
 type ApplianceColumns struct {
 	id       app.ID
 	name     app.Name
-	appType  app.ApplianceType
+	appType  ApplianceType
 	deviceID app.DeviceID
 	scale    sql.NullFloat64
 	miht     sql.NullInt16
@@ -35,19 +44,19 @@ func (c ApplianceColumns) convert() (a app.Appliance) {
 	}
 
 	switch c.appType {
-	case app.TypeCustom:
+	case TypeCustom:
 		a = app.Custom{
 			ApplianceData: ad,
 		}
-	case app.TypeButton:
+	case TypeButton:
 		a = app.Button{
 			ApplianceData: ad,
 		}
-	case app.TypeToggle:
-		a = app.Button{
+	case TypeToggle:
+		a = app.Toggle{
 			ApplianceData: ad,
 		}
-	case app.TypeThermostat:
+	case TypeThermostat:
 		a = app.Thermostat{
 			ApplianceData:      ad,
 			Scale:              c.scale.Float64,
@@ -141,16 +150,11 @@ func InsertIntoThermostats(t app.Thermostat) database.Query {
 
 func SelectFromAppsWhere(id app.ID) database.Query {
 	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id,
-		th.scale, 
-		th.minimum_heating_temp, th.maximum_heating_temp,
-		th.minimum_cooling_temp, th.maximum_cooling_temp
-		FROM appliances a 
-		LEFT JOIN customs c ON a.app_id = c.app_id
-		LEFT JOIN buttons b ON a.app_id = b.app_id
-		LEFT JOIN toggles t ON a.app_id = t.app_id
-		LEFT JOIN thermostats th ON a.app_id = th.app_id
-		WHERE a.app_id = ?`,
+		Statement: `
+		SELECT * 
+		FROM appliances_sti
+		WHERE a.app_id = ?
+		`,
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			c := ApplianceColumns{}
@@ -176,42 +180,35 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 
 func SelectFromApps() database.Query {
 	return database.Query{
-		Statement: `SELECT a.app_id, a.name, a.app_type, a.device_id, 
-		th.scale, 
-		th.minimum_heating_temp, th.maximum_heating_temp,
-		th.minimum_cooling_temp, th.maximum_cooling_temp,
-		(SELECT COUNT(*) FROM appliances)
-		FROM appliances a 
-		LEFT JOIN customs c ON a.app_id = c.app_id
-		LEFT JOIN buttons b ON a.app_id = b.app_id
-		LEFT JOIN toggles t ON a.app_id = t.app_id
-		LEFT JOIN thermostats th ON a.app_id = th.app_id`,
+		Statement: `
+		SELECT *, (SELECT COUNT(*) FROM appliances)
+		FROM appliances_sti
+		`,
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			var apps []app.Appliance
 			var count int
-
 			c := ApplianceColumns{}
-			rows, err := stmt.QueryContext(ctx)
+			rows, err := stmt.QueryContext(ctx, TypeCustom, TypeButton, TypeButton, TypeCustom)
 			if err != nil {
-				return
+				return apps, err
 			}
 			defer rows.Close()
 
 			if !rows.Next() {
-				return
+				return apps, err
 			}
 
-			err = rows.Scan(&c.id, &c.name, &c.appType, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact, &count)
+			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact, &count)
 			if err != nil {
-				return
+				return apps, err
 			}
 
 			apps = make([]app.Appliance, 0, count)
 			apps = append(apps, c.convert())
 
 			for rows.Next() {
-				err = rows.Scan(&c.id, &c.name, &c.appType, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact, &count)
+				err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact, &count)
 				if err != nil {
 					return
 				}
@@ -219,7 +216,7 @@ func SelectFromApps() database.Query {
 			}
 
 			resp = apps
-			return
+			return apps, err
 		},
 	}
 }

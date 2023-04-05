@@ -30,13 +30,16 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 			in.MaximumCoolingTemp,
 		)
 	default:
-		return out, errors.New("invaild input")
+		err = errors.New("invaild input")
 	}
 	if err != nil {
 		return out, err
 	}
 
 	a, err = i.repo.CreateAppliance(ctx, a)
+	if err != nil {
+		return
+	}
 	out.ID = string(a.GetID())
 	return out, err
 }
