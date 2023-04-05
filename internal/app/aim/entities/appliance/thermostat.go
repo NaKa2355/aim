@@ -17,7 +17,7 @@ const COOLING_THRESHOLD_MAX = 35
 var _ Appliance = Thermostat{}
 
 type Thermostat struct {
-	ApplianceData
+	*ApplianceData
 	Scale              float64
 	MaximumHeatingTemp int
 	MinimumHeatingTemp int
@@ -121,36 +121,6 @@ func foor2ndDiminals(f float64) float64 {
 func round2ndDiminals(f float64) float64 {
 	r := math.Round(f*10) / 10
 	return r
-}
-
-func (t Thermostat) SetID(id string) (Appliance, error) {
-	_id, err := NewID(id)
-	if err != nil {
-		return t, err
-	}
-
-	t.ID = _id
-	return t, nil
-}
-
-func (t Thermostat) SetName(name string) (Appliance, error) {
-	n, err := NewName(name)
-	if err != nil {
-		return t, err
-	}
-
-	t.Name = n
-	return t, nil
-}
-
-func (t Thermostat) SetDeviceID(deviceID string) (Appliance, error) {
-	d, err := NewDeviceID(deviceID)
-	if err != nil {
-		return t, err
-	}
-
-	t.DeviceID = d
-	return t, nil
 }
 
 func (t Thermostat) ChangeCommandName() error {

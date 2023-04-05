@@ -72,12 +72,12 @@ type Appliance interface {
 	AddCommand() error
 	RemoveCommand() error
 	GetID() ID
-	SetID(string) (Appliance, error)
+	SetID(string) error
 	GetName() Name
-	SetName(string) (Appliance, error)
+	SetName(string) error
 	GetType() ApplianceType
 	GetDeviceID() DeviceID
-	SetDeviceID(string) (Appliance, error)
+	SetDeviceID(string) error
 	GetCommands() []command.Command
 }
 
@@ -89,7 +89,7 @@ type ApplianceData struct {
 	Commands []command.Command
 }
 
-func NewApplianceData(name string, appType ApplianceType, deviceID string, commands []command.Command) (a ApplianceData, err error) {
+func NewApplianceData(name string, appType ApplianceType, deviceID string, commands []command.Command) (a *ApplianceData, err error) {
 	n, err := NewName(name)
 	if err != nil {
 		return a, err
@@ -100,7 +100,7 @@ func NewApplianceData(name string, appType ApplianceType, deviceID string, comma
 		return a, err
 	}
 
-	return ApplianceData{
+	return &ApplianceData{
 		ID:       "",
 		Name:     n,
 		Type:     appType,
@@ -109,22 +109,37 @@ func NewApplianceData(name string, appType ApplianceType, deviceID string, comma
 	}, nil
 }
 
-func (a ApplianceData) GetID() ID {
+func (a *ApplianceData) GetID() ID {
 	return a.ID
 }
 
-func (a ApplianceData) GetName() Name {
+func (a *ApplianceData) GetName() Name {
 	return a.Name
 }
 
-func (a ApplianceData) GetType() ApplianceType {
+func (a *ApplianceData) GetType() ApplianceType {
 	return a.Type
 }
 
-func (a ApplianceData) GetDeviceID() DeviceID {
+func (a *ApplianceData) GetDeviceID() DeviceID {
 	return a.DeviceID
 }
 
-func (a ApplianceData) GetCommands() []command.Command {
+func (a *ApplianceData) GetCommands() []command.Command {
 	return a.Commands
+}
+
+func (a *ApplianceData) SetID(id string) (err error) {
+	a.ID, err = NewID(id)
+	return
+}
+
+func (a *ApplianceData) SetName(name string) (err error) {
+	a.Name, err = NewName(name)
+	return
+}
+
+func (b ApplianceData) SetDeviceID(deviceID string) (err error) {
+	b.DeviceID, err = NewDeviceID(deviceID)
+	return
 }
