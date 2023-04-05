@@ -99,14 +99,14 @@ type GetCommandsOutput struct {
 
 type IRData []byte
 
-type ChangeType int
+type UpdateType int
 
 const (
-	ChangeTypeAdd ChangeType = iota
-	ChangeTypeDelete
+	UpdateTypeAdd UpdateType = iota
+	UpdateTypeDelete
 )
 
-type ChangeNotifyOutput struct {
+type UpdateNotifyOutput struct {
 	AppID string
-	Type  ChangeType
+	Type  UpdateType
 }

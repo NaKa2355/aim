@@ -152,7 +152,7 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 	return database.Query{
 		Statement: `
 		SELECT * 
-		FROM appliances_sti
+		FROM appliances_sti a
 		WHERE a.app_id = ?
 		`,
 
@@ -171,7 +171,7 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 				)
 				return
 			}
-			err = rows.Scan(&c.id, &c.name, &c.appType, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact)
+			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact)
 			resp = c.convert()
 			return
 		},
