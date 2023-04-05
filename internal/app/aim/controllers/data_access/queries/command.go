@@ -71,21 +71,37 @@ func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
 
 func SelectCommands(appID appliance.ID) database.Query {
 	return database.Query{
-		Statement: "SELECT name, irdata, com_id FROM commands WHERE app_id=?",
+		Statement: `SELECT name, irdata, com_id,
+		(SELECT COUNT(*) 
+		FROM commands WHERE app_id=?)
+		FROM commands WHERE app_id=?`,
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
 			var coms []command.Command
+			var count int
 			var c = command.Command{}
 
-			rows, err := stmt.QueryContext(ctx, appID)
+			rows, err := stmt.QueryContext(ctx, appID, appID)
 			if err != nil {
 				return
 			}
 			defer rows.Close()
 
+			if !rows.Next() {
+				return
+			}
+
+			err = rows.Scan(&c.Name, &c.IRData, &c.ID, &count)
+			if err != nil {
+				return
+			}
+
+			coms = make([]command.Command, 0, count)
+			coms = append(coms, c)
+
 			for rows.Next() {
-				err = rows.Scan(&c.Name, &c.IRData, &c.ID)
+				err = rows.Scan(&c.Name, &c.IRData, &c.ID, &count)
 				if err != nil {
 					return
 				}
