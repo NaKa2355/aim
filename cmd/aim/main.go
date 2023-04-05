@@ -24,8 +24,9 @@ func main() {
 	}
 	defer d.Close()
 
-	i := interactor.New(d)
-	h := web.NewHandler(i)
+	h := web.NewHandler()
+	i := interactor.New(d, h)
+	h.SetInteractor(i)
 	s := server.New(h)
 
 	listener, err := net.Listen("tcp", ":8080")

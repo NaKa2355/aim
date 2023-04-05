@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-type NotificatorApplianceUpdate interface {
-	NotificateApplianceUpdate(ctx, o Appliance)
+type ApplianceUpdateNotifier interface {
+	NotificateApplianceUpdate(ctx context.Context, o UpdateNotifyOutput)
 }
 
 type ApplianceAdder interface {

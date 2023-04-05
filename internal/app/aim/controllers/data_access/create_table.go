@@ -16,27 +16,3 @@ func (d *DataAccess) CreateTable() error {
 	}
 	return nil
 }
-
-/*
-func (d *DataAccess) AddAppTypeQuery() error {
-	return d.db.Exec(
-		context.Background(),
-		[]database.Query{
-			{
-				Statement: "INSERT OR IGNORE INTO appliance_types VALUES(?, ?)",
-				Exec: func(ctx context.Context, stmt *sql.Stmt) error {
-					var err error = nil
-					for i, appType := range appliance.ApplianceTypeMap {
-						_, err = stmt.Exec(i, appType)
-						if err != nil {
-							return err
-						}
-
-					}
-					return nil
-				},
-			},
-		},
-	)
-}
-*/

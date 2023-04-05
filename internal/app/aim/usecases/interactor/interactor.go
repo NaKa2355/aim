@@ -40,6 +40,13 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 	if err != nil {
 		return
 	}
+
+	i.output.NotificateApplianceUpdate(
+		ctx, bdy.UpdateNotifyOutput{
+			AppID: string(a.GetID()),
+			Type:  bdy.UpdateTypeAdd,
+		},
+	)
 	out.ID = string(a.GetID())
 	return out, err
 }
@@ -212,7 +219,18 @@ func (i *Interactor) setIRData(ctx context.Context, in bdy.SetIRDataInput) (err 
 // Delete
 func (i *Interactor) deleteAppliance(ctx context.Context, in bdy.DeleteAppInput) (err error) {
 	err = i.repo.DeleteApp(ctx, app.ID(in.AppID))
-	return
+	if err != nil {
+		return err
+	}
+
+	i.output.NotificateApplianceUpdate(
+		ctx,
+		bdy.UpdateNotifyOutput{
+			AppID: in.AppID,
+			Type:  bdy.UpdateTypeDelete,
+		},
+	)
+	return err
 }
 
 func (i *Interactor) deleteCommand(ctx context.Context, in bdy.DeleteCommandInput) (err error) {

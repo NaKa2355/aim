@@ -9,7 +9,8 @@ import (
 )
 
 type Interactor struct {
-	repo repository.Repository
+	repo   repository.Repository
+	output bdy.ApplianceUpdateNotifier
 }
 
 func convertErrCode(err error) bdy.ErrCode {
@@ -48,9 +49,10 @@ func wrapErr(err error) error {
 	return bdy.NewError(code, err)
 }
 
-func New(in repository.Repository) *Interactor {
+func New(repo repository.Repository, out bdy.ApplianceUpdateNotifier) *Interactor {
 	i := &Interactor{
-		repo: in,
+		repo:   repo,
+		output: out,
 	}
 	return i
 }

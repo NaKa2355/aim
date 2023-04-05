@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 	aimv1 "github.com/NaKa2355/irdeck-proto/gen/go/aim/api/v1"
@@ -30,15 +31,20 @@ type Boundary interface {
 
 type Handler struct {
 	aimv1.UnimplementedAimServiceServer
-	i Boundary
+	i  Boundary
+	nc chan aimv1.ApplianceUpdateNotification
 }
 
 var _ aimv1.AimServiceServer = &Handler{}
 
-func NewHandler(i Boundary) *Handler {
+func NewHandler() *Handler {
 	return &Handler{
-		i: i,
+		nc: make(chan aimv1.ApplianceUpdateNotification),
 	}
+}
+
+func (h *Handler) SetInteractor(i Boundary) {
+	h.i = i
 }
 
 func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequest) (res *aimv1.AddAppResponse, err error) {
@@ -264,6 +270,29 @@ func (h *Handler) DeleteCommand(ctx context.Context, req *aimv1.DeleteCommandReq
 	return
 }
 
+func (h *Handler) NotificateApplianceUpdate(ctx context.Context, o bdy.UpdateNotifyOutput) {
+	var updateType aimv1.ApplianceUpdateNotification_UpdateType
+	switch o.Type {
+	case bdy.UpdateTypeAdd:
+		updateType = aimv1.ApplianceUpdateNotification_UPDATE_TYPE_ADD
+	case bdy.UpdateTypeDelete:
+		updateType = aimv1.ApplianceUpdateNotification_UPDATE_TYPE_DELETE
+	}
+
+	h.nc <- aimv1.ApplianceUpdateNotification{
+		ApplianceId: o.AppID,
+		UpdateType:  updateType,
+	}
+}
+
 func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, req aimv1.AimService_NotifyApplianceUpdateServer) error {
-	return nil
+	for {
+		select {
+		case <-req.Context().Done():
+			fmt.Println("done")
+			return req.Context().Err()
+		case notification := <-h.nc:
+			req.Send(&notification)
+		}
+	}
 }
