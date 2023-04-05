@@ -10,26 +10,6 @@ import (
 
 type ApplianceType int
 
-const (
-	TypeCustom ApplianceType = iota
-	TypeButton
-	TypeToggle
-	TypeThermostat
-	TypeTelevision
-)
-
-var ApplianceTypeMap map[ApplianceType]string = map[ApplianceType]string{
-	TypeCustom:     "Custom",
-	TypeButton:     "Button",
-	TypeToggle:     "Toggle",
-	TypeThermostat: "Thermostat",
-	TypeTelevision: "Television",
-}
-
-func (a ApplianceType) String() string {
-	return ApplianceTypeMap[a]
-}
-
 type ID string
 
 func NewID(id string) (ID, error) {
@@ -75,7 +55,6 @@ type Appliance interface {
 	GetDeviceID() DeviceID
 	SetDeviceID(string) error
 	GetCommands() []command.Command
-
 	ChangeCommandName() error
 	AddCommand() error
 	RemoveCommand() error

@@ -88,7 +88,8 @@ func (d *DataAccess) CreateAppliance(ctx context.Context, a app.Appliance) (_ ap
 	case app.Thermostat:
 		q[2] = queries.InsertIntoThermostats(a)
 	default:
-		return a, errors.New("unsupported appliance")
+		err = errors.New("unsupported appliance")
+		return
 	}
 
 	err = d.db.Exec(ctx, q[:])

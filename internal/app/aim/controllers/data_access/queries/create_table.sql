@@ -3,8 +3,7 @@ PRAGMA foreign_keys=true;
 CREATE TABLE IF NOT EXISTS appliances (
 	app_id TEXT PRIMARY KEY NOT NULL, 
 	name TEXT NOT NULL UNIQUE, 
-	device_id TEXT NOT NULL,
-	FOREIGN KEY(app_type) REFERENCES appliance_types(type_id) 
+	device_id TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS commands (
@@ -35,9 +34,29 @@ CREATE TABLE IF NOT EXISTS toggles (
 CREATE TABLE IF NOT EXISTS thermostats (
 	app_id TEXT PRIMARY KEY NOT NULL,
 	scale REAL NOT NULL,
-	minimum_heating_temp INT NOT NULL,
-	maximum_heating_temp INT NOT NULL,
-	minimum_cooling_temp INT NOT NULL,
-	maximum_cooling_temp INT NOT NULL,
+	min_heat_tmp INT NOT NULL,
+	max_heat_tmp INT NOT NULL,
+	min_cool_tmp INT NOT NULL,
+	max_cool_tmp INT NOT NULL,
 	FOREIGN KEY (app_id) REFERENCES appliances (app_id) ON DELETE CASCADE
 );
+
+
+DROP VIEW IF EXISTS appliances_sti;
+
+CREATE VIEW appliances_sti AS 
+SELECT  apps.app_id, apps.app_type, a.name, a.device_id, th.scale, th.min_heat_tmp, th.max_heat_tmp, th.min_cool_tmp, th.max_cool_tmp
+FROM
+(
+	SELECT 0 AS app_type, app_id FROM customs
+	UNION
+	SELECT 1 AS app_type, app_id FROM buttons
+	UNION
+	SELECT 2 AS app_type, app_id FROM toggles
+	UNION
+	SELECT 3 AS app_type, app_id FROM thermostats
+) AS apps
+LEFT JOIN appliances a ON apps.app_id = a.app_id
+LEFT JOIN thermostats th ON apps.app_id = th.app_id;
+
+

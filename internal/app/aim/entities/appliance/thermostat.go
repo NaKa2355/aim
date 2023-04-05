@@ -141,7 +141,3 @@ func (t Thermostat) RemoveCommand() error {
 		fmt.Errorf("thermostat appliance does not support removing command"),
 	)
 }
-
-func (t Thermostat) GetType() ApplianceType {
-	return TypeThermostat
-}

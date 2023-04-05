@@ -41,7 +41,3 @@ func (t Toggle) RemoveCommand() error {
 		fmt.Errorf("toggle appliance does not support removing command"),
 	)
 }
-
-func (t Toggle) GetType() ApplianceType {
-	return TypeToggle
-}
