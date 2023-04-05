@@ -1,12 +1,7 @@
 package data_access
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 )
 
 func (d *DataAccess) CreateTable() error {
@@ -22,6 +17,7 @@ func (d *DataAccess) CreateTable() error {
 	return nil
 }
 
+/*
 func (d *DataAccess) AddAppTypeQuery() error {
 	return d.db.Exec(
 		context.Background(),
@@ -43,3 +39,4 @@ func (d *DataAccess) AddAppTypeQuery() error {
 		},
 	)
 }
+*/

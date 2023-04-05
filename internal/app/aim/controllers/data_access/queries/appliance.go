@@ -74,10 +74,10 @@ func wrapErr(err *error) {
 
 func InsertApp(a app.Appliance) database.Query {
 	return database.Query{
-		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
+		Statement: `INSERT INTO appliances VALUES(?, ?, ?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetType(), a.GetDeviceID())
+			_, err = stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetDeviceID())
 
 			if sqlErr, ok := err.(*sqlite.Error); ok {
 				if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
