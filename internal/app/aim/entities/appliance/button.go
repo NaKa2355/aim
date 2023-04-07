@@ -22,20 +22,20 @@ func LoadButton(id ID, name Name, deviceID DeviceID) *Appliance {
 func (c buttonController) ChangeCommandName() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("button appliance does not support changing command name"),
+		errors.New("button appliance does not support changing the command name"),
 	)
 }
 
 func (c buttonController) AddCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("button appliance does not support adding command name"),
+		errors.New("button appliance does not support adding a command"),
 	)
 }
 
 func (c buttonController) RemoveCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("button appliance does not support removing command name"),
+		errors.New("button appliance does not support removing the command"),
 	)
 }

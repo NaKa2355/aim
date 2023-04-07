@@ -109,20 +109,20 @@ func round2ndDiminals(f float64) float64 {
 func (c thermostatController) ChangeCommandName() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("thermotat appliance does not support changing command name"),
+		errors.New("thermotat appliance does not support changing the command name"),
 	)
 }
 
 func (c thermostatController) AddCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("thermostat appliance does not support adding command name"),
+		errors.New("thermostat appliance does not support adding a command"),
 	)
 }
 
 func (c thermostatController) RemoveCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("thermostat appliance does not support removing command name"),
+		errors.New("thermostat appliance does not support removing the command"),
 	)
 }
