@@ -3,7 +3,7 @@ package web
 import (
 	"context"
 	"errors"
-	"fmt"
+	"sync"
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 	aimv1 "github.com/NaKa2355/irdeck-proto/gen/go/aim/api/v1"
@@ -31,8 +31,10 @@ type Boundary interface {
 
 type Handler struct {
 	aimv1.UnimplementedAimServiceServer
-	i  Boundary
-	nc chan aimv1.ApplianceUpdateNotification
+	i            Boundary
+	nc           chan aimv1.ApplianceUpdateNotification
+	notification aimv1.ApplianceUpdateNotification
+	c            *Cond
 }
 
 var _ aimv1.AimServiceServer = &Handler{}
@@ -40,6 +42,7 @@ var _ aimv1.AimServiceServer = &Handler{}
 func NewHandler() *Handler {
 	return &Handler{
 		nc: make(chan aimv1.ApplianceUpdateNotification),
+		c:  NewCond(&sync.Mutex{}),
 	}
 }
 
@@ -146,14 +149,9 @@ func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (res *aimv1
 		case bdy.Thermostat:
 			app.Appliance = &aimv1.Appliance_Thermostat{
 				Thermostat: &aimv1.Thermostat{
-					Id:                 a.ID,
-					Name:               a.Name,
-					DeviceId:           a.DeviceID,
-					TempScale:          float32(a.Scale),
-					MinimumHeatingTemp: uint32(a.MinimumHeatingTemp),
-					MaximumHeatingTemp: uint32(a.MaximumHeatingTemp),
-					MinimumCoolingTemp: uint32(a.MinimumCoolingTemp),
-					MaximumCoolingTemp: uint32(a.MaximumCoolingTemp),
+					Id:       a.ID,
+					Name:     a.Name,
+					DeviceId: a.DeviceID,
 				},
 			}
 
@@ -265,12 +263,12 @@ func (h *Handler) DeleteCommand(ctx context.Context, req *aimv1.DeleteCommandReq
 
 	in.AppID = req.ApplianceId
 	in.ComID = req.CommandId
-
 	err = h.i.DeleteCommand(ctx, in)
 	return
 }
 
 func (h *Handler) NotificateApplianceUpdate(ctx context.Context, o bdy.UpdateNotifyOutput) {
+	defer h.c.L.Unlock()
 	var updateType aimv1.ApplianceUpdateNotification_UpdateType
 	switch o.Type {
 	case bdy.UpdateTypeAdd:
@@ -279,20 +277,26 @@ func (h *Handler) NotificateApplianceUpdate(ctx context.Context, o bdy.UpdateNot
 		updateType = aimv1.ApplianceUpdateNotification_UPDATE_TYPE_DELETE
 	}
 
-	h.nc <- aimv1.ApplianceUpdateNotification{
+	h.c.L.Lock()
+	h.notification = aimv1.ApplianceUpdateNotification{
 		ApplianceId: o.AppID,
 		UpdateType:  updateType,
 	}
+	h.c.Broadcast()
 }
 
-func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, req aimv1.AimService_NotifyApplianceUpdateServer) error {
+func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyApplianceUpdateServer) error {
 	for {
 		select {
-		case <-req.Context().Done():
-			fmt.Println("done")
-			return req.Context().Err()
-		case notification := <-h.nc:
-			req.Send(&notification)
+		case <-stream.Context().Done():
+			return stream.Context().Err()
+		case <-h.c.NotifyChan():
+			h.c.L.Lock()
+			err := stream.Send(&h.notification)
+			h.c.L.Unlock()
+			if err != nil {
+				return err
+			}
 		}
 	}
 }

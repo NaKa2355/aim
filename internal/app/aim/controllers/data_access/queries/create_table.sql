@@ -33,11 +33,6 @@ CREATE TABLE IF NOT EXISTS toggles (
 
 CREATE TABLE IF NOT EXISTS thermostats (
 	app_id TEXT PRIMARY KEY NOT NULL,
-	scale REAL NOT NULL,
-	min_heat_tmp INT NOT NULL,
-	max_heat_tmp INT NOT NULL,
-	min_cool_tmp INT NOT NULL,
-	max_cool_tmp INT NOT NULL,
 	FOREIGN KEY (app_id) REFERENCES appliances (app_id) ON DELETE CASCADE
 );
 
@@ -45,7 +40,7 @@ CREATE TABLE IF NOT EXISTS thermostats (
 DROP VIEW IF EXISTS appliances_sti;
 
 CREATE VIEW appliances_sti AS 
-SELECT  apps.app_id, apps.app_type, a.name, a.device_id, th.scale, th.min_heat_tmp, th.max_heat_tmp, th.min_cool_tmp, th.max_cool_tmp
+SELECT  apps.app_id, apps.app_type, a.name, a.device_id
 FROM
 (
 	SELECT 0 AS app_type, app_id FROM customs
@@ -56,7 +51,6 @@ FROM
 	UNION
 	SELECT 3 AS app_type, app_id FROM thermostats
 ) AS apps
-LEFT JOIN appliances a ON apps.app_id = a.app_id
-LEFT JOIN thermostats th ON apps.app_id = th.app_id;
+LEFT JOIN appliances a ON apps.app_id = a.app_id;
 
 
