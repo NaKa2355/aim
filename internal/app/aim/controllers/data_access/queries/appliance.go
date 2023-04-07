@@ -84,7 +84,7 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 	return database.Query{
 		Statement: `
 		SELECT * 
-		FROM appliances_sti a
+		FROM appliances a
 		WHERE a.app_id = ?
 		`,
 
@@ -103,7 +103,8 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 				)
 				return
 			}
-			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID)
+			err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType)
+			resp = c.convert()
 			return
 		},
 	}
@@ -130,7 +131,7 @@ func SelectFromApps() database.Query {
 				return apps, err
 			}
 
-			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &count)
+			err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType, &count)
 			if err != nil {
 				return apps, err
 			}
@@ -139,7 +140,7 @@ func SelectFromApps() database.Query {
 			apps = append(apps, c.convert())
 
 			for rows.Next() {
-				err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &count)
+				err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType, &count)
 				if err != nil {
 					return
 				}
