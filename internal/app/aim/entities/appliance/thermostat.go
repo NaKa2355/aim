@@ -1,6 +1,7 @@
 package appliance
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
@@ -14,31 +15,25 @@ const HEATING_THRESHOLD_MAX = 25
 const COOLING_THRESHOLD_MIN = 10
 const COOLING_THRESHOLD_MAX = 35
 
-var _ Appliance = Thermostat{}
-
-type Thermostat struct {
-	*ApplianceData
-}
+type thermostatController struct{}
 
 func NewThermostat(name string, deviceID string,
-	s float64, miht int, maht int, mict int, mact int) (t Thermostat, err error) {
+	s float64, miht int, maht int, mict int, mact int) (t *Appliance, err error) {
+
+	ctr := thermostatController{}
 	err = validate(s, miht, maht, mict, mact)
 	if err != nil {
 		return t, entities.NewError(entities.CodeInvaildInput, err)
 	}
 
-	a, err := NewApplianceData(name, deviceID,
-		getCommands(s, miht, maht, mict, mact))
+	coms := getCommands(s, miht, maht, mict, mact)
 
-	if err != nil {
-		return t, err
-	}
+	return NewAppliance(name, deviceID, TypeThermostat, coms, ctr)
+}
 
-	t = Thermostat{
-		ApplianceData: a,
-	}
-
-	return t, err
+func LoadThermostat(id ID, name Name, deviceID DeviceID) *Appliance {
+	a := LoadAppliance(id, name, deviceID, TypeThermostat, thermostatController{})
+	return a
 }
 
 func validate(s float64, miht int, maht int, mict int, mact int) error {
@@ -111,23 +106,23 @@ func round2ndDiminals(f float64) float64 {
 	return r
 }
 
-func (t Thermostat) ChangeCommandName() error {
+func (c thermostatController) ChangeCommandName() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("thermostat appliance does not support changing command name"),
+		errors.New("thermotat appliance does not support changing command name"),
 	)
 }
 
-func (t Thermostat) AddCommand() error {
+func (c thermostatController) AddCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("thermostat appliance does not support adding command"),
+		errors.New("thermostat appliance does not support adding command name"),
 	)
 }
 
-func (t Thermostat) RemoveCommand() error {
+func (c thermostatController) RemoveCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("thermostat appliance does not support removing command"),
+		errors.New("thermostat appliance does not support removing command name"),
 	)
 }

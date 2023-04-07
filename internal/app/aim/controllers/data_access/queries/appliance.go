@@ -27,36 +27,23 @@ const (
 type ApplianceColumns struct {
 	id       app.ID
 	name     app.Name
-	appType  ApplianceType
+	appType  app.ApplianceType
 	deviceID app.DeviceID
 }
 
-func (c ApplianceColumns) convert() (a app.Appliance) {
-	ad := &app.ApplianceData{
-		ID:       c.id,
-		Name:     c.name,
-		DeviceID: c.deviceID,
-	}
-
+func (c *ApplianceColumns) convert() *app.Appliance {
+	var a *app.Appliance
 	switch c.appType {
-	case TypeCustom:
-		a = app.Custom{
-			ApplianceData: ad,
-		}
-	case TypeButton:
-		a = app.Button{
-			ApplianceData: ad,
-		}
-	case TypeToggle:
-		a = app.Toggle{
-			ApplianceData: ad,
-		}
-	case TypeThermostat:
-		a = app.Thermostat{
-			ApplianceData: ad,
-		}
+	case app.TypeCustom:
+		a = app.LoadCustom(c.id, c.name, c.deviceID)
+	case app.TypeButton:
+		a = app.LoadButton(c.id, c.name, c.deviceID)
+	case app.TypeToggle:
+		a = app.LoadToggle(c.id, c.name, c.deviceID)
+	case app.TypeThermostat:
+		a = app.LoadThermostat(c.id, c.name, c.deviceID)
 	}
-	return
+	return a
 }
 
 func wrapErr(err *error) {
@@ -71,12 +58,12 @@ func wrapErr(err *error) {
 	*err = repo.NewError(repo.CodeDataBase, *err)
 }
 
-func InsertApp(a app.Appliance) database.Query {
+func InsertApp(a *app.Appliance) database.Query {
 	return database.Query{
-		Statement: `INSERT INTO appliances VALUES(?, ?, ?)`,
+		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, a.GetID(), a.GetName(), a.GetDeviceID())
+			_, err = stmt.ExecContext(ctx, a.ID, a.Name, a.DeviceID, a.Type)
 
 			if sqlErr, ok := err.(*sqlite.Error); ok {
 				if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
@@ -88,50 +75,6 @@ func InsertApp(a app.Appliance) database.Query {
 				}
 			}
 
-			return
-		},
-	}
-}
-
-func InsertIntoCustoms(c app.Custom) database.Query {
-	return database.Query{
-		Statement: `INSERT INTO customs VALUES(?)`,
-
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, c.GetID())
-			return
-		},
-	}
-}
-
-func InsertIntoButtons(b app.Button) database.Query {
-	return database.Query{
-		Statement: `INSERT INTO buttons VALUES(?)`,
-
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, b.GetID())
-			return
-		},
-	}
-}
-
-func InsertIntoToggles(t app.Toggle) database.Query {
-	return database.Query{
-		Statement: `INSERT INTO toggles VALUES(?)`,
-
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, t.GetID())
-			return
-		},
-	}
-}
-
-func InsertIntoThermostats(t app.Thermostat) database.Query {
-	return database.Query{
-		Statement: `INSERT INTO thermostats VALUES(?)`,
-
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, t.GetID())
 			return
 		},
 	}
@@ -161,7 +104,6 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 				return
 			}
 			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID)
-			resp = c.convert()
 			return
 		},
 	}
@@ -171,11 +113,11 @@ func SelectFromApps() database.Query {
 	return database.Query{
 		Statement: `
 		SELECT *, (SELECT COUNT(*) FROM appliances)
-		FROM appliances_sti
+		FROM appliances
 		`,
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			var apps []app.Appliance
+			var apps []*app.Appliance
 			var count int
 			c := ApplianceColumns{}
 			rows, err := stmt.QueryContext(ctx, TypeCustom, TypeButton, TypeButton, TypeCustom)
@@ -193,7 +135,7 @@ func SelectFromApps() database.Query {
 				return apps, err
 			}
 
-			apps = make([]app.Appliance, 0, count)
+			apps = make([]*app.Appliance, 0, count)
 			apps = append(apps, c.convert())
 
 			for rows.Next() {
@@ -210,12 +152,12 @@ func SelectFromApps() database.Query {
 	}
 }
 
-func UpdateApp(a app.Appliance) database.Query {
+func UpdateApp(a *app.Appliance) database.Query {
 	return database.Query{
 		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?",
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, a.GetName(), a.GetDeviceID(), a.GetID())
+			_, err = stmt.ExecContext(ctx, a.Name, a.DeviceID, a.ID)
 
 			if sqlErr, ok := err.(*sqlite.Error); ok {
 				if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
