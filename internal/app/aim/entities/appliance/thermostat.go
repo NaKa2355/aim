@@ -18,11 +18,6 @@ var _ Appliance = Thermostat{}
 
 type Thermostat struct {
 	*ApplianceData
-	Scale              float64
-	MaximumHeatingTemp int
-	MinimumHeatingTemp int
-	MaximumCoolingTemp int
-	MinimumCoolingTemp int
 }
 
 func NewThermostat(name string, deviceID string,
@@ -40,12 +35,7 @@ func NewThermostat(name string, deviceID string,
 	}
 
 	t = Thermostat{
-		ApplianceData:      a,
-		Scale:              s,
-		MinimumHeatingTemp: miht,
-		MaximumHeatingTemp: maht,
-		MinimumCoolingTemp: mict,
-		MaximumCoolingTemp: mact,
+		ApplianceData: a,
 	}
 
 	return t, err

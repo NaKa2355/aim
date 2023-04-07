@@ -29,11 +29,6 @@ type ApplianceColumns struct {
 	name     app.Name
 	appType  ApplianceType
 	deviceID app.DeviceID
-	scale    sql.NullFloat64
-	miht     sql.NullInt16
-	maht     sql.NullInt16
-	mict     sql.NullInt16
-	mact     sql.NullInt16
 }
 
 func (c ApplianceColumns) convert() (a app.Appliance) {
@@ -58,12 +53,7 @@ func (c ApplianceColumns) convert() (a app.Appliance) {
 		}
 	case TypeThermostat:
 		a = app.Thermostat{
-			ApplianceData:      ad,
-			Scale:              c.scale.Float64,
-			MaximumHeatingTemp: int(c.maht.Int16),
-			MinimumHeatingTemp: int(c.miht.Int16),
-			MaximumCoolingTemp: int(c.mact.Int16),
-			MinimumCoolingTemp: int(c.mict.Int16),
+			ApplianceData: ad,
 		}
 	}
 	return
@@ -138,11 +128,10 @@ func InsertIntoToggles(t app.Toggle) database.Query {
 
 func InsertIntoThermostats(t app.Thermostat) database.Query {
 	return database.Query{
-		Statement: `INSERT INTO thermostats VALUES(?, ?, ?, ?, ?, ?)`,
+		Statement: `INSERT INTO thermostats VALUES(?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, t.GetID(),
-				t.Scale, t.MinimumHeatingTemp, t.MaximumHeatingTemp, t.MinimumCoolingTemp, t.MaximumCoolingTemp)
+			_, err = stmt.ExecContext(ctx, t.GetID())
 			return
 		},
 	}
@@ -171,7 +160,7 @@ func SelectFromAppsWhere(id app.ID) database.Query {
 				)
 				return
 			}
-			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact)
+			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID)
 			resp = c.convert()
 			return
 		},
@@ -199,7 +188,7 @@ func SelectFromApps() database.Query {
 				return apps, err
 			}
 
-			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact, &count)
+			err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &count)
 			if err != nil {
 				return apps, err
 			}
@@ -208,7 +197,7 @@ func SelectFromApps() database.Query {
 			apps = append(apps, c.convert())
 
 			for rows.Next() {
-				err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &c.scale, &c.miht, &c.maht, &c.mict, &c.mact, &count)
+				err = rows.Scan(&c.id, &c.appType, &c.name, &c.deviceID, &count)
 				if err != nil {
 					return
 				}

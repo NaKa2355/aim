@@ -101,14 +101,9 @@ func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOu
 			}
 		case app.Thermostat:
 			out.Apps[i] = bdy.Thermostat{
-				ID:                 string(a.GetID()),
-				Name:               string(a.GetName()),
-				DeviceID:           string(a.GetDeviceID()),
-				Scale:              a.Scale,
-				MaximumHeatingTemp: a.MaximumHeatingTemp,
-				MinimumHeatingTemp: a.MinimumHeatingTemp,
-				MaximumCoolingTemp: a.MaximumCoolingTemp,
-				MinimumCoolingTemp: a.MinimumCoolingTemp,
+				ID:       string(a.GetID()),
+				Name:     string(a.GetName()),
+				DeviceID: string(a.GetDeviceID()),
 			}
 		}
 	}
