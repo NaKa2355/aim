@@ -17,6 +17,7 @@ type Boundary interface {
 	bdy.CommandAdder
 
 	bdy.AppliancesGetter
+	bdy.ApplianceGetter
 	bdy.CommandGetter
 	bdy.CommandsGetter
 
@@ -74,7 +75,7 @@ func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequ
 		in = bdy.AddThermostatInput{
 			Name:               r.Thermostat.Name,
 			DeviceID:           r.Thermostat.DeviceId,
-			Scale:              float64(r.Thermostat.TempScale),
+			Scale:              float64(r.Thermostat.Scale),
 			MinimumHeatingTemp: int(r.Thermostat.MinimumHeatingTemp),
 			MaximumHeatingTemp: int(r.Thermostat.MaximumHeatingTemp),
 			MinimumCoolingTemp: int(r.Thermostat.MinimumCoolingTemp),
@@ -114,52 +115,30 @@ func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (res *aimv1
 	}
 
 	res.Appliances = make([]*aimv1.Appliance, len(out.Apps))
-	for i, _a := range out.Apps {
+	for i, a := range out.Apps {
 		res.Appliances[i] = &aimv1.Appliance{}
-		app := res.Appliances[i]
-
-		switch a := _a.(type) {
-		case bdy.Custom:
-			app.Appliance = &aimv1.Appliance_Custom{
-				Custom: &aimv1.Custom{
-					Id:       a.ID,
-					Name:     a.Name,
-					DeviceId: a.DeviceID,
-				},
-			}
-
-		case bdy.Button:
-			app.Appliance = &aimv1.Appliance_Button{
-				Button: &aimv1.Button{
-					Id:       a.ID,
-					Name:     a.Name,
-					DeviceId: a.DeviceID,
-				},
-			}
-
-		case bdy.Toggle:
-			app.Appliance = &aimv1.Appliance_Toggle{
-				Toggle: &aimv1.Toggle{
-					Id:       a.ID,
-					Name:     a.Name,
-					DeviceId: a.DeviceID,
-				},
-			}
-
-		case bdy.Thermostat:
-			app.Appliance = &aimv1.Appliance_Thermostat{
-				Thermostat: &aimv1.Thermostat{
-					Id:       a.ID,
-					Name:     a.Name,
-					DeviceId: a.DeviceID,
-				},
-			}
-
-		default:
-			err = errors.New("undefined appliance type")
+		res.Appliances[i], err = ConvertAppliance(a)
+		if err != nil {
+			return res, err
 		}
 	}
 	return
+}
+
+func (h *Handler) GetAppliance(ctx context.Context, req *aimv1.GetApplianceRequest) (res *aimv1.GetApplianceResponse, err error) {
+	var out bdy.GetApplianceOutput
+	res = &aimv1.GetApplianceResponse{}
+	in := bdy.GetApplianceInput{
+		AppID: req.ApplianceId,
+	}
+
+	out, err = h.i.GetAppliance(ctx, in)
+	if err != nil {
+		return
+	}
+
+	res.Appliance, err = ConvertAppliance(out.App)
+	return res, err
 }
 
 func (h *Handler) GetCommands(ctx context.Context, req *aimv1.GetCommandsRequest) (res *aimv1.GetCommandsResponse, err error) {
@@ -299,4 +278,49 @@ func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, stream aimv1.AimService_
 			}
 		}
 	}
+}
+
+func ConvertAppliance(app bdy.Appliance) (out *aimv1.Appliance, err error) {
+	out = &aimv1.Appliance{}
+	switch a := app.(type) {
+	case bdy.Custom:
+		out.Appliance = &aimv1.Appliance_Custom{
+			Custom: &aimv1.Custom{
+				Id:       a.ID,
+				Name:     a.Name,
+				DeviceId: a.DeviceID,
+			},
+		}
+
+	case bdy.Button:
+		out.Appliance = &aimv1.Appliance_Button{
+			Button: &aimv1.Button{
+				Id:       a.ID,
+				Name:     a.Name,
+				DeviceId: a.DeviceID,
+			},
+		}
+
+	case bdy.Toggle:
+		out.Appliance = &aimv1.Appliance_Toggle{
+			Toggle: &aimv1.Toggle{
+				Id:       a.ID,
+				Name:     a.Name,
+				DeviceId: a.DeviceID,
+			},
+		}
+
+	case bdy.Thermostat:
+		out.Appliance = &aimv1.Appliance_Thermostat{
+			Thermostat: &aimv1.Thermostat{
+				Id:       a.ID,
+				Name:     a.Name,
+				DeviceId: a.DeviceID,
+			},
+		}
+
+	default:
+		return out, errors.New("unspported type")
+	}
+	return out, nil
 }

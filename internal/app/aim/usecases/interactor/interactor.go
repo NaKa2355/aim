@@ -79,35 +79,22 @@ func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOu
 	}
 
 	out.Apps = make([]bdy.Appliance, len(apps))
-	for i, _a := range apps {
-		switch a := _a.(type) {
-		case app.Custom:
-			out.Apps[i] = bdy.Custom{
-				ID:       string(a.GetID()),
-				Name:     string(a.GetName()),
-				DeviceID: string(a.GetDeviceID()),
-			}
-		case app.Button:
-			out.Apps[i] = bdy.Button{
-				ID:       string(a.GetID()),
-				Name:     string(a.GetName()),
-				DeviceID: string(a.GetDeviceID()),
-			}
-		case app.Toggle:
-			out.Apps[i] = bdy.Toggle{
-				ID:       string(a.GetID()),
-				Name:     string(a.GetName()),
-				DeviceID: string(a.GetDeviceID()),
-			}
-		case app.Thermostat:
-			out.Apps[i] = bdy.Thermostat{
-				ID:       string(a.GetID()),
-				Name:     string(a.GetName()),
-				DeviceID: string(a.GetDeviceID()),
-			}
-		}
+	for i, a := range apps {
+		out.Apps[i] = convertAppliance(a)
 	}
 	return
+}
+
+func (i *Interactor) getAppliance(ctx context.Context, in bdy.GetApplianceInput) (out bdy.GetApplianceOutput, err error) {
+	var a app.Appliance
+
+	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
+	if err != nil {
+		return out, err
+	}
+
+	out.App = convertAppliance(a)
+	return out, err
 }
 
 func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (out bdy.GetCommandsOutput, err error) {
@@ -243,4 +230,23 @@ func (i *Interactor) deleteCommand(ctx context.Context, in bdy.DeleteCommandInpu
 
 	err = i.repo.DeleteCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
 	return
+}
+
+func convertAppliance(in app.Appliance) (out bdy.Appliance) {
+	var id = string(in.GetID())
+	var name = string(in.GetName())
+	var deviceID = string(in.GetDeviceID())
+
+	switch in.(type) {
+	case app.Custom:
+		out = bdy.Custom{ID: id, Name: name, DeviceID: deviceID}
+	case app.Button:
+		out = bdy.Button{ID: id, Name: name, DeviceID: deviceID}
+	case app.Toggle:
+		out = bdy.Toggle{ID: id, Name: name, DeviceID: deviceID}
+	case app.Thermostat:
+		out = bdy.Thermostat{ID: id, Name: name, DeviceID: deviceID}
+	}
+
+	return out
 }

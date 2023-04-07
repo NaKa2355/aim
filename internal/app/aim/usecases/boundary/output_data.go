@@ -87,6 +87,10 @@ type GetAppliancesOutput struct {
 	Apps []Appliance
 }
 
+type GetApplianceOutput struct {
+	App Appliance
+}
+
 type GetCommandOutput struct {
 	ID   string
 	Name string

@@ -27,7 +27,7 @@ type AddThermostatInput struct {
 	MinimumCoolingTemp int
 }
 
-type GetAppInput struct {
+type GetApplianceInput struct {
 	AppID string
 }
 
