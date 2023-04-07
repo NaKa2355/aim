@@ -4,25 +4,26 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
 
-type Custom struct {
-	*ApplianceData
+type customController struct{}
+
+func NewCustom(name string, deviceID string) (c *Appliance, err error) {
+	ctr := customController{}
+	return NewAppliance(name, deviceID, TypeCustom, make([]command.Command, 0), ctr)
 }
 
-func NewCustom(name string, deviceID string) (c Custom, err error) {
-	a, err := NewApplianceData(name, deviceID, make([]command.Command, 0))
-	return Custom{
-		ApplianceData: a,
-	}, err
+func LoadCustom(id ID, name Name, deviceID DeviceID) *Appliance {
+	a := LoadAppliance(id, name, deviceID, TypeCustom, customController{})
+	return a
 }
 
-func (c Custom) ChangeCommandName() error {
+func (c customController) ChangeCommandName() error {
 	return nil
 }
 
-func (c Custom) AddCommand() error {
+func (c customController) AddCommand() error {
 	return nil
 }
 
-func (c Custom) RemoveCommand() error {
+func (c customController) RemoveCommand() error {
 	return nil
 }

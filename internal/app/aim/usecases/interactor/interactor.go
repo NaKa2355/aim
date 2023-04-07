@@ -11,7 +11,7 @@ import (
 )
 
 func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput) (out bdy.AddAppOutput, err error) {
-	var a app.Appliance
+	var a *app.Appliance
 	switch in := _in.(type) {
 	case bdy.AddCustomInput:
 		a, err = app.NewCustom(in.Name, in.DeviceID)
@@ -43,16 +43,16 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 
 	i.output.NotificateApplianceUpdate(
 		ctx, bdy.UpdateNotifyOutput{
-			AppID: string(a.GetID()),
+			AppID: string(a.ID),
 			Type:  bdy.UpdateTypeAdd,
 		},
 	)
-	out.ID = string(a.GetID())
+	out.ID = string(a.ID)
 	return out, err
 }
 
 func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (err error) {
-	var a app.Appliance
+	var a *app.Appliance
 	var com command.Command
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
@@ -71,7 +71,7 @@ func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (er
 }
 
 func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOutput, err error) {
-	var apps []app.Appliance
+	var apps []*app.Appliance
 
 	apps, err = i.repo.ReadApps(ctx)
 	if err != nil {
@@ -80,20 +80,28 @@ func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOu
 
 	out.Apps = make([]bdy.Appliance, len(apps))
 	for i, a := range apps {
-		out.Apps[i] = convertAppliance(a)
+		out.Apps[i] = bdy.Appliance{
+			ID:       string(a.ID),
+			DeviceID: string(a.DeviceID),
+			Name:     string(a.Name),
+		}
 	}
 	return
 }
 
 func (i *Interactor) getAppliance(ctx context.Context, in bdy.GetApplianceInput) (out bdy.GetApplianceOutput, err error) {
-	var a app.Appliance
+	var a *app.Appliance
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
 		return out, err
 	}
 
-	out.App = convertAppliance(a)
+	out.App = bdy.Appliance{
+		ID:       string(a.ID),
+		DeviceID: string(a.DeviceID),
+		Name:     string(a.Name),
+	}
 	return out, err
 }
 
@@ -130,7 +138,7 @@ func (i *Interactor) getCommand(ctx context.Context, in bdy.GetCommandInput) (ou
 
 // Update
 func (i *Interactor) renameAppliance(ctx context.Context, in bdy.RenameAppInput) (err error) {
-	var a app.Appliance
+	var a *app.Appliance
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -147,7 +155,7 @@ func (i *Interactor) renameAppliance(ctx context.Context, in bdy.RenameAppInput)
 }
 
 func (i *Interactor) changeIRDevice(ctx context.Context, in bdy.ChangeIRDevInput) (err error) {
-	var a app.Appliance
+	var a *app.Appliance
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -161,7 +169,7 @@ func (i *Interactor) changeIRDevice(ctx context.Context, in bdy.ChangeIRDevInput
 }
 
 func (i *Interactor) renameCommand(ctx context.Context, in bdy.RenameCommandInput) (err error) {
-	var a app.Appliance
+	var a *app.Appliance
 	var c command.Command
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
@@ -216,7 +224,7 @@ func (i *Interactor) deleteAppliance(ctx context.Context, in bdy.DeleteAppInput)
 }
 
 func (i *Interactor) deleteCommand(ctx context.Context, in bdy.DeleteCommandInput) (err error) {
-	var a app.Appliance
+	var a *app.Appliance
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -230,23 +238,4 @@ func (i *Interactor) deleteCommand(ctx context.Context, in bdy.DeleteCommandInpu
 
 	err = i.repo.DeleteCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
 	return
-}
-
-func convertAppliance(in app.Appliance) (out bdy.Appliance) {
-	var id = string(in.GetID())
-	var name = string(in.GetName())
-	var deviceID = string(in.GetDeviceID())
-
-	switch in.(type) {
-	case app.Custom:
-		out = bdy.Custom{ID: id, Name: name, DeviceID: deviceID}
-	case app.Button:
-		out = bdy.Button{ID: id, Name: name, DeviceID: deviceID}
-	case app.Toggle:
-		out = bdy.Toggle{ID: id, Name: name, DeviceID: deviceID}
-	case app.Thermostat:
-		out = bdy.Thermostat{ID: id, Name: name, DeviceID: deviceID}
-	}
-
-	return out
 }

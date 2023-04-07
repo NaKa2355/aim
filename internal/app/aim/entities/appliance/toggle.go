@@ -1,43 +1,44 @@
 package appliance
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
 
-type Toggle struct {
-	*ApplianceData
-}
+type toggleController struct{}
 
-func NewToggle(name string, deviceID string) (t Toggle, err error) {
-	a, err := NewApplianceData(name, deviceID, []command.Command{
+func NewToggle(name string, deviceID string) (*Appliance, error) {
+	ctr := toggleController{}
+	return NewAppliance(name, deviceID, TypeToggle, []command.Command{
 		command.New("on", nil),
 		command.New("off", nil),
-	})
-	return Toggle{
-		ApplianceData: a,
-	}, err
+	}, ctr)
 }
 
-func (t Toggle) ChangeCommandName() error {
+func LoadToggle(id ID, name Name, deviceID DeviceID) *Appliance {
+	a := LoadAppliance(id, name, deviceID, TypeToggle, toggleController{})
+	return a
+}
+
+func (c toggleController) ChangeCommandName() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("toggle appliance does not support changing command name"),
+		errors.New("toggle appliance does not support changing command name"),
 	)
 }
 
-func (t Toggle) AddCommand() error {
+func (c toggleController) AddCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("toggle appliance does not support adding command"),
+		errors.New("toggle appliance does not support adding command name"),
 	)
 }
 
-func (t Toggle) RemoveCommand() error {
+func (c toggleController) RemoveCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("toggle appliance does not support removing command"),
+		errors.New("toggle appliance does not support removing command name"),
 	)
 }

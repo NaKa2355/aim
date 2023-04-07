@@ -1,42 +1,41 @@
 package appliance
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 )
 
-var _ Appliance = Button{}
+type buttonController struct{}
 
-type Button struct {
-	*ApplianceData
+func NewButton(name string, deviceID string) (*Appliance, error) {
+	ctr := buttonController{}
+	return NewAppliance(name, deviceID, TypeButton, []command.Command{command.New("push", nil)}, ctr)
 }
 
-func NewButton(name string, deviceID string) (b Button, err error) {
-	a, err := NewApplianceData(name, deviceID, []command.Command{command.New("push", nil)})
-	return Button{
-		ApplianceData: a,
-	}, err
+func LoadButton(id ID, name Name, deviceID DeviceID) *Appliance {
+	a := LoadAppliance(id, name, deviceID, TypeButton, buttonController{})
+	return a
 }
 
-func (b Button) ChangeCommandName() error {
+func (c buttonController) ChangeCommandName() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("button appliance does not support changing command name"),
+		errors.New("button appliance does not support changing command name"),
 	)
 }
 
-func (b Button) AddCommand() error {
+func (c buttonController) AddCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("button appliance does not support adding command"),
+		errors.New("button appliance does not support adding command name"),
 	)
 }
 
-func (b Button) RemoveCommand() error {
+func (c buttonController) RemoveCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		fmt.Errorf("button appliance does not support removing command"),
+		errors.New("button appliance does not support removing command name"),
 	)
 }

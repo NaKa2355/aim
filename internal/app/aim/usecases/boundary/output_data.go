@@ -81,7 +81,11 @@ type Command struct {
 	Name string
 }
 
-type Appliance interface{} //Custom or Button or Toggle or Thermostat
+type Appliance struct {
+	ID       string
+	Name     string
+	DeviceID string
+}
 
 type GetAppliancesOutput struct {
 	Apps []Appliance

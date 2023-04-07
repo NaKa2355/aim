@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"errors"
 	"sync"
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
@@ -116,10 +115,10 @@ func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (res *aimv1
 
 	res.Appliances = make([]*aimv1.Appliance, len(out.Apps))
 	for i, a := range out.Apps {
-		res.Appliances[i] = &aimv1.Appliance{}
-		res.Appliances[i], err = ConvertAppliance(a)
-		if err != nil {
-			return res, err
+		res.Appliances[i] = &aimv1.Appliance{
+			Id:       a.ID,
+			Name:     a.Name,
+			DeviceId: a.DeviceID,
 		}
 	}
 	return
@@ -137,7 +136,11 @@ func (h *Handler) GetAppliance(ctx context.Context, req *aimv1.GetApplianceReque
 		return
 	}
 
-	res.Appliance, err = ConvertAppliance(out.App)
+	res.Appliance = &aimv1.Appliance{
+		Id:       out.App.ID,
+		Name:     out.App.Name,
+		DeviceId: out.App.DeviceID,
+	}
 	return res, err
 }
 
@@ -278,49 +281,4 @@ func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, stream aimv1.AimService_
 			}
 		}
 	}
-}
-
-func ConvertAppliance(app bdy.Appliance) (out *aimv1.Appliance, err error) {
-	out = &aimv1.Appliance{}
-	switch a := app.(type) {
-	case bdy.Custom:
-		out.Appliance = &aimv1.Appliance_Custom{
-			Custom: &aimv1.Custom{
-				Id:       a.ID,
-				Name:     a.Name,
-				DeviceId: a.DeviceID,
-			},
-		}
-
-	case bdy.Button:
-		out.Appliance = &aimv1.Appliance_Button{
-			Button: &aimv1.Button{
-				Id:       a.ID,
-				Name:     a.Name,
-				DeviceId: a.DeviceID,
-			},
-		}
-
-	case bdy.Toggle:
-		out.Appliance = &aimv1.Appliance_Toggle{
-			Toggle: &aimv1.Toggle{
-				Id:       a.ID,
-				Name:     a.Name,
-				DeviceId: a.DeviceID,
-			},
-		}
-
-	case bdy.Thermostat:
-		out.Appliance = &aimv1.Appliance_Thermostat{
-			Thermostat: &aimv1.Thermostat{
-				Id:       a.ID,
-				Name:     a.Name,
-				DeviceId: a.DeviceID,
-			},
-		}
-
-	default:
-		return out, errors.New("unspported type")
-	}
-	return out, nil
 }
