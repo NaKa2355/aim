@@ -25,20 +25,20 @@ func LoadToggle(id ID, name Name, deviceID DeviceID) *Appliance {
 func (c toggleController) ChangeCommandName() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("toggle appliance does not support changing command name"),
+		errors.New("toggle appliance does not support changing the command name"),
 	)
 }
 
 func (c toggleController) AddCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("toggle appliance does not support adding command name"),
+		errors.New("toggle appliance does not support adding a command"),
 	)
 }
 
 func (c toggleController) RemoveCommand() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("toggle appliance does not support removing command name"),
+		errors.New("toggle appliance does not support removing the command"),
 	)
 }
