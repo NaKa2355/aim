@@ -72,6 +72,11 @@ func (i *Interactor) GetAppliances(ctx context.Context) (bdy.GetAppliancesOutput
 	return out, wrapErr(err)
 }
 
+func (i *Interactor) GetAppliance(ctx context.Context, in bdy.GetApplianceInput) (bdy.GetApplianceOutput, error) {
+	out, err := i.getAppliance(ctx, in)
+	return out, wrapErr(err)
+}
+
 func (i *Interactor) GetCommands(ctx context.Context, in bdy.GetCommandsInput) (bdy.GetCommandsOutput, error) {
 	out, err := i.getCommands(ctx, in)
 	return out, wrapErr(err)

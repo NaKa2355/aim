@@ -20,6 +20,10 @@ type AppliancesGetter interface {
 	GetAppliances(ctx context.Context) (GetAppliancesOutput, error)
 }
 
+type ApplianceGetter interface {
+	GetAppliance(ctx context.Context, i GetApplianceInput) (GetApplianceOutput, error)
+}
+
 type CommandsGetter interface {
 	GetCommands(ctx context.Context, i GetCommandsInput) (GetCommandsOutput, error)
 }
