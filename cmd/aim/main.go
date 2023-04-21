@@ -1,55 +1,35 @@
 package main
 
 import (
-	"fmt"
-	"net"
 	"os"
-	"os/signal"
-	"runtime"
-	"time"
+	"os/user"
 
-	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
-	"github.com/NaKa2355/aim/internal/app/aim/controllers/web"
-	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/web/server"
-	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
+	"github.com/NaKa2355/aim/internal/app/aim/daemon"
+	"golang.org/x/exp/slog"
 )
 
+const ConfigFilePath = "/etc/aimd.json"
+const DomainSocketPath = "/tmp/aimd.sock"
+
 func main() {
-	var mem runtime.MemStats
-	fmt.Println("Hello, World!")
-	d, err := data_access.New("./test.db")
+	logger := slog.New(slog.Default().Handler())
+	user, err := user.Current()
 	if err != nil {
-		fmt.Println(err)
-		return
+		logger.Error(
+			"faild to get current user",
+			"error", err.Error(),
+		)
+		os.Exit(-1)
 	}
-	defer d.Close()
 
-	h := web.NewHandler()
-	i := interactor.New(d, h)
-	h.SetInteractor(i)
-	s := server.New(h)
-
-	listener, err := net.Listen("tcp", ":8080")
+	dbFilePath := user.HomeDir + "/.aim.db"
+	d, err := daemon.New(ConfigFilePath, dbFilePath, logger)
 	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	s.Start(listener)
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	t := time.NewTicker(1 * time.Second)
-L:
-	for {
-		select {
-		case <-t.C:
-			runtime.ReadMemStats(&mem)
-			fmt.Println(mem.StackSys, mem.HeapSys, mem.Sys, float32(mem.Alloc)/float32(mem.HeapSys))
-		case <-quit:
-			break L
-		}
+		os.Exit(-1)
 	}
 
-	s.Stop()
-	fmt.Println("")
+	err = d.Start(DomainSocketPath)
+	if err != nil {
+		os.Exit(-1)
+	}
 }
