@@ -1,0 +1,6 @@
+[Unit]
+Description=Infrared appliances manager. config file: (/etc/aimd.json)
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/aim

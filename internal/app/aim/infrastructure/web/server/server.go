@@ -2,6 +2,8 @@ package server
 
 import (
 	"net"
+	"os"
+	"os/signal"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/web"
 	v1 "github.com/NaKa2355/irdeck-proto/gen/go/aim/api/v1"
@@ -13,11 +15,13 @@ type Server struct {
 	s *grpc.Server
 }
 
-func New(handler v1.AimServiceServer) *Server {
+func New(handler v1.AimServiceServer, useReflection bool) *Server {
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(web.UnaryErrInterceptor),
 	)
-	reflection.Register(s)
+	if useReflection {
+		reflection.Register(s)
+	}
 	v1.RegisterAimServiceServer(s, handler)
 	return &Server{
 		s: s,
@@ -25,7 +29,17 @@ func New(handler v1.AimServiceServer) *Server {
 }
 
 func (s *Server) Start(listener net.Listener) {
-	go s.s.Serve(listener)
+	go func() {
+		defer listener.Close()
+		s.s.Serve(listener)
+	}()
+}
+
+func (s *Server) WaitSigAndStop(sig ...os.Signal) {
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, sig...)
+	<-sigCh
+	s.s.GracefulStop()
 }
 
 func (s *Server) Stop() {
