@@ -208,6 +208,10 @@ func (i *Interactor) setIRData(ctx context.Context, in bdy.SetIRDataInput) (err 
 
 // Delete
 func (i *Interactor) deleteAppliance(ctx context.Context, in bdy.DeleteAppInput) (err error) {
+	if _, err = i.repo.ReadApp(ctx, app.ID(in.AppID)); err != nil {
+		return err
+	}
+
 	err = i.repo.DeleteApp(ctx, app.ID(in.AppID))
 	if err != nil {
 		return err
