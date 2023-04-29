@@ -28,12 +28,8 @@ type CommandsGetter interface {
 	GetCommands(ctx context.Context, i GetCommandsInput) (GetCommandsOutput, error)
 }
 
-type CommandGetter interface {
-	GetCommand(ctx context.Context, i GetCommandInput) (GetCommandOutput, error)
-}
-
 type IRDataGetter interface {
-	GetIRData(ctx context.Context, i GetIRDataInput) (IRData, error)
+	GetIRData(ctx context.Context, i GetIRDataInput) (GetIRDataOutput, error)
 }
 
 type ApplianceRenamer interface {

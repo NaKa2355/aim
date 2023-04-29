@@ -2,6 +2,8 @@ github.com/NaKa2355/irdeck-proto v0.0.0-20230407065305-e5e9b5cbd73d h1:DnSfJ09Tr
 github.com/NaKa2355/irdeck-proto v0.0.0-20230407065305-e5e9b5cbd73d/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
 github.com/NaKa2355/irdeck-proto v0.0.0-20230420004118-86ccb7e2a0d4 h1:JYjjNnV0sV3Xr1VpIBCm9Y8Gc9X5DJZNabYFe6ZYW4o=
 github.com/NaKa2355/irdeck-proto v0.0.0-20230420004118-86ccb7e2a0d4/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230429192939-2cbbc8b8cf38 h1:JIM9DpLCcftEGZv9qWsOHsdxMWFC43EOODG4jkfzwqU=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230429192939-2cbbc8b8cf38/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
