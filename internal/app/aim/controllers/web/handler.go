@@ -17,7 +17,7 @@ type Boundary interface {
 
 	bdy.AppliancesGetter
 	bdy.ApplianceGetter
-	bdy.CommandGetter
+	bdy.IRDataGetter
 	bdy.CommandsGetter
 
 	bdy.ApplianceRenamer
@@ -116,9 +116,10 @@ func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (res *aimv1
 	res.Appliances = make([]*aimv1.Appliance, len(out.Apps))
 	for i, a := range out.Apps {
 		res.Appliances[i] = &aimv1.Appliance{
-			Id:       a.ID,
-			Name:     a.Name,
-			DeviceId: a.DeviceID,
+			Id:            a.ID,
+			Name:          a.Name,
+			DeviceId:      a.DeviceID,
+			CanAddCommand: a.CanAddCommand,
 		}
 	}
 	return
@@ -137,9 +138,10 @@ func (h *Handler) GetAppliance(ctx context.Context, req *aimv1.GetApplianceReque
 	}
 
 	res.Appliance = &aimv1.Appliance{
-		Id:       out.App.ID,
-		Name:     out.App.Name,
-		DeviceId: out.App.DeviceID,
+		Id:            out.App.ID,
+		Name:          out.App.Name,
+		DeviceId:      out.App.DeviceID,
+		CanAddCommand: out.App.CanAddCommand,
 	}
 	return res, err
 }
@@ -159,8 +161,10 @@ func (h *Handler) GetCommands(ctx context.Context, req *aimv1.GetCommandsRequest
 	res.Commands = make([]*aimv1.Command, len(out.Commands))
 	for i, c := range out.Commands {
 		res.Commands[i] = &aimv1.Command{
-			Id:   c.ID,
-			Name: c.Name,
+			Id:        c.ID,
+			Name:      c.Name,
+			CanRename: c.CanRename,
+			CanDelete: c.CanDelete,
 		}
 	}
 
@@ -168,18 +172,18 @@ func (h *Handler) GetCommands(ctx context.Context, req *aimv1.GetCommandsRequest
 }
 
 func (h *Handler) GetIrData(ctx context.Context, req *aimv1.GetIrDataRequest) (res *anypb.Any, err error) {
-	var in bdy.GetCommandInput
-	var out bdy.GetCommandOutput
+	var in bdy.GetIRDataInput
+	var out bdy.GetIRDataOutput
 	res = &anypb.Any{}
 
 	in.AppID = req.ApplianceId
 	in.ComID = req.CommandId
-	out, err = h.i.GetCommand(ctx, in)
+	out, err = h.i.GetIRData(ctx, in)
 	if err != nil {
 		return
 	}
 
-	proto.Unmarshal(out.Data, res)
+	proto.Unmarshal(out.IRData, res)
 	return
 }
 

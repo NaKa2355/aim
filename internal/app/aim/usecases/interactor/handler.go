@@ -82,8 +82,8 @@ func (i *Interactor) GetCommands(ctx context.Context, in bdy.GetCommandsInput) (
 	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetCommand(ctx context.Context, in bdy.GetCommandInput) (bdy.GetCommandOutput, error) {
-	out, err := i.getCommand(ctx, in)
+func (i *Interactor) GetIRData(ctx context.Context, in bdy.GetIRDataInput) (bdy.GetIRDataOutput, error) {
+	out, err := i.getIRData(ctx, in)
 	return out, wrapErr(err)
 }
 

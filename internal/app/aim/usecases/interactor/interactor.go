@@ -81,9 +81,10 @@ func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOu
 	out.Apps = make([]bdy.Appliance, len(apps))
 	for i, a := range apps {
 		out.Apps[i] = bdy.Appliance{
-			ID:       string(a.ID),
-			DeviceID: string(a.DeviceID),
-			Name:     string(a.Name),
+			ID:            string(a.ID),
+			DeviceID:      string(a.DeviceID),
+			Name:          string(a.Name),
+			CanAddCommand: (a.AddCommand() == nil),
 		}
 	}
 	return
@@ -98,15 +99,21 @@ func (i *Interactor) getAppliance(ctx context.Context, in bdy.GetApplianceInput)
 	}
 
 	out.App = bdy.Appliance{
-		ID:       string(a.ID),
-		DeviceID: string(a.DeviceID),
-		Name:     string(a.Name),
+		ID:            string(a.ID),
+		DeviceID:      string(a.DeviceID),
+		Name:          string(a.Name),
+		CanAddCommand: (a.AddCommand() == nil),
 	}
 	return out, err
 }
 
 func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (out bdy.GetCommandsOutput, err error) {
 	var coms []command.Command
+	a, err := i.repo.ReadApp(ctx, app.ID(in.AppID))
+	if err != nil {
+		return
+	}
+
 	coms, err = i.repo.ReadCommands(ctx, app.ID(in.AppID))
 	if err != nil {
 		return
@@ -116,12 +123,14 @@ func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (
 	for i, c := range coms {
 		out.Commands[i].ID = string(c.ID)
 		out.Commands[i].Name = string(c.Name)
+		out.Commands[i].CanRename = (a.ChangeCommandName() == nil)
+		out.Commands[i].CanDelete = (a.RemoveCommand() == nil)
 	}
 
 	return
 }
 
-func (i *Interactor) getCommand(ctx context.Context, in bdy.GetCommandInput) (out bdy.GetCommandOutput, err error) {
+func (i *Interactor) getIRData(ctx context.Context, in bdy.GetIRDataInput) (out bdy.GetIRDataOutput, err error) {
 	var com command.Command
 
 	com, err = i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
@@ -129,9 +138,7 @@ func (i *Interactor) getCommand(ctx context.Context, in bdy.GetCommandInput) (ou
 		return
 	}
 
-	out.ID = string(com.ID)
-	out.Name = string(com.Name)
-	out.Data = bdy.IRData(com.IRData)
+	out.IRData = bdy.IRData(com.IRData)
 
 	return
 }

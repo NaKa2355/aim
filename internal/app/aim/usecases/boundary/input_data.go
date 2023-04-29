@@ -70,11 +70,6 @@ type GetIRDataInput struct {
 	ComID string
 }
 
-type GetCommandInput struct {
-	AppID string
-	ComID string
-}
-
 type SetIRDataInput struct {
 	AppID string
 	ComID string
