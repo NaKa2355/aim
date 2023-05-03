@@ -10,6 +10,21 @@ import (
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 )
 
+func convertType(in app.ApplianceType) (out bdy.ApplianceType) {
+	switch in {
+	case app.TypeCustom:
+		return bdy.TypeCustom
+	case app.TypeButton:
+		return bdy.TypeButton
+	case app.TypeToggle:
+		return bdy.TypeToggle
+	case app.TypeThermostat:
+		return bdy.TypeThermostat
+	default:
+		return bdy.ApplianceType(in)
+	}
+}
+
 func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput) (out bdy.AddAppOutput, err error) {
 	var a *app.Appliance
 	switch in := _in.(type) {
@@ -83,6 +98,7 @@ func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOu
 		out.Apps[i] = bdy.Appliance{
 			ID:            string(a.ID),
 			DeviceID:      string(a.DeviceID),
+			Type:          convertType(a.Type),
 			Name:          string(a.Name),
 			CanAddCommand: (a.AddCommand() == nil),
 		}
@@ -101,6 +117,7 @@ func (i *Interactor) getAppliance(ctx context.Context, in bdy.GetApplianceInput)
 	out.App = bdy.Appliance{
 		ID:            string(a.ID),
 		DeviceID:      string(a.DeviceID),
+		Type:          convertType(a.Type),
 		Name:          string(a.Name),
 		CanAddCommand: (a.AddCommand() == nil),
 	}

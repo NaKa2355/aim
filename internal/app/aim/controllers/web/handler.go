@@ -46,6 +46,21 @@ func NewHandler() *Handler {
 	}
 }
 
+func convertAppType(in bdy.ApplianceType) (out aimv1.Appliance_AppType) {
+	switch in {
+	case bdy.TypeCustom:
+		return aimv1.Appliance_CUSTOM
+	case bdy.TypeButton:
+		return aimv1.Appliance_BUTTON
+	case bdy.TypeToggle:
+		return aimv1.Appliance_TOGGLE
+	case bdy.TypeThermostat:
+		return aimv1.Appliance_THERMOSTAT
+	default:
+		return aimv1.Appliance_APP_TYPE_UNKNOWN
+	}
+}
+
 func (h *Handler) SetInteractor(i Boundary) {
 	h.i = i
 }
@@ -118,6 +133,7 @@ func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (res *aimv1
 		res.Appliances[i] = &aimv1.Appliance{
 			Id:            a.ID,
 			Name:          a.Name,
+			ApplianceType: convertAppType(a.Type),
 			DeviceId:      a.DeviceID,
 			CanAddCommand: a.CanAddCommand,
 		}
@@ -140,6 +156,7 @@ func (h *Handler) GetAppliance(ctx context.Context, req *aimv1.GetApplianceReque
 	res.Appliance = &aimv1.Appliance{
 		Id:            out.App.ID,
 		Name:          out.App.Name,
+		ApplianceType: convertAppType(out.App.Type),
 		DeviceId:      out.App.DeviceID,
 		CanAddCommand: out.App.CanAddCommand,
 	}
