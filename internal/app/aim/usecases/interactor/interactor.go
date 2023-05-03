@@ -62,7 +62,13 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 			Type:  bdy.UpdateTypeAdd,
 		},
 	)
-	out.ID = string(a.ID)
+	out.App = bdy.Appliance{
+		ID:            string(a.ID),
+		Name:          string(a.Name),
+		Type:          convertType(a.Type),
+		DeviceID:      string(a.DeviceID),
+		CanAddCommand: (a.AddCommand() == nil),
+	}
 	return out, err
 }
 

@@ -65,7 +65,7 @@ func (h *Handler) SetInteractor(i Boundary) {
 	h.i = i
 }
 
-func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequest) (res *aimv1.AddAppResponse, err error) {
+func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequest) (res *aimv1.AddApplianceResponse, err error) {
 	var in bdy.AddApplianceInput
 	var out bdy.AddAppOutput
 
@@ -102,8 +102,14 @@ func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequ
 		return
 	}
 
-	res = &aimv1.AddAppResponse{
-		ApplianceId: out.ID,
+	res = &aimv1.AddApplianceResponse{
+		Appliance: &aimv1.Appliance{
+			Id:            out.App.ID,
+			Name:          out.App.Name,
+			DeviceId:      out.App.DeviceID,
+			ApplianceType: convertAppType(out.App.Type),
+			CanAddCommand: out.App.CanAddCommand,
+		},
 	}
 	return
 }
