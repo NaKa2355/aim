@@ -24,6 +24,7 @@ type Command struct {
 type Appliance struct {
 	ID            string
 	Name          string
+	Type          ApplianceType
 	DeviceID      string
 	CanAddCommand bool
 }
