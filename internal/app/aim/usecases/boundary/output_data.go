@@ -11,7 +11,7 @@ const (
 )
 
 type AddAppOutput struct {
-	ID string
+	App Appliance
 }
 
 type Command struct {
