@@ -10,9 +10,10 @@ import (
 type Name string
 
 func NewName(name string) (Name, error) {
-	err := validation.Validate(name,
+	err := validation.Validate(
+		name,
 		validation.Required,
-		validation.Length(1, 20),
+		validation.RuneLength(0, 25),
 	)
 	if err != nil {
 		return Name(""), entities.NewError(

@@ -89,7 +89,7 @@ func SelectCommands(appID appliance.ID) database.Query {
 			defer rows.Close()
 
 			if !rows.Next() {
-				return
+				return coms, err
 			}
 
 			err = rows.Scan(&c.Name, &c.IRData, &c.ID, &count)
