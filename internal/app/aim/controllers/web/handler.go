@@ -187,6 +187,7 @@ func (h *Handler) GetCommands(ctx context.Context, req *aimv1.GetCommandsRequest
 			Name:      c.Name,
 			CanRename: c.CanRename,
 			CanDelete: c.CanDelete,
+			HasIrdata: c.HasIRData,
 		}
 	}
 

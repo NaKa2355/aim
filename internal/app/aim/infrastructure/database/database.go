@@ -9,7 +9,7 @@ import (
 
 type DataBase struct {
 	dbFile string
-	db     *sql.DB
+	DB     *sql.DB
 }
 
 func New(dbFile string) (*DataBase, error) {
@@ -20,7 +20,7 @@ func New(dbFile string) (*DataBase, error) {
 	if err != nil {
 		return d, err
 	}
-	d.db = db
+	d.DB = db
 	return d, nil
 }
 
@@ -52,7 +52,7 @@ func (q *Query) query(ctx context.Context, tx *sql.Tx) (any, error) {
 
 func (d *DataBase) Exec(ctx context.Context, queries []Query) error {
 	var err error = nil
-	tx, err := d.db.Begin()
+	tx, err := d.DB.Begin()
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (d *DataBase) Exec(ctx context.Context, queries []Query) error {
 
 func (d *DataBase) Query(ctx context.Context, q Query) (any, error) {
 	var err error = nil
-	tx, err := d.db.Begin()
+	tx, err := d.DB.Begin()
 	if err != nil {
 		return nil, err
 	}
@@ -83,9 +83,9 @@ func (d *DataBase) Query(ctx context.Context, q Query) (any, error) {
 }
 
 func (d *DataBase) ExecStmt(statement string) (sql.Result, error) {
-	return d.db.Exec(statement)
+	return d.DB.Exec(statement)
 }
 
 func (d *DataBase) Close() error {
-	return d.db.Close()
+	return d.DB.Close()
 }
