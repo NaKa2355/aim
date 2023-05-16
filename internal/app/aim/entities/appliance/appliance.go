@@ -18,7 +18,7 @@ type Appliance struct {
 	Name     Name
 	DeviceID DeviceID
 	Type     ApplianceType
-	Commands []command.Command
+	Commands []*command.Command
 	ApplianceController
 }
 
@@ -28,7 +28,7 @@ type ApplianceController interface {
 	RemoveCommand() error
 }
 
-func NewAppliance(n string, d string, appType ApplianceType, commands []command.Command, ctr ApplianceController) (*Appliance, error) {
+func NewAppliance(n string, d string, appType ApplianceType, commands []*command.Command, ctr ApplianceController) (*Appliance, error) {
 	var app *Appliance
 	name, err := NewName(n)
 	if err != nil {

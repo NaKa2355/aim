@@ -36,8 +36,8 @@ type Command struct {
 	IRData irdata.IRData
 }
 
-func New(name Name, irdata irdata.IRData) Command {
-	return Command{
+func New(name Name, irdata irdata.IRData) *Command {
+	return &Command{
 		Name:   name,
 		IRData: irdata,
 	}

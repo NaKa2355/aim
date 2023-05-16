@@ -8,7 +8,7 @@ type customController struct{}
 
 func NewCustom(name string, deviceID string) (c *Appliance, err error) {
 	ctr := customController{}
-	return NewAppliance(name, deviceID, TypeCustom, make([]command.Command, 0), ctr)
+	return NewAppliance(name, deviceID, TypeCustom, make([]*command.Command, 0), ctr)
 }
 
 func LoadCustom(id ID, name Name, deviceID DeviceID) *Appliance {

@@ -64,29 +64,19 @@ func (d *DataAccess) Close() (err error) {
 func (d *DataAccess) CreateAppliance(ctx context.Context, a *app.Appliance) (_ *app.Appliance, err error) {
 	defer wrapErr(&err)
 
-	var q = [2]database.Query{}
-	err = a.SetID(genID())
-	if err != nil {
-		return
-	}
-
-	for i := 0; i < len(a.Commands); i++ {
-		a.Commands[i].ID = command.ID(genID())
-	}
-
-	q[0] = queries.InsertApp(a)
-	q[1] = queries.InsertIntoCommands(a.ID, a.Commands)
-
-	err = d.db.Exec(ctx, q[:])
+	err = d.db.Exec(ctx, []database.Query{
+		queries.InsertApp(a),
+		queries.InsertIntoCommands(a.ID, a.Commands),
+	})
 	return a, err
 }
 
-func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c command.Command) (_ command.Command, err error) {
+func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c *command.Command) (_ *command.Command, err error) {
 	defer wrapErr(&err)
 	c.ID = command.ID(genID())
 	err = d.db.Exec(ctx,
 		[]database.Query{
-			queries.InsertIntoCommands(appID, []command.Command{c}),
+			queries.InsertIntoCommands(appID, []*command.Command{c}),
 		},
 	)
 	return c, err
@@ -112,23 +102,23 @@ func (d *DataAccess) ReadApps(ctx context.Context) (apps []*app.Appliance, err e
 	return apps, err
 }
 
-func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID command.ID) (c command.Command, err error) {
+func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID command.ID) (c *command.Command, err error) {
 	defer wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectFromCommandsWhere(appID, comID))
 	if err != nil {
 		return c, err
 	}
-	c = res.(command.Command)
+	c = res.(*command.Command)
 	return c, err
 }
 
-func (d *DataAccess) ReadCommands(ctx context.Context, appID app.ID) (coms []command.Command, err error) {
+func (d *DataAccess) ReadCommands(ctx context.Context, appID app.ID) (coms []*command.Command, err error) {
 	defer wrapErr(&err)
 	res, err := d.db.Query(ctx, queries.SelectCommands(appID))
 	if err != nil {
 		return coms, err
 	}
-	coms = res.([]command.Command)
+	coms = res.([]*command.Command)
 	return coms, err
 }
 
@@ -138,7 +128,7 @@ func (d *DataAccess) UpdateApp(ctx context.Context, a *app.Appliance) (err error
 	return
 }
 
-func (d *DataAccess) UpdateCommand(ctx context.Context, appID app.ID, c command.Command) (err error) {
+func (d *DataAccess) UpdateCommand(ctx context.Context, appID app.ID, c *command.Command) (err error) {
 	defer wrapErr(&err)
 	err = d.db.Exec(ctx, []database.Query{queries.UpdateCommand(appID, c)})
 	return err

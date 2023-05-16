@@ -63,6 +63,7 @@ func InsertApp(a *app.Appliance) database.Query {
 		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
 
 		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
+			a.SetID(genID())
 			_, err = stmt.ExecContext(ctx, a.ID, a.Name, a.DeviceID, a.Type)
 
 			if sqlErr, ok := err.(*sqlite.Error); ok {

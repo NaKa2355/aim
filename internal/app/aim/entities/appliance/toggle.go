@@ -11,7 +11,7 @@ type toggleController struct{}
 
 func NewToggle(name string, deviceID string) (*Appliance, error) {
 	ctr := toggleController{}
-	return NewAppliance(name, deviceID, TypeToggle, []command.Command{
+	return NewAppliance(name, deviceID, TypeToggle, []*command.Command{
 		command.New("on", nil),
 		command.New("off", nil),
 	}, ctr)
