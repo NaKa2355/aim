@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 	"modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
@@ -58,131 +57,96 @@ func wrapErr(err *error) {
 	*err = repo.NewError(repo.CodeDataBase, *err)
 }
 
-func InsertApp(a *app.Appliance) database.Query {
-	return database.Query{
-		Statement: `INSERT INTO appliances VALUES(?, ?, ?, ?)`,
+func InsertApp(ctx context.Context, tx *sql.Tx, a *app.Appliance) (*app.Appliance, error) {
+	a.ID = app.ID(genID())
+	_, err := tx.ExecContext(ctx, `INSERT INTO appliances VALUES(?, ?, ?, ?)`, a.ID, a.Name, a.DeviceID, a.Type)
 
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			a.SetID(genID())
-			_, err = stmt.ExecContext(ctx, a.ID, a.Name, a.DeviceID, a.Type)
-
-			if sqlErr, ok := err.(*sqlite.Error); ok {
-				if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
-					err = repo.NewError(
-						repo.CodeAlreadyExists,
-						fmt.Errorf("same name appliance already exists: %w", err),
-					)
-					return
-				}
-			}
-
-			return
-		},
+	if sqlErr, ok := err.(*sqlite.Error); ok {
+		if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+			err = repo.NewError(
+				repo.CodeAlreadyExists,
+				fmt.Errorf("same name appliance already exists: %w", err),
+			)
+			return a, err
+		}
 	}
+
+	return a, err
 }
 
-func SelectFromAppsWhere(id app.ID) database.Query {
-	return database.Query{
-		Statement: `
-		SELECT * 
-		FROM appliances a
-		WHERE a.app_id = ?
-		`,
+func SelectFromAppsWhere(ctx context.Context, tx *sql.Tx, id app.ID) (a *app.Appliance, err error) {
+	c := ApplianceColumns{}
 
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			c := ApplianceColumns{}
-			rows, err := stmt.QueryContext(ctx, id)
-			if err != nil {
-				return
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				err = repo.NewError(
-					repo.CodeNotFound,
-					errors.New("appiance not found"),
-				)
-				return
-			}
-			err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType)
-			resp = c.convert()
-			return
-		},
+	rows, err := tx.QueryContext(ctx, `SELECT * FROM appliances a WHERE a.app_id = ?`, id)
+	if err != nil {
+		return
 	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		err = repo.NewError(
+			repo.CodeNotFound,
+			errors.New("appiance not found"),
+		)
+		return
+	}
+
+	err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType)
+	return c.convert(), err
 }
 
-func SelectFromApps() database.Query {
-	return database.Query{
-		Statement: `
-		SELECT *, (SELECT COUNT(*) FROM appliances)
-		FROM appliances
-		`,
-
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			var apps []*app.Appliance
-			var count int
-			c := ApplianceColumns{}
-			rows, err := stmt.QueryContext(ctx, TypeCustom, TypeButton, TypeButton, TypeCustom)
-			if err != nil {
-				return apps, err
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				return apps, err
-			}
-
-			err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType, &count)
-			if err != nil {
-				return apps, err
-			}
-
-			apps = make([]*app.Appliance, 0, count)
-			apps = append(apps, c.convert())
-
-			for rows.Next() {
-				err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType, &count)
-				if err != nil {
-					return
-				}
-				apps = append(apps, c.convert())
-			}
-
-			resp = apps
-			return apps, err
-		},
+func selectCountFromApps(ctx context.Context, tx *sql.Tx) (count int, err error) {
+	rows, err := tx.QueryContext(ctx, `SELECT COUNT(*) FROM appliances`)
+	if err != nil {
+		return
 	}
+	defer rows.Close()
+
+	err = rows.Scan(&count)
+	return
 }
 
-func UpdateApp(a *app.Appliance) database.Query {
-	return database.Query{
-		Statement: "UPDATE appliances SET name=?, device_id=? WHERE app_id=?",
-
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, a.Name, a.DeviceID, a.ID)
-
-			if sqlErr, ok := err.(*sqlite.Error); ok {
-				if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
-					err = repo.NewError(
-						repo.CodeAlreadyExists,
-						fmt.Errorf("same name appliance already exists: %w", err),
-					)
-					return
-				}
-			}
-
-			return
-		},
+func SelectFromApps(ctx context.Context, tx *sql.Tx) (apps []*app.Appliance, err error) {
+	c := ApplianceColumns{}
+	count, err := selectCountFromApps(ctx, tx)
+	if err != nil {
+		return
 	}
+
+	rows, err := tx.QueryContext(ctx, `SELECT * FROM appliances`)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	apps = make([]*app.Appliance, 0, count)
+
+	for rows.Next() {
+		err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType)
+		if err != nil {
+			return
+		}
+		apps = append(apps, c.convert())
+	}
+
+	return apps, err
 }
 
-func DeleteApp(id app.ID) database.Query {
-	return database.Query{
-		Statement: "DELETE FROM appliances WHERE app_id=?",
-
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			_, err = stmt.ExecContext(ctx, id)
+func UpdateApp(ctx context.Context, tx *sql.Tx, a *app.Appliance) (err error) {
+	_, err = tx.ExecContext(ctx, `UPDATE appliances SET name=?, device_id=? WHERE app_id=?`, a.Name, a.DeviceID, a.ID)
+	if sqlErr, ok := err.(*sqlite.Error); ok {
+		if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+			err = repo.NewError(
+				repo.CodeAlreadyExists,
+				fmt.Errorf("same name appliance already exists: %w", err),
+			)
 			return
-		},
+		}
 	}
+	return
+}
+
+func DeleteApp(ctx context.Context, tx *sql.Tx, id app.ID) (err error) {
+	_, err = tx.ExecContext(ctx, `DELETE FROM appliances WHERE app_id=?`, id)
+	return
 }

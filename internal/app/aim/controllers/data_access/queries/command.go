@@ -8,146 +8,117 @@ import (
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
-	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 	"modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-func InsertIntoCommands(appID appliance.ID, coms []*command.Command) database.Query {
-	return database.Query{
-		Statement: "INSERT INTO commands VALUES(?, ?, ?, ?)",
-
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
-			var sqliteErr *sqlite.Error
-
-			for _, com := range coms {
-				com.ID = command.ID(genID())
-				_, err = stmt.Exec(com.ID, appID, com.GetName(), []byte{})
-				if err == nil {
-					continue
-				}
-
-				if _, ok := err.(*sqlite.Error); !ok {
-					return err
-				}
-				sqliteErr = err.(*sqlite.Error)
-
-				if sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
-					err = repo.NewError(
-						repo.CodeAlreadyExists,
-						fmt.Errorf("same name already exists: %w", err),
-					)
-					return
-				}
-			}
-
-			return
-		},
+func InsertIntoCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID, coms []*command.Command) (res []*command.Command, err error) {
+	stmt, err := tx.PrepareContext(ctx, `INSERT INTO commands VALUES(?, ?, ?, ?)`)
+	if err != nil {
+		return
 	}
+	defer stmt.Close()
+
+	var sqliteErr *sqlite.Error
+
+	for _, com := range coms {
+
+		com.ID = command.ID(genID())
+
+		_, err = stmt.Exec(com.ID, appID, com.GetName(), []byte{})
+		if err == nil {
+			continue
+		}
+
+		if _, ok := err.(*sqlite.Error); !ok {
+			return
+		}
+
+		sqliteErr = err.(*sqlite.Error)
+
+		if sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+			err = repo.NewError(
+				repo.CodeAlreadyExists,
+				fmt.Errorf("same name already exists: %w", err),
+			)
+			return
+		}
+	}
+
+	return coms, err
 }
 
-func UpdateCommand(appID appliance.ID, c *command.Command) database.Query {
-	return database.Query{
-		Statement: "UPDATE commands SET name=?, irdata=? WHERE com_id=? AND app_id=?",
+func UpdateCommand(ctx context.Context, tx *sql.Tx, appID appliance.ID, c *command.Command) (err error) {
+	_, err = tx.Exec(`UPDATE commands SET name=?, irdata=? WHERE com_id=? AND app_id=?`,
+		c.GetName(), c.GetRawIRData(), c.GetID(), appID)
 
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
-			_, err = stmt.Exec(c.GetName(), c.GetRawIRData(), c.GetID(), appID)
-
-			if err, ok := err.(*sqlite.Error); ok {
-				if err.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
-					return repo.NewError(
-						repo.CodeAlreadyExists,
-						fmt.Errorf("same name already exists: %w", err),
-					)
-				}
-			}
-
-			return
-		},
+	if err, ok := err.(*sqlite.Error); ok {
+		if err.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+			return repo.NewError(
+				repo.CodeAlreadyExists,
+				fmt.Errorf("same name already exists: %w", err),
+			)
+		}
 	}
+	return
 }
 
-func SelectCommands(appID appliance.ID) database.Query {
-	return database.Query{
-		Statement: `SELECT name, irdata, com_id, irdata,
-		(SELECT COUNT(*) 
-		FROM commands WHERE app_id=?)
-		FROM commands WHERE app_id=?`,
-
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
-			var coms []*command.Command
-			var count int
-			var c = &command.Command{}
-
-			rows, err := stmt.QueryContext(ctx, appID, appID)
-			if err != nil {
-				return
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				return coms, err
-			}
-
-			err = rows.Scan(&c.Name, &c.IRData, &c.ID, &c.IRData, &count)
-			if err != nil {
-				return
-			}
-
-			coms = make([]*command.Command, 0, count)
-			coms = append(coms, c)
-
-			for rows.Next() {
-				err = rows.Scan(&c.Name, &c.IRData, &c.ID, &c.IRData, &count)
-				if err != nil {
-					return
-				}
-				coms = append(coms, c)
-			}
-
-			resp = coms
-			return
-		},
-	}
+func SelectCountFromCommandsWhere(ctx context.Context, tx *sql.Tx, appID appliance.ID) (count int, err error) {
+	row := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM commands WHERE app_id=?`, appID)
+	err = row.Scan(&count)
+	return
 }
 
-func SelectFromCommandsWhere(appID appliance.ID, comID command.ID) database.Query {
-	return database.Query{
-		Statement: "SELECT name, irdata FROM commands WHERE app_id=? AND com_id=?",
+func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID) (coms []*command.Command, err error) {
+	var c = command.Command{}
 
-		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
-			defer wrapErr(&err)
-			var c = &command.Command{}
-
-			rows, err := stmt.QueryContext(ctx, appID, comID)
-			if err != nil {
-				return
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				return c, repo.NewError(repo.CodeNotFound, errors.New("command not found"))
-			}
-
-			err = rows.Scan(&c.Name, &c.IRData)
-			c.ID = comID
-			return c, err
-		},
+	count, err := SelectCountFromCommandsWhere(ctx, tx, appID)
+	if err != nil {
+		return
 	}
+
+	coms = make([]*command.Command, 0, count)
+
+	rows, err := tx.QueryContext(ctx, `SELECT name, irdata, com_id, irdata, FROM commands WHERE app_id=?`, appID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&c.Name, &c.IRData, &c.ID, &c.IRData, &count)
+		if err != nil {
+			return
+		}
+		coms = append(coms, &command.Command{
+			Name:   c.Name,
+			ID:     c.ID,
+			IRData: c.IRData,
+		})
+	}
+	return
 }
 
-func DeleteFromCommand(appID appliance.ID, comID command.ID) database.Query {
-	return database.Query{
-		Statement: "DELETE FROM commands WHERE com_id = ? AND app_id = ?",
+func SelectFromCommandsWhere(ctx context.Context, tx *sql.Tx, appID appliance.ID, comID command.ID) (com *command.Command, err error) {
+	var c = &command.Command{}
 
-		Exec: func(ctx context.Context, stmt *sql.Stmt) (err error) {
-			defer wrapErr(&err)
-			_, err = stmt.Exec(comID, appID)
-			return
-		},
+	rows, err := tx.QueryContext(ctx, `SELECT name, irdata FROM commands WHERE app_id=? AND com_id=?`, appID, comID)
+	if err != nil {
+		return
 	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return c, repo.NewError(repo.CodeNotFound, errors.New("command not found"))
+	}
+
+	err = rows.Scan(&c.Name, &c.IRData)
+	c.ID = comID
+	return c, err
+}
+
+func DeleteFromCommand(ctx context.Context, tx *sql.Tx, appID appliance.ID, comID command.ID) (err error) {
+	_, err = tx.ExecContext(ctx, `DELETE FROM commands WHERE com_id = ? AND app_id = ?`, comID, appID)
+	return err
 }
