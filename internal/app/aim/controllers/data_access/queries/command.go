@@ -71,7 +71,7 @@ func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
 
 func SelectCommands(appID appliance.ID) database.Query {
 	return database.Query{
-		Statement: `SELECT name, irdata, com_id,
+		Statement: `SELECT name, irdata, com_id, irdata,
 		(SELECT COUNT(*) 
 		FROM commands WHERE app_id=?)
 		FROM commands WHERE app_id=?`,
@@ -92,7 +92,7 @@ func SelectCommands(appID appliance.ID) database.Query {
 				return coms, err
 			}
 
-			err = rows.Scan(&c.Name, &c.IRData, &c.ID, &count)
+			err = rows.Scan(&c.Name, &c.IRData, &c.ID, &c.IRData, &count)
 			if err != nil {
 				return
 			}
@@ -101,7 +101,7 @@ func SelectCommands(appID appliance.ID) database.Query {
 			coms = append(coms, c)
 
 			for rows.Next() {
-				err = rows.Scan(&c.Name, &c.IRData, &c.ID, &count)
+				err = rows.Scan(&c.Name, &c.IRData, &c.ID, c.IRData, &count)
 				if err != nil {
 					return
 				}

@@ -19,6 +19,7 @@ type Command struct {
 	Name      string
 	CanRename bool
 	CanDelete bool
+	HasIRData bool
 }
 
 type Appliance struct {

@@ -31,13 +31,9 @@ type GetApplianceInput struct {
 	AppID string
 }
 
-type RenameAppInput struct {
-	AppID string
-	Name  string
-}
-
-type ChangeIRDevInput struct {
+type EditApplianceInput struct {
 	AppID    string
+	Name     string
 	DeviceID string
 }
 
@@ -45,7 +41,7 @@ type DeleteAppInput struct {
 	AppID string
 }
 
-type RenameCommandInput struct {
+type EditCommandInput struct {
 	AppID string
 	ComID string
 	Name  string

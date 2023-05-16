@@ -32,16 +32,12 @@ type IRDataGetter interface {
 	GetIRData(ctx context.Context, i GetIRDataInput) (GetIRDataOutput, error)
 }
 
-type ApplianceRenamer interface {
-	RenameAppliance(ctx context.Context, i RenameAppInput) error
+type ApplianceEditor interface {
+	EditAppliance(ctx context.Context, i EditApplianceInput) error
 }
 
-type IRDeviceChanger interface {
-	ChangeIRDevice(ctx context.Context, i ChangeIRDevInput) error
-}
-
-type CommandRenamer interface {
-	RenameCommand(ctx context.Context, i RenameCommandInput) error
+type CommandEditor interface {
+	EditCommand(ctx context.Context, i EditCommandInput) error
 }
 
 type IRDataSetter interface {
