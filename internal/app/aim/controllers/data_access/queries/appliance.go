@@ -96,13 +96,11 @@ func SelectFromAppsWhere(ctx context.Context, tx *sql.Tx, id app.ID) (a *app.App
 }
 
 func selectCountFromApps(ctx context.Context, tx *sql.Tx) (count int, err error) {
-	rows, err := tx.QueryContext(ctx, `SELECT COUNT(*) FROM appliances`)
+	row := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM appliances`)
 	if err != nil {
 		return
 	}
-	defer rows.Close()
-
-	err = rows.Scan(&count)
+	err = row.Scan(&count)
 	return
 }
 
