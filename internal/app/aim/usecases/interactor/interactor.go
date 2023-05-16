@@ -74,7 +74,7 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 
 func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (err error) {
 	var a *app.Appliance
-	var com command.Command
+	var com *command.Command
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -131,7 +131,7 @@ func (i *Interactor) getAppliance(ctx context.Context, in bdy.GetApplianceInput)
 }
 
 func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (out bdy.GetCommandsOutput, err error) {
-	var coms []command.Command
+	var coms []*command.Command
 	a, err := i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
 		return
@@ -156,7 +156,7 @@ func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (
 }
 
 func (i *Interactor) getIRData(ctx context.Context, in bdy.GetIRDataInput) (out bdy.GetIRDataOutput, err error) {
-	var com command.Command
+	var com *command.Command
 
 	com, err = i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
 	if err != nil {
@@ -192,7 +192,7 @@ func (i *Interactor) editAppliance(ctx context.Context, in bdy.EditApplianceInpu
 
 func (i *Interactor) renameCommand(ctx context.Context, in bdy.EditCommandInput) (err error) {
 	var a *app.Appliance
-	var c command.Command
+	var c *command.Command
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
 	if err != nil {
@@ -216,7 +216,7 @@ func (i *Interactor) renameCommand(ctx context.Context, in bdy.EditCommandInput)
 }
 
 func (i *Interactor) setIRData(ctx context.Context, in bdy.SetIRDataInput) (err error) {
-	var c command.Command
+	var c *command.Command
 
 	c, err = i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
 	if err != nil {

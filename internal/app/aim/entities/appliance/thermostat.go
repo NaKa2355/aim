@@ -73,10 +73,10 @@ func validate(s float64, miht int, maht int, mict int, mact int) error {
 	return nil
 }
 
-func getCommands(s float64, miht int, maht int, mict int, mact int) []command.Command {
+func getCommands(s float64, miht int, maht int, mict int, mact int) []*command.Command {
 	var temp float64
 	var size int = int(float64(mact-mict)/s + 1 + float64(maht-miht)/s + 1 + 1)
-	var commands = make([]command.Command, 0, size)
+	var commands = make([]*command.Command, 0, size)
 
 	temp = float64(miht)
 	for temp <= float64(maht) {

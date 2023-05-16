@@ -14,7 +14,7 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Query {
+func InsertIntoCommands(appID appliance.ID, coms []*command.Command) database.Query {
 	return database.Query{
 		Statement: "INSERT INTO commands VALUES(?, ?, ?, ?)",
 
@@ -23,6 +23,7 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 			var sqliteErr *sqlite.Error
 
 			for _, com := range coms {
+				com.ID = command.ID(genID())
 				_, err = stmt.Exec(com.ID, appID, com.GetName(), []byte{})
 				if err == nil {
 					continue
@@ -47,7 +48,7 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 	}
 }
 
-func UpdateCommand(appID appliance.ID, c command.Command) database.Query {
+func UpdateCommand(appID appliance.ID, c *command.Command) database.Query {
 	return database.Query{
 		Statement: "UPDATE commands SET name=?, irdata=? WHERE com_id=? AND app_id=?",
 
@@ -78,9 +79,9 @@ func SelectCommands(appID appliance.ID) database.Query {
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
-			var coms []command.Command
+			var coms []*command.Command
 			var count int
-			var c = command.Command{}
+			var c = &command.Command{}
 
 			rows, err := stmt.QueryContext(ctx, appID, appID)
 			if err != nil {
@@ -97,7 +98,7 @@ func SelectCommands(appID appliance.ID) database.Query {
 				return
 			}
 
-			coms = make([]command.Command, 0, count)
+			coms = make([]*command.Command, 0, count)
 			coms = append(coms, c)
 
 			for rows.Next() {
@@ -120,7 +121,7 @@ func SelectFromCommandsWhere(appID appliance.ID, comID command.ID) database.Quer
 
 		Query: func(ctx context.Context, stmt *sql.Stmt) (resp any, err error) {
 			defer wrapErr(&err)
-			var c command.Command
+			var c = &command.Command{}
 
 			rows, err := stmt.QueryContext(ctx, appID, comID)
 			if err != nil {

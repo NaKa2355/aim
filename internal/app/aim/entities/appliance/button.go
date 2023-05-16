@@ -11,7 +11,7 @@ type buttonController struct{}
 
 func NewButton(name string, deviceID string) (*Appliance, error) {
 	ctr := buttonController{}
-	return NewAppliance(name, deviceID, TypeButton, []command.Command{command.New("push", nil)}, ctr)
+	return NewAppliance(name, deviceID, TypeButton, []*command.Command{command.New("push", nil)}, ctr)
 }
 
 func LoadButton(id ID, name Name, deviceID DeviceID) *Appliance {
