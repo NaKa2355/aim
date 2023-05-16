@@ -20,9 +20,8 @@ type Boundary interface {
 	bdy.IRDataGetter
 	bdy.CommandsGetter
 
-	bdy.ApplianceRenamer
-	bdy.IRDeviceChanger
-	bdy.CommandRenamer
+	bdy.ApplianceEditor
+	bdy.CommandEditor
 	bdy.IRDataSetter
 
 	bdy.ApplianceDeleter
@@ -210,34 +209,24 @@ func (h *Handler) GetIrData(ctx context.Context, req *aimv1.GetIrDataRequest) (r
 	return
 }
 
-func (h *Handler) RenameAppliance(ctx context.Context, req *aimv1.RenameApplianceRequest) (e *empty.Empty, err error) {
-	var in bdy.RenameAppInput
+func (h *Handler) EditAppliance(ctx context.Context, req *aimv1.EditApplianceRequest) (e *empty.Empty, err error) {
+	var in bdy.EditApplianceInput
 	e = &empty.Empty{}
 
 	in.AppID = req.ApplianceId
 	in.Name = req.Name
-	err = h.i.RenameAppliance(ctx, in)
+	err = h.i.EditAppliance(ctx, in)
 	return
 }
 
-func (h *Handler) ChangeDevice(ctx context.Context, req *aimv1.ChangeDeviceRequest) (e *empty.Empty, err error) {
-	var in bdy.ChangeIRDevInput
-	e = &empty.Empty{}
-
-	in.AppID = req.ApplianceId
-	in.DeviceID = req.DeviceId
-	err = h.i.ChangeIRDevice(ctx, in)
-	return
-}
-
-func (h *Handler) RenameCommand(ctx context.Context, req *aimv1.RenameCommandRequest) (e *empty.Empty, err error) {
-	var in bdy.RenameCommandInput
+func (h *Handler) EditCommand(ctx context.Context, req *aimv1.EditCommandRequest) (e *empty.Empty, err error) {
+	var in bdy.EditCommandInput
 	e = &empty.Empty{}
 
 	in.AppID = req.ApplianceId
 	in.ComID = req.CommandId
 	in.Name = req.Name
-	err = h.i.RenameCommand(ctx, in)
+	err = h.i.EditCommand(ctx, in)
 	return
 }
 

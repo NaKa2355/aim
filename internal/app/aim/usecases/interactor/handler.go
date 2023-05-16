@@ -88,17 +88,12 @@ func (i *Interactor) GetIRData(ctx context.Context, in bdy.GetIRDataInput) (bdy.
 }
 
 // Update
-func (i *Interactor) RenameAppliance(ctx context.Context, in bdy.RenameAppInput) error {
-	err := i.renameAppliance(ctx, in)
+func (i *Interactor) EditAppliance(ctx context.Context, in bdy.EditApplianceInput) error {
+	err := i.editAppliance(ctx, in)
 	return wrapErr(err)
 }
 
-func (i *Interactor) ChangeIRDevice(ctx context.Context, in bdy.ChangeIRDevInput) error {
-	err := i.changeIRDevice(ctx, in)
-	return wrapErr(err)
-}
-
-func (i *Interactor) RenameCommand(ctx context.Context, in bdy.RenameCommandInput) error {
+func (i *Interactor) EditCommand(ctx context.Context, in bdy.EditCommandInput) error {
 	err := i.renameCommand(ctx, in)
 	return wrapErr(err)
 }

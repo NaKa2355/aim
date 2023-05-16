@@ -144,10 +144,12 @@ func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (
 
 	out.Commands = make([]bdy.Command, len(coms))
 	for i, c := range coms {
+		c.GetRawIRData()
 		out.Commands[i].ID = string(c.ID)
 		out.Commands[i].Name = string(c.Name)
 		out.Commands[i].CanRename = (a.ChangeCommandName() == nil)
 		out.Commands[i].CanDelete = (a.RemoveCommand() == nil)
+		out.Commands[i].HasIRData = (len(c.IRData) != 0)
 	}
 
 	return
@@ -166,8 +168,7 @@ func (i *Interactor) getIRData(ctx context.Context, in bdy.GetIRDataInput) (out 
 	return
 }
 
-// Update
-func (i *Interactor) renameAppliance(ctx context.Context, in bdy.RenameAppInput) (err error) {
+func (i *Interactor) editAppliance(ctx context.Context, in bdy.EditApplianceInput) (err error) {
 	var a *app.Appliance
 
 	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
@@ -180,25 +181,16 @@ func (i *Interactor) renameAppliance(ctx context.Context, in bdy.RenameAppInput)
 		return
 	}
 
-	err = i.repo.UpdateApp(ctx, a)
-	return
-}
-
-func (i *Interactor) changeIRDevice(ctx context.Context, in bdy.ChangeIRDevInput) (err error) {
-	var a *app.Appliance
-
-	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
+	err = a.SetDeviceID(in.DeviceID)
 	if err != nil {
 		return
 	}
 
-	a.SetDeviceID(in.DeviceID)
 	err = i.repo.UpdateApp(ctx, a)
-
 	return
 }
 
-func (i *Interactor) renameCommand(ctx context.Context, in bdy.RenameCommandInput) (err error) {
+func (i *Interactor) renameCommand(ctx context.Context, in bdy.EditCommandInput) (err error) {
 	var a *app.Appliance
 	var c command.Command
 
