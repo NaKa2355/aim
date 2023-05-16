@@ -2,17 +2,15 @@ package data_access
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"fmt"
-	"math/rand"
-	"time"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access/queries"
 	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
-	"github.com/oklog/ulid"
 )
 
 //go:embed queries/create_table.sql
@@ -63,92 +61,112 @@ func (d *DataAccess) Close() (err error) {
 
 func (d *DataAccess) CreateAppliance(ctx context.Context, a *app.Appliance) (_ *app.Appliance, err error) {
 	defer wrapErr(&err)
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			a, err = queries.InsertApp(ctx, tx, a)
+			return err
+		},
 
-	err = d.db.Exec(ctx, []database.Query{
-		queries.InsertApp(a),
-		queries.InsertIntoCommands(a.ID, a.Commands),
+		func(tx *sql.Tx) error {
+			_, err = queries.InsertIntoCommands(ctx, tx, a.ID, a.Commands)
+			return err
+		},
 	})
 	return a, err
 }
 
 func (d *DataAccess) CreateCommand(ctx context.Context, appID app.ID, c *command.Command) (_ *command.Command, err error) {
 	defer wrapErr(&err)
-	c.ID = command.ID(genID())
-	err = d.db.Exec(ctx,
-		[]database.Query{
-			queries.InsertIntoCommands(appID, []*command.Command{c}),
+	var coms []*command.Command
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			coms, err = queries.InsertIntoCommands(ctx, tx, appID, []*command.Command{c})
+			return err
 		},
-	)
-	return c, err
+	})
+	return coms[0], err
 }
 
 func (d *DataAccess) ReadApp(ctx context.Context, appID app.ID) (a *app.Appliance, err error) {
 	defer wrapErr(&err)
-	res, err := d.db.Query(ctx, queries.SelectFromAppsWhere(appID))
-	if err != nil {
-		return a, err
-	}
-	a = res.(*app.Appliance)
-	return a, err
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			a, err = queries.SelectFromAppsWhere(ctx, tx, appID)
+			return err
+		},
+	})
+	return
 }
 
 func (d *DataAccess) ReadApps(ctx context.Context) (apps []*app.Appliance, err error) {
 	defer wrapErr(&err)
-	res, err := d.db.Query(ctx, queries.SelectFromApps())
-	if err != nil {
-		return apps, err
-	}
-	apps = res.([]*app.Appliance)
-	return apps, err
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			apps, err = queries.SelectFromApps(ctx, tx)
+			return err
+		},
+	})
+	return
 }
 
 func (d *DataAccess) ReadCommand(ctx context.Context, appID app.ID, comID command.ID) (c *command.Command, err error) {
 	defer wrapErr(&err)
-	res, err := d.db.Query(ctx, queries.SelectFromCommandsWhere(appID, comID))
-	if err != nil {
-		return c, err
-	}
-	c = res.(*command.Command)
-	return c, err
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			c, err = queries.SelectFromCommandsWhere(ctx, tx, appID, comID)
+			return err
+		},
+	})
+	return
 }
 
 func (d *DataAccess) ReadCommands(ctx context.Context, appID app.ID) (coms []*command.Command, err error) {
 	defer wrapErr(&err)
-	res, err := d.db.Query(ctx, queries.SelectCommands(appID))
-	if err != nil {
-		return coms, err
-	}
-	coms = res.([]*command.Command)
-	return coms, err
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			coms, err = queries.SelectFromCommands(ctx, tx, appID)
+			return err
+		},
+	})
+	return
 }
 
 func (d *DataAccess) UpdateApp(ctx context.Context, a *app.Appliance) (err error) {
 	defer wrapErr(&err)
-	err = d.db.Exec(ctx, []database.Query{queries.UpdateApp(a)})
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			return queries.UpdateApp(ctx, tx, a)
+		},
+	})
 	return
 }
 
 func (d *DataAccess) UpdateCommand(ctx context.Context, appID app.ID, c *command.Command) (err error) {
 	defer wrapErr(&err)
-	err = d.db.Exec(ctx, []database.Query{queries.UpdateCommand(appID, c)})
-	return err
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			return queries.UpdateCommand(ctx, tx, appID, c)
+		},
+	})
+	return
 }
 
 func (d *DataAccess) DeleteApp(ctx context.Context, appID app.ID) (err error) {
 	defer wrapErr(&err)
-	err = d.db.Exec(ctx, []database.Query{queries.DeleteApp(appID)})
+	err = d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			return queries.DeleteApp(ctx, tx, appID)
+		},
+	})
 	return err
 }
 
 func (d *DataAccess) DeleteCommand(ctx context.Context, appID app.ID, comID command.ID) (err error) {
 	defer wrapErr(&err)
-	err = d.db.Exec(ctx, []database.Query{queries.DeleteFromCommand(appID, comID)})
-	return err
-}
-
-func genID() string {
-	t := time.Now()
-	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
-	id := ulid.MustNew(ulid.Timestamp(t), entropy)
-	return id.String()
+	d.db.BeginTransaction(database.Transaction{
+		func(tx *sql.Tx) error {
+			return queries.DeleteFromCommand(ctx, tx, appID, comID)
+		},
+	})
+	return
 }

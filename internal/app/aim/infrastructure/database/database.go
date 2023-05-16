@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"database/sql"
 
 	_ "modernc.org/sqlite"
@@ -9,7 +8,7 @@ import (
 
 type DataBase struct {
 	dbFile string
-	DB     *sql.DB
+	db     *sql.DB
 }
 
 func New(dbFile string) (*DataBase, error) {
@@ -20,72 +19,29 @@ func New(dbFile string) (*DataBase, error) {
 	if err != nil {
 		return d, err
 	}
-	d.DB = db
+	d.db = db
 	return d, nil
 }
 
-type Query struct {
-	Statement string
-	Exec      func(context.Context, *sql.Stmt) error
-	Query     func(context.Context, *sql.Stmt) (any, error)
+func (d *DataBase) Close() error {
+	return d.db.Close()
 }
 
-func (q *Query) exec(ctx context.Context, tx *sql.Tx) error {
-	stmt, err := tx.Prepare(q.Statement)
+type Transaction []func(tx *sql.Tx) error
+
+func (d *DataBase) BeginTransaction(t Transaction) (err error) {
+	tx, err := d.db.Begin()
 	if err != nil {
-		return err
+		return
 	}
 
-	defer stmt.Close()
-	return q.Exec(ctx, stmt)
-}
-
-func (q *Query) query(ctx context.Context, tx *sql.Tx) (any, error) {
-	stmt, err := tx.Prepare(q.Statement)
-	if err != nil {
-		return nil, err
-	}
-
-	defer stmt.Close()
-	return q.Query(ctx, stmt)
-}
-
-func (d *DataBase) Exec(ctx context.Context, queries []Query) error {
-	var err error = nil
-	tx, err := d.DB.Begin()
-	if err != nil {
-		return err
-	}
-
-	for _, q := range queries {
-		err = (&q).exec(ctx, tx)
+	for _, s := range t {
+		err = s(tx)
 		if err != nil {
 			tx.Rollback()
-			return err
+			return
 		}
 	}
 
 	return tx.Commit()
-}
-
-func (d *DataBase) Query(ctx context.Context, q Query) (any, error) {
-	var err error = nil
-	tx, err := d.DB.Begin()
-	if err != nil {
-		return nil, err
-	}
-	r, err := q.query(ctx, tx)
-	if err != nil {
-		tx.Rollback()
-		return r, err
-	}
-	return r, tx.Commit()
-}
-
-func (d *DataBase) ExecStmt(statement string) (sql.Result, error) {
-	return d.DB.Exec(statement)
-}
-
-func (d *DataBase) Close() error {
-	return d.DB.Close()
 }
