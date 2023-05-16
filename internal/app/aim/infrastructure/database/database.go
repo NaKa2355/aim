@@ -23,6 +23,10 @@ func New(dbFile string) (*DataBase, error) {
 	return d, nil
 }
 
+func (d *DataBase) ExecStmt(statement string) (sql.Result, error) {
+	return d.db.Exec(statement)
+}
+
 func (d *DataBase) Close() error {
 	return d.db.Close()
 }
