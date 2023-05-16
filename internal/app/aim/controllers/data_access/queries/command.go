@@ -23,7 +23,7 @@ func InsertIntoCommands(appID appliance.ID, coms []command.Command) database.Que
 			var sqliteErr *sqlite.Error
 
 			for _, com := range coms {
-				_, err = stmt.Exec(com.GetID(), appID, com.GetName(), []byte{})
+				_, err = stmt.Exec(com.ID, appID, com.GetName(), []byte{})
 				if err == nil {
 					continue
 				}
@@ -101,7 +101,7 @@ func SelectCommands(appID appliance.ID) database.Query {
 			coms = append(coms, c)
 
 			for rows.Next() {
-				err = rows.Scan(&c.Name, &c.IRData, &c.ID, c.IRData, &count)
+				err = rows.Scan(&c.Name, &c.IRData, &c.ID, &c.IRData, &count)
 				if err != nil {
 					return
 				}
