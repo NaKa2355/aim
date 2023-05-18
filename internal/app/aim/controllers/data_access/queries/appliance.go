@@ -45,18 +45,6 @@ func (c *ApplianceColumns) convert() *app.Appliance {
 	return a
 }
 
-func wrapErr(err *error) {
-	if *err == nil {
-		return
-	}
-
-	if _, ok := (*err).(repo.Error); ok {
-		return
-	}
-
-	*err = repo.NewError(repo.CodeDataBase, *err)
-}
-
 func InsertApp(ctx context.Context, tx *sql.Tx, a *app.Appliance) (*app.Appliance, error) {
 	a.ID = app.ID(genID())
 	_, err := tx.ExecContext(ctx, `INSERT INTO appliances VALUES(?, ?, ?, ?)`, a.ID, a.Name, a.DeviceID, a.Type)

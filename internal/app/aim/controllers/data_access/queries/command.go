@@ -80,14 +80,14 @@ func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID) (co
 
 	coms = make([]*command.Command, 0, count)
 
-	rows, err := tx.QueryContext(ctx, `SELECT name, irdata, com_id, irdata, FROM commands WHERE app_id=?`, appID)
+	rows, err := tx.QueryContext(ctx, `SELECT name, irdata, com_id FROM commands WHERE app_id=?`, appID)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err = rows.Scan(&c.Name, &c.IRData, &c.ID, &c.IRData, &count)
+		err = rows.Scan(&c.Name, &c.IRData, &c.ID)
 		if err != nil {
 			return
 		}

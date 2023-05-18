@@ -31,5 +31,6 @@ func UnaryErrInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryS
 	} else {
 		err = status.Error(codes.Unknown, err.Error())
 	}
+
 	return res, err
 }
