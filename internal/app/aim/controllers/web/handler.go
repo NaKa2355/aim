@@ -216,6 +216,7 @@ func (h *Handler) EditAppliance(ctx context.Context, req *aimv1.EditApplianceReq
 
 	in.AppID = req.ApplianceId
 	in.Name = req.Name
+	in.DeviceID = req.DeviceId
 	err = h.i.EditAppliance(ctx, in)
 	return
 }
