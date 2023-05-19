@@ -10,7 +10,7 @@ import (
 
 type Interactor struct {
 	repo   repository.Repository
-	output bdy.ApplianceUpdateNotifier
+	output bdy.RemoteUpdateNotifier
 }
 
 func convertErrCode(err error) bdy.ErrCode {
@@ -49,7 +49,7 @@ func wrapErr(err error) error {
 	return bdy.NewError(code, err)
 }
 
-func New(repo repository.Repository, out bdy.ApplianceUpdateNotifier) *Interactor {
+func New(repo repository.Repository, out bdy.RemoteUpdateNotifier) *Interactor {
 	i := &Interactor{
 		repo:   repo,
 		output: out,
@@ -57,28 +57,28 @@ func New(repo repository.Repository, out bdy.ApplianceUpdateNotifier) *Interacto
 	return i
 }
 
-func (i *Interactor) AddAppliance(ctx context.Context, in bdy.AddApplianceInput) (bdy.AddAppOutput, error) {
-	out, err := i.addAppliance(ctx, in)
+func (i *Interactor) AddRemote(ctx context.Context, in bdy.AddRemoteInput) (bdy.AddRemoteOutput, error) {
+	out, err := i.addRemote(ctx, in)
 	return out, wrapErr(err)
 }
 
-func (i *Interactor) AddCommand(ctx context.Context, in bdy.AddCommandInput) error {
-	err := i.addCommand(ctx, in)
+func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) error {
+	err := i.addButton(ctx, in)
 	return wrapErr(err)
 }
 
-func (i *Interactor) GetAppliances(ctx context.Context) (bdy.GetAppliancesOutput, error) {
-	out, err := i.getAppliances(ctx)
+func (i *Interactor) GetRemotes(ctx context.Context) (bdy.GetRemotesOutput, error) {
+	out, err := i.getRemotes(ctx)
 	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetAppliance(ctx context.Context, in bdy.GetApplianceInput) (bdy.GetApplianceOutput, error) {
-	out, err := i.getAppliance(ctx, in)
+func (i *Interactor) GetRemote(ctx context.Context, in bdy.GetRemoteInput) (bdy.GetRemoteOutput, error) {
+	out, err := i.getRemote(ctx, in)
 	return out, wrapErr(err)
 }
 
-func (i *Interactor) GetCommands(ctx context.Context, in bdy.GetCommandsInput) (bdy.GetCommandsOutput, error) {
-	out, err := i.getCommands(ctx, in)
+func (i *Interactor) GetButtons(ctx context.Context, in bdy.GetButtonsInput) (bdy.GetButtonsOutput, error) {
+	out, err := i.getButtons(ctx, in)
 	return out, wrapErr(err)
 }
 
@@ -88,13 +88,13 @@ func (i *Interactor) GetIRData(ctx context.Context, in bdy.GetIRDataInput) (bdy.
 }
 
 // Update
-func (i *Interactor) EditAppliance(ctx context.Context, in bdy.EditApplianceInput) error {
-	err := i.editAppliance(ctx, in)
+func (i *Interactor) EditRemote(ctx context.Context, in bdy.EditRemoteInput) error {
+	err := i.editRemote(ctx, in)
 	return wrapErr(err)
 }
 
-func (i *Interactor) EditCommand(ctx context.Context, in bdy.EditCommandInput) error {
-	err := i.renameCommand(ctx, in)
+func (i *Interactor) EditButton(ctx context.Context, in bdy.EditButtonInput) error {
+	err := i.renameButton(ctx, in)
 	return wrapErr(err)
 }
 
@@ -104,12 +104,12 @@ func (i *Interactor) SetIRData(ctx context.Context, in bdy.SetIRDataInput) error
 }
 
 // Delete
-func (i *Interactor) DeleteAppliance(ctx context.Context, in bdy.DeleteAppInput) error {
-	err := i.deleteAppliance(ctx, in)
+func (i *Interactor) DeleteRemote(ctx context.Context, in bdy.DeleteRemoteInput) error {
+	err := i.deleteRemote(ctx, in)
 	return wrapErr(err)
 }
 
-func (i *Interactor) DeleteCommand(ctx context.Context, in bdy.DeleteCommandInput) error {
-	err := i.deleteCommand(ctx, in)
+func (i *Interactor) DeleteButton(ctx context.Context, in bdy.DeleteButtonInput) error {
+	err := i.deleteButton(ctx, in)
 	return wrapErr(err)
 }

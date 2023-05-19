@@ -6,14 +6,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/remote"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 	"modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-func InsertIntoCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID, coms []*command.Command) (res []*command.Command, err error) {
+func InsertIntoCommands(ctx context.Context, tx *sql.Tx, appID remote.ID, coms []*button.Button) (res []*button.Button, err error) {
 	stmt, err := tx.PrepareContext(ctx, `INSERT INTO commands VALUES(?, ?, ?, ?)`)
 	if err != nil {
 		return
@@ -24,7 +24,7 @@ func InsertIntoCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID, com
 
 	for _, com := range coms {
 
-		com.ID = command.ID(genID())
+		com.ID = button.ID(genID())
 
 		_, err = stmt.Exec(com.ID, appID, com.GetName(), []byte{})
 		if err == nil {
@@ -49,7 +49,7 @@ func InsertIntoCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID, com
 	return coms, err
 }
 
-func UpdateCommand(ctx context.Context, tx *sql.Tx, appID appliance.ID, c *command.Command) (err error) {
+func UpdateCommand(ctx context.Context, tx *sql.Tx, appID remote.ID, c *button.Button) (err error) {
 	_, err = tx.Exec(`UPDATE commands SET name=?, irdata=? WHERE com_id=? AND app_id=?`,
 		c.GetName(), c.GetRawIRData(), c.GetID(), appID)
 
@@ -64,21 +64,21 @@ func UpdateCommand(ctx context.Context, tx *sql.Tx, appID appliance.ID, c *comma
 	return
 }
 
-func SelectCountFromCommandsWhere(ctx context.Context, tx *sql.Tx, appID appliance.ID) (count int, err error) {
+func SelectCountFromCommandsWhere(ctx context.Context, tx *sql.Tx, appID remote.ID) (count int, err error) {
 	row := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM commands WHERE app_id=?`, appID)
 	err = row.Scan(&count)
 	return
 }
 
-func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID) (coms []*command.Command, err error) {
-	var c = command.Command{}
+func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID remote.ID) (coms []*button.Button, err error) {
+	var c = button.Button{}
 
 	count, err := SelectCountFromCommandsWhere(ctx, tx, appID)
 	if err != nil {
 		return
 	}
 
-	coms = make([]*command.Command, 0, count)
+	coms = make([]*button.Button, 0, count)
 
 	rows, err := tx.QueryContext(ctx, `SELECT name, irdata, com_id FROM commands WHERE app_id=?`, appID)
 	if err != nil {
@@ -91,7 +91,7 @@ func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID) (co
 		if err != nil {
 			return
 		}
-		coms = append(coms, &command.Command{
+		coms = append(coms, &button.Button{
 			Name:   c.Name,
 			ID:     c.ID,
 			IRData: c.IRData,
@@ -100,8 +100,8 @@ func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID appliance.ID) (co
 	return
 }
 
-func SelectFromCommandsWhere(ctx context.Context, tx *sql.Tx, appID appliance.ID, comID command.ID) (com *command.Command, err error) {
-	var c = &command.Command{}
+func SelectFromCommandsWhere(ctx context.Context, tx *sql.Tx, appID remote.ID, comID button.ID) (com *button.Button, err error) {
+	var c = &button.Button{}
 
 	rows, err := tx.QueryContext(ctx, `SELECT name, irdata FROM commands WHERE app_id=? AND com_id=?`, appID, comID)
 	if err != nil {
@@ -118,7 +118,7 @@ func SelectFromCommandsWhere(ctx context.Context, tx *sql.Tx, appID appliance.ID
 	return c, err
 }
 
-func DeleteFromCommand(ctx context.Context, tx *sql.Tx, appID appliance.ID, comID command.ID) (err error) {
+func DeleteFromCommand(ctx context.Context, tx *sql.Tx, appID remote.ID, comID button.ID) (err error) {
 	_, err = tx.ExecContext(ctx, `DELETE FROM commands WHERE com_id = ? AND app_id = ?`, comID, appID)
 	return err
 }

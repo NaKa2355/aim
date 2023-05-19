@@ -1,4 +1,4 @@
-package appliance
+package remote
 
 import (
 	"fmt"

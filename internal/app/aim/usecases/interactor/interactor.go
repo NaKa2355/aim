@@ -4,38 +4,38 @@ import (
 	"context"
 	"errors"
 
-	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
+	remote "github.com/NaKa2355/aim/internal/app/aim/entities/remote"
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 )
 
-func convertType(in app.ApplianceType) (out bdy.ApplianceType) {
+func convertType(in remote.RemoteType) (out bdy.RemoteType) {
 	switch in {
-	case app.TypeCustom:
+	case remote.TypeCustom:
 		return bdy.TypeCustom
-	case app.TypeButton:
+	case remote.TypeButton:
 		return bdy.TypeButton
-	case app.TypeToggle:
+	case remote.TypeToggle:
 		return bdy.TypeToggle
-	case app.TypeThermostat:
+	case remote.TypeThermostat:
 		return bdy.TypeThermostat
 	default:
-		return bdy.ApplianceType(in)
+		return bdy.RemoteType(in)
 	}
 }
 
-func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput) (out bdy.AddAppOutput, err error) {
-	var a *app.Appliance
+func (i *Interactor) addRemote(ctx context.Context, _in bdy.AddRemoteInput) (out bdy.AddRemoteOutput, err error) {
+	var r *remote.Remote
 	switch in := _in.(type) {
-	case bdy.AddCustomInput:
-		a, err = app.NewCustom(in.Name, in.DeviceID)
-	case bdy.AddButtonInput:
-		a, err = app.NewButton(in.Name, in.DeviceID)
-	case bdy.AddToggleInput:
-		a, err = app.NewToggle(in.Name, in.DeviceID)
-	case bdy.AddThermostatInput:
-		a, err = app.NewThermostat(
+	case bdy.AddCustomRemoteInput:
+		r, err = remote.NewCustom(in.Name, in.DeviceID)
+	case bdy.AddButtonRemoteInput:
+		r, err = remote.NewButton(in.Name, in.DeviceID)
+	case bdy.AddToggleRemoteInput:
+		r, err = remote.NewToggle(in.Name, in.DeviceID)
+	case bdy.AddThermostatRemoteInput:
+		r, err = remote.NewThermostat(
 			in.Name,
 			in.DeviceID,
 			in.Scale,
@@ -51,217 +51,217 @@ func (i *Interactor) addAppliance(ctx context.Context, _in bdy.AddApplianceInput
 		return out, err
 	}
 
-	a, err = i.repo.CreateAppliance(ctx, a)
+	r, err = i.repo.CreateRemote(ctx, r)
 	if err != nil {
 		return
 	}
 
-	i.output.NotificateApplianceUpdate(
+	i.output.NotificateRemoteUpdate(
 		ctx, bdy.UpdateNotifyOutput{
-			AppID: string(a.ID),
-			Type:  bdy.UpdateTypeAdd,
+			RemoteID: string(r.ID),
+			Type:     bdy.UpdateTypeAdd,
 		},
 	)
-	out.App = bdy.Appliance{
-		ID:            string(a.ID),
-		Name:          string(a.Name),
-		Type:          convertType(a.Type),
-		DeviceID:      string(a.DeviceID),
-		CanAddCommand: (a.AddCommand() == nil),
+	out.Remote = bdy.Remote{
+		ID:           string(r.ID),
+		Name:         string(r.Name),
+		Type:         convertType(r.Type),
+		DeviceID:     string(r.DeviceID),
+		CanAddButton: (r.AddButton() == nil),
 	}
 	return out, err
 }
 
-func (i *Interactor) addCommand(ctx context.Context, in bdy.AddCommandInput) (err error) {
-	var a *app.Appliance
-	var com *command.Command
+func (i *Interactor) addButton(ctx context.Context, in bdy.AddButtonInput) (err error) {
+	var r *remote.Remote
+	var b *button.Button
 
-	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
+	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}
 
-	err = a.AddCommand()
+	err = r.AddButton()
 	if err != nil {
 		return
 	}
 
-	com = command.New(command.Name(in.Name), irdata.IRData{})
-	_, err = i.repo.CreateCommand(ctx, app.ID(in.AppID), com)
+	b = button.New(button.Name(in.Name), irdata.IRData{})
+	_, err = i.repo.CreateButton(ctx, remote.ID(in.RemoteID), b)
 	return
 }
 
-func (i *Interactor) getAppliances(ctx context.Context) (out bdy.GetAppliancesOutput, err error) {
-	var apps []*app.Appliance
+func (i *Interactor) getRemotes(ctx context.Context) (out bdy.GetRemotesOutput, err error) {
+	var remotes []*remote.Remote
 
-	apps, err = i.repo.ReadApps(ctx)
+	remotes, err = i.repo.ReadRemotes(ctx)
 	if err != nil {
 		return
 	}
 
-	out.Apps = make([]bdy.Appliance, len(apps))
-	for i, a := range apps {
-		out.Apps[i] = bdy.Appliance{
-			ID:            string(a.ID),
-			DeviceID:      string(a.DeviceID),
-			Type:          convertType(a.Type),
-			Name:          string(a.Name),
-			CanAddCommand: (a.AddCommand() == nil),
+	out.Remotes = make([]bdy.Remote, len(remotes))
+	for i, r := range remotes {
+		out.Remotes[i] = bdy.Remote{
+			ID:           string(r.ID),
+			DeviceID:     string(r.DeviceID),
+			Type:         convertType(r.Type),
+			Name:         string(r.Name),
+			CanAddButton: (r.AddButton() == nil),
 		}
 	}
 	return
 }
 
-func (i *Interactor) getAppliance(ctx context.Context, in bdy.GetApplianceInput) (out bdy.GetApplianceOutput, err error) {
-	var a *app.Appliance
+func (i *Interactor) getRemote(ctx context.Context, in bdy.GetRemoteInput) (out bdy.GetRemoteOutput, err error) {
+	var r *remote.Remote
 
-	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
+	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return out, err
 	}
 
-	out.App = bdy.Appliance{
-		ID:            string(a.ID),
-		DeviceID:      string(a.DeviceID),
-		Type:          convertType(a.Type),
-		Name:          string(a.Name),
-		CanAddCommand: (a.AddCommand() == nil),
+	out.Remote = bdy.Remote{
+		ID:           string(r.ID),
+		DeviceID:     string(r.DeviceID),
+		Type:         convertType(r.Type),
+		Name:         string(r.Name),
+		CanAddButton: (r.AddButton() == nil),
 	}
 	return out, err
 }
 
-func (i *Interactor) getCommands(ctx context.Context, in bdy.GetCommandsInput) (out bdy.GetCommandsOutput, err error) {
-	var coms []*command.Command
-	a, err := i.repo.ReadApp(ctx, app.ID(in.AppID))
+func (i *Interactor) getButtons(ctx context.Context, in bdy.GetButtonsInput) (out bdy.GetButtonsOutput, err error) {
+	var buttons []*button.Button
+	r, err := i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}
 
-	coms, err = i.repo.ReadCommands(ctx, app.ID(in.AppID))
+	buttons, err = i.repo.ReadButtons(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}
 
-	out.Commands = make([]bdy.Command, len(coms))
-	for i, c := range coms {
+	out.Buttons = make([]bdy.Button, len(buttons))
+	for i, c := range buttons {
 		c.GetRawIRData()
-		out.Commands[i].ID = string(c.ID)
-		out.Commands[i].Name = string(c.Name)
-		out.Commands[i].CanRename = (a.ChangeCommandName() == nil)
-		out.Commands[i].CanDelete = (a.RemoveCommand() == nil)
-		out.Commands[i].HasIRData = (len(c.IRData) != 0)
+		out.Buttons[i].ID = string(c.ID)
+		out.Buttons[i].Name = string(c.Name)
+		out.Buttons[i].CanRename = (r.ChangeButtonName() == nil)
+		out.Buttons[i].CanDelete = (r.ChangeButtonName() == nil)
+		out.Buttons[i].HasIRData = (len(c.IRData) != 0)
 	}
 
 	return
 }
 
 func (i *Interactor) getIRData(ctx context.Context, in bdy.GetIRDataInput) (out bdy.GetIRDataOutput, err error) {
-	var com *command.Command
+	var b *button.Button
 
-	com, err = i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
+	b, err = i.repo.ReadButton(ctx, remote.ID(in.RemoteID), button.ID(in.ButtonID))
 	if err != nil {
 		return
 	}
 
-	out.IRData = bdy.IRData(com.IRData)
+	out.IRData = bdy.IRData(b.IRData)
 
 	return
 }
 
-func (i *Interactor) editAppliance(ctx context.Context, in bdy.EditApplianceInput) (err error) {
-	var a *app.Appliance
+func (i *Interactor) editRemote(ctx context.Context, in bdy.EditRemoteInput) (err error) {
+	var r *remote.Remote
 
-	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
+	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}
 
-	err = a.SetName(in.Name)
+	err = r.SetName(in.Name)
 	if err != nil {
 		return
 	}
 
-	err = a.SetDeviceID(in.DeviceID)
+	err = r.SetDeviceID(in.DeviceID)
 	if err != nil {
 		return
 	}
 
-	err = i.repo.UpdateApp(ctx, a)
+	err = i.repo.UpdateRemote(ctx, r)
 	return
 }
 
-func (i *Interactor) renameCommand(ctx context.Context, in bdy.EditCommandInput) (err error) {
-	var a *app.Appliance
-	var c *command.Command
+func (i *Interactor) renameButton(ctx context.Context, in bdy.EditButtonInput) (err error) {
+	var r *remote.Remote
+	var b *button.Button
 
-	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
+	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}
 
-	err = a.ChangeCommandName()
+	err = r.ChangeButtonName()
 	if err != nil {
 		return
 	}
 
-	c, err = i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
+	b, err = i.repo.ReadButton(ctx, remote.ID(in.RemoteID), button.ID(in.ButtonID))
 	if err != nil {
 		return
 	}
 
-	c.SetName(command.Name(in.Name))
-	err = i.repo.UpdateCommand(ctx, app.ID(in.AppID), c)
+	b.SetName(button.Name(in.Name))
+	err = i.repo.UpdateButton(ctx, remote.ID(in.RemoteID), b)
 
 	return
 }
 
 func (i *Interactor) setIRData(ctx context.Context, in bdy.SetIRDataInput) (err error) {
-	var c *command.Command
+	var b *button.Button
 
-	c, err = i.repo.ReadCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
+	b, err = i.repo.ReadButton(ctx, remote.ID(in.RemoteID), button.ID(in.ButtonID))
 	if err != nil {
 		return
 	}
 
-	c.SetRawIRData(irdata.IRData(in.Data))
-	err = i.repo.UpdateCommand(ctx, app.ID(in.AppID), c)
+	b.SetRawIRData(irdata.IRData(in.Data))
+	err = i.repo.UpdateButton(ctx, remote.ID(in.RemoteID), b)
 	return
 }
 
 // Delete
-func (i *Interactor) deleteAppliance(ctx context.Context, in bdy.DeleteAppInput) (err error) {
-	if _, err = i.repo.ReadApp(ctx, app.ID(in.AppID)); err != nil {
+func (i *Interactor) deleteRemote(ctx context.Context, in bdy.DeleteRemoteInput) (err error) {
+	if _, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID)); err != nil {
 		return err
 	}
 
-	err = i.repo.DeleteApp(ctx, app.ID(in.AppID))
+	err = i.repo.DeleteRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return err
 	}
 
-	i.output.NotificateApplianceUpdate(
+	i.output.NotificateRemoteUpdate(
 		ctx,
 		bdy.UpdateNotifyOutput{
-			AppID: in.AppID,
-			Type:  bdy.UpdateTypeDelete,
+			RemoteID: in.RemoteID,
+			Type:     bdy.UpdateTypeDelete,
 		},
 	)
 	return err
 }
 
-func (i *Interactor) deleteCommand(ctx context.Context, in bdy.DeleteCommandInput) (err error) {
-	var a *app.Appliance
+func (i *Interactor) deleteButton(ctx context.Context, in bdy.DeleteButtonInput) (err error) {
+	var r *remote.Remote
 
-	a, err = i.repo.ReadApp(ctx, app.ID(in.AppID))
+	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}
 
-	err = a.RemoveCommand()
+	err = r.RemoveButton()
 	if err != nil {
 		return
 	}
 
-	err = i.repo.DeleteCommand(ctx, app.ID(in.AppID), command.ID(in.ComID))
+	err = i.repo.DeleteButton(ctx, remote.ID(in.RemoteID), button.ID(in.ButtonID))
 	return
 }

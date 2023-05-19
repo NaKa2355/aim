@@ -1,4 +1,4 @@
-package appliance
+package remote
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"math"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
 )
 
 const HEATING_THRESHOLD_MIN = 0
@@ -18,7 +18,7 @@ const COOLING_THRESHOLD_MAX = 35
 type thermostatController struct{}
 
 func NewThermostat(name string, deviceID string,
-	s float64, miht int, maht int, mict int, mact int) (t *Appliance, err error) {
+	s float64, miht int, maht int, mict int, mact int) (t *Remote, err error) {
 
 	ctr := thermostatController{}
 	err = validate(s, miht, maht, mict, mact)
@@ -26,12 +26,12 @@ func NewThermostat(name string, deviceID string,
 		return t, entities.NewError(entities.CodeInvaildInput, err)
 	}
 
-	coms := getCommands(s, miht, maht, mict, mact)
+	coms := getButtons(s, miht, maht, mict, mact)
 
 	return NewAppliance(name, deviceID, TypeThermostat, coms, ctr)
 }
 
-func LoadThermostat(id ID, name Name, deviceID DeviceID) *Appliance {
+func LoadThermostat(id ID, name Name, deviceID DeviceID) *Remote {
 	a := LoadAppliance(id, name, deviceID, TypeThermostat, thermostatController{})
 	return a
 }
@@ -73,26 +73,26 @@ func validate(s float64, miht int, maht int, mict int, mact int) error {
 	return nil
 }
 
-func getCommands(s float64, miht int, maht int, mict int, mact int) []*command.Command {
+func getButtons(s float64, miht int, maht int, mict int, mact int) []*button.Button {
 	var temp float64
 	var size int = int(float64(mact-mict)/s + 1 + float64(maht-miht)/s + 1 + 1)
-	var commands = make([]*command.Command, 0, size)
+	var commands = make([]*button.Button, 0, size)
 
 	temp = float64(miht)
 	for temp <= float64(maht) {
-		commands = append(commands, command.New(command.Name(fmt.Sprintf("h%.1f", temp)), nil))
+		commands = append(commands, button.New(button.Name(fmt.Sprintf("h%.1f", temp)), nil))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
 
 	temp = float64(mict)
 	for temp <= float64(mact) {
-		commands = append(commands, command.New(command.Name(fmt.Sprintf("c%.1f", temp)), nil))
+		commands = append(commands, button.New(button.Name(fmt.Sprintf("c%.1f", temp)), nil))
 		temp += s
 		temp = round2ndDiminals(temp)
 	}
 
-	commands = append(commands, command.New("off", nil))
+	commands = append(commands, button.New("off", nil))
 	return commands
 }
 
@@ -106,23 +106,23 @@ func round2ndDiminals(f float64) float64 {
 	return r
 }
 
-func (c thermostatController) ChangeCommandName() error {
+func (c thermostatController) ChangeButtonName() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("thermotat appliance does not support changing the command name"),
+		errors.New("thermotat appliance does not support changing the button name"),
 	)
 }
 
-func (c thermostatController) AddCommand() error {
+func (c thermostatController) AddButton() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("thermostat appliance does not support adding a command"),
+		errors.New("thermostat appliance does not support adding a button"),
 	)
 }
 
-func (c thermostatController) RemoveCommand() error {
+func (c thermostatController) RemoveButton() error {
 	return entities.NewError(
 		entities.CodeInvaildOperation,
-		errors.New("thermostat appliance does not support removing the command"),
+		errors.New("thermostat appliance does not support removing the button"),
 	)
 }

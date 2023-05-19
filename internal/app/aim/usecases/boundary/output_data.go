@@ -1,20 +1,20 @@
 package boundary
 
-type ApplianceType int
+type RemoteType int
 
 const (
-	TypeCustom ApplianceType = iota
+	TypeCustom RemoteType = iota
 	TypeButton
 	TypeToggle
 	TypeThermostat
 	TypeTelevision
 )
 
-type AddAppOutput struct {
-	App Appliance
+type AddRemoteOutput struct {
+	Remote Remote
 }
 
-type Command struct {
+type Button struct {
 	ID        string
 	Name      string
 	CanRename bool
@@ -22,24 +22,24 @@ type Command struct {
 	HasIRData bool
 }
 
-type Appliance struct {
-	ID            string
-	Name          string
-	Type          ApplianceType
-	DeviceID      string
-	CanAddCommand bool
+type Remote struct {
+	ID           string
+	Name         string
+	Type         RemoteType
+	DeviceID     string
+	CanAddButton bool
 }
 
-type GetAppliancesOutput struct {
-	Apps []Appliance
+type GetRemotesOutput struct {
+	Remotes []Remote
 }
 
-type GetApplianceOutput struct {
-	App Appliance
+type GetRemoteOutput struct {
+	Remote Remote
 }
 
-type GetCommandsOutput struct {
-	Commands []Command
+type GetButtonsOutput struct {
+	Buttons []Button
 }
 
 type GetIRDataOutput struct {
@@ -56,6 +56,6 @@ const (
 )
 
 type UpdateNotifyOutput struct {
-	AppID string
-	Type  UpdateType
+	RemoteID string
+	Type     UpdateType
 }

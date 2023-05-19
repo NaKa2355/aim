@@ -12,27 +12,27 @@ import (
 )
 
 type Boundary interface {
-	bdy.ApplianceAdder
-	bdy.CommandAdder
+	bdy.RemoteAdder
+	bdy.ButtonAdder
 
-	bdy.AppliancesGetter
-	bdy.ApplianceGetter
+	bdy.RemotesGetter
+	bdy.RemoteGetter
 	bdy.IRDataGetter
-	bdy.CommandsGetter
+	bdy.ButtonsGetter
 
-	bdy.ApplianceEditor
-	bdy.CommandEditor
+	bdy.RemoteEditor
+	bdy.ButtonEditor
 	bdy.IRDataSetter
 
-	bdy.ApplianceDeleter
-	bdy.CommandDeleter
+	bdy.RemoteDeleter
+	bdy.ButtonDeleter
 }
 
 type Handler struct {
 	aimv1.UnimplementedAimServiceServer
 	i            Boundary
-	nc           chan aimv1.ApplianceUpdateNotification
-	notification aimv1.ApplianceUpdateNotification
+	nc           chan aimv1.RemoteUpdateNotification
+	notification aimv1.RemoteUpdateNotification
 	c            *Cond
 }
 
@@ -40,23 +40,23 @@ var _ aimv1.AimServiceServer = &Handler{}
 
 func NewHandler() *Handler {
 	return &Handler{
-		nc: make(chan aimv1.ApplianceUpdateNotification),
+		nc: make(chan aimv1.RemoteUpdateNotification),
 		c:  NewCond(&sync.Mutex{}),
 	}
 }
 
-func convertAppType(in bdy.ApplianceType) (out aimv1.Appliance_AppType) {
+func convertRemoteType(in bdy.RemoteType) (out aimv1.Remote_RemoteType) {
 	switch in {
 	case bdy.TypeCustom:
-		return aimv1.Appliance_CUSTOM
+		return aimv1.Remote_CUSTOM
 	case bdy.TypeButton:
-		return aimv1.Appliance_BUTTON
+		return aimv1.Remote_BUTTON
 	case bdy.TypeToggle:
-		return aimv1.Appliance_TOGGLE
+		return aimv1.Remote_TOGGLE
 	case bdy.TypeThermostat:
-		return aimv1.Appliance_THERMOSTAT
+		return aimv1.Remote_THERMOSTAT
 	default:
-		return aimv1.Appliance_APP_TYPE_UNKNOWN
+		return aimv1.Remote_REMOTE_TYPE_UNKNOWN
 	}
 }
 
@@ -64,28 +64,28 @@ func (h *Handler) SetInteractor(i Boundary) {
 	h.i = i
 }
 
-func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequest) (res *aimv1.AddApplianceResponse, err error) {
-	var in bdy.AddApplianceInput
-	var out bdy.AddAppOutput
+func (h *Handler) AddRemote(ctx context.Context, _req *aimv1.AddRemoteRequest) (res *aimv1.AddRemoteResponse, err error) {
+	var in bdy.AddRemoteInput
+	var out bdy.AddRemoteOutput
 
-	switch r := _req.GetAppliance().(type) {
-	case *aimv1.AddApplianceRequest_Custom:
-		in = bdy.AddCustomInput{
+	switch r := _req.GetRemote().(type) {
+	case *aimv1.AddRemoteRequest_Custom:
+		in = bdy.AddCustomRemoteInput{
 			Name:     r.Custom.Name,
 			DeviceID: r.Custom.DeviceId,
 		}
-	case *aimv1.AddApplianceRequest_Button:
-		in = bdy.AddButtonInput{
+	case *aimv1.AddRemoteRequest_Button:
+		in = bdy.AddButtonRemoteInput{
 			Name:     r.Button.Name,
 			DeviceID: r.Button.DeviceId,
 		}
-	case *aimv1.AddApplianceRequest_Toggle:
-		in = bdy.AddToggleInput{
+	case *aimv1.AddRemoteRequest_Toggle:
+		in = bdy.AddToggleRemoteInput{
 			Name:     r.Toggle.Name,
 			DeviceID: r.Toggle.DeviceId,
 		}
-	case *aimv1.AddApplianceRequest_Thermostat:
-		in = bdy.AddThermostatInput{
+	case *aimv1.AddRemoteRequest_Thermostat:
+		in = bdy.AddThermostatRemoteInput{
 			Name:               r.Thermostat.Name,
 			DeviceID:           r.Thermostat.DeviceId,
 			Scale:              float64(r.Thermostat.Scale),
@@ -96,98 +96,98 @@ func (h *Handler) AddAppliance(ctx context.Context, _req *aimv1.AddApplianceRequ
 		}
 	}
 
-	out, err = h.i.AddAppliance(ctx, in)
+	out, err = h.i.AddRemote(ctx, in)
 	if err != nil {
 		return
 	}
 
-	res = &aimv1.AddApplianceResponse{
-		Appliance: &aimv1.Appliance{
-			Id:            out.App.ID,
-			Name:          out.App.Name,
-			DeviceId:      out.App.DeviceID,
-			ApplianceType: convertAppType(out.App.Type),
-			CanAddCommand: out.App.CanAddCommand,
+	res = &aimv1.AddRemoteResponse{
+		Remote: &aimv1.Remote{
+			Id:           out.Remote.ID,
+			Name:         out.Remote.Name,
+			DeviceId:     out.Remote.DeviceID,
+			RemoteType:   convertRemoteType(out.Remote.Type),
+			CanAddButton: out.Remote.CanAddButton,
 		},
 	}
 	return
 }
 
-func (h *Handler) AddCommand(ctx context.Context, req *aimv1.AddCommandRequest) (e *empty.Empty, err error) {
+func (h *Handler) AddButton(ctx context.Context, req *aimv1.AddButtonRequest) (e *empty.Empty, err error) {
 	e = &empty.Empty{}
 
-	in := bdy.AddCommandInput{
-		AppID: req.ApplianceId,
-		Name:  req.Name,
+	in := bdy.AddButtonInput{
+		RemoteID: req.RemoteId,
+		Name:     req.Name,
 	}
-	err = h.i.AddCommand(ctx, in)
+	err = h.i.AddButton(ctx, in)
 	return
 }
 
-func (h *Handler) GetAppliances(ctx context.Context, _ *empty.Empty) (res *aimv1.GetAppliancesResponse, err error) {
-	var out bdy.GetAppliancesOutput
-	res = &aimv1.GetAppliancesResponse{}
+func (h *Handler) GetRemotes(ctx context.Context, _ *empty.Empty) (res *aimv1.GetRemotesResponse, err error) {
+	var out bdy.GetRemotesOutput
+	res = &aimv1.GetRemotesResponse{}
 
-	out, err = h.i.GetAppliances(ctx)
+	out, err = h.i.GetRemotes(ctx)
 	if err != nil {
 		return
 	}
 
-	res.Appliances = make([]*aimv1.Appliance, len(out.Apps))
-	for i, a := range out.Apps {
-		res.Appliances[i] = &aimv1.Appliance{
-			Id:            a.ID,
-			Name:          a.Name,
-			ApplianceType: convertAppType(a.Type),
-			DeviceId:      a.DeviceID,
-			CanAddCommand: a.CanAddCommand,
+	res.Remotes = make([]*aimv1.Remote, len(out.Remotes))
+	for i, r := range out.Remotes {
+		res.Remotes[i] = &aimv1.Remote{
+			Id:           r.ID,
+			Name:         r.Name,
+			RemoteType:   convertRemoteType(r.Type),
+			DeviceId:     r.DeviceID,
+			CanAddButton: r.CanAddButton,
 		}
 	}
 	return
 }
 
-func (h *Handler) GetAppliance(ctx context.Context, req *aimv1.GetApplianceRequest) (res *aimv1.GetApplianceResponse, err error) {
-	var out bdy.GetApplianceOutput
-	res = &aimv1.GetApplianceResponse{}
-	in := bdy.GetApplianceInput{
-		AppID: req.ApplianceId,
+func (h *Handler) GetRemote(ctx context.Context, req *aimv1.GetRemoteRequest) (res *aimv1.GetRemoteResponse, err error) {
+	var out bdy.GetRemoteOutput
+	res = &aimv1.GetRemoteResponse{}
+	in := bdy.GetRemoteInput{
+		RemoteID: req.RemoteId,
 	}
 
-	out, err = h.i.GetAppliance(ctx, in)
+	out, err = h.i.GetRemote(ctx, in)
 	if err != nil {
 		return
 	}
 
-	res.Appliance = &aimv1.Appliance{
-		Id:            out.App.ID,
-		Name:          out.App.Name,
-		ApplianceType: convertAppType(out.App.Type),
-		DeviceId:      out.App.DeviceID,
-		CanAddCommand: out.App.CanAddCommand,
+	res.Remote = &aimv1.Remote{
+		Id:           out.Remote.ID,
+		Name:         out.Remote.Name,
+		RemoteType:   convertRemoteType(out.Remote.Type),
+		DeviceId:     out.Remote.DeviceID,
+		CanAddButton: out.Remote.CanAddButton,
 	}
 	return res, err
 }
 
-func (h *Handler) GetCommands(ctx context.Context, req *aimv1.GetCommandsRequest) (res *aimv1.GetCommandsResponse, err error) {
-	var in = bdy.GetCommandsInput{}
-	var out bdy.GetCommandsOutput
-	res = &aimv1.GetCommandsResponse{}
+func (h *Handler) GetButtons(ctx context.Context, req *aimv1.GetButtonsRequest) (res *aimv1.GetButtonsResponse, err error) {
+	var in = bdy.GetButtonsInput{}
+	var out bdy.GetButtonsOutput
+	res = &aimv1.GetButtonsResponse{}
 
-	in.AppID = req.ApplianceId
+	in.RemoteID = req.RemoteId
 
-	out, err = h.i.GetCommands(ctx, in)
+	out, err = h.i.GetButtons(ctx, in)
 	if err != nil {
 		return
 	}
 
-	res.Commands = make([]*aimv1.Command, len(out.Commands))
-	for i, c := range out.Commands {
-		res.Commands[i] = &aimv1.Command{
-			Id:        c.ID,
-			Name:      c.Name,
-			CanRename: c.CanRename,
-			CanDelete: c.CanDelete,
-			HasIrdata: c.HasIRData,
+	res.Buttons = make([]*aimv1.Button, len(out.Buttons))
+	for i, b := range out.Buttons {
+		res.Buttons[i] = &aimv1.Button{
+			Id:        b.ID,
+			Name:      b.Name,
+			CanRename: b.CanRename,
+			CanDelete: b.CanDelete,
+			HasIrdata: b.HasIRData,
 		}
 	}
 
@@ -199,8 +199,8 @@ func (h *Handler) GetIrData(ctx context.Context, req *aimv1.GetIrDataRequest) (r
 	var out bdy.GetIRDataOutput
 	res = &anypb.Any{}
 
-	in.AppID = req.ApplianceId
-	in.ComID = req.CommandId
+	in.RemoteID = req.RemoteId
+	in.ButtonID = req.ButtonId
 	out, err = h.i.GetIRData(ctx, in)
 	if err != nil {
 		return
@@ -210,25 +210,25 @@ func (h *Handler) GetIrData(ctx context.Context, req *aimv1.GetIrDataRequest) (r
 	return
 }
 
-func (h *Handler) EditAppliance(ctx context.Context, req *aimv1.EditApplianceRequest) (e *empty.Empty, err error) {
-	var in bdy.EditApplianceInput
+func (h *Handler) EditRemote(ctx context.Context, req *aimv1.EditRemoteRequest) (e *empty.Empty, err error) {
+	var in bdy.EditRemoteInput
 	e = &empty.Empty{}
 
-	in.AppID = req.ApplianceId
+	in.RemoteID = req.RemoteId
 	in.Name = req.Name
 	in.DeviceID = req.DeviceId
-	err = h.i.EditAppliance(ctx, in)
+	err = h.i.EditRemote(ctx, in)
 	return
 }
 
-func (h *Handler) EditCommand(ctx context.Context, req *aimv1.EditCommandRequest) (e *empty.Empty, err error) {
-	var in bdy.EditCommandInput
+func (h *Handler) EditButton(ctx context.Context, req *aimv1.EditButtonRequest) (e *empty.Empty, err error) {
+	var in bdy.EditButtonInput
 	e = &empty.Empty{}
 
-	in.AppID = req.ApplianceId
-	in.ComID = req.CommandId
+	in.RemoteID = req.RemoteId
+	in.ButtonID = req.ButtonId
 	in.Name = req.Name
-	err = h.i.EditCommand(ctx, in)
+	err = h.i.EditButton(ctx, in)
 	return
 }
 
@@ -236,8 +236,8 @@ func (h *Handler) SetIrData(ctx context.Context, req *aimv1.SetIRDataRequest) (e
 	var in bdy.SetIRDataInput
 	e = &empty.Empty{}
 
-	in.AppID = req.ApplianceId
-	in.ComID = req.CommandId
+	in.RemoteID = req.RemoteId
+	in.ButtonID = req.ButtonId
 	in.Data, err = proto.Marshal(req.Irdata)
 	if err != nil {
 		return
@@ -247,45 +247,45 @@ func (h *Handler) SetIrData(ctx context.Context, req *aimv1.SetIRDataRequest) (e
 	return
 }
 
-func (h *Handler) DeleteAppliance(ctx context.Context, req *aimv1.DeleteApplianceRequest) (e *empty.Empty, err error) {
-	var in bdy.DeleteAppInput
+func (h *Handler) DeleteRemote(ctx context.Context, req *aimv1.DeleteRemoteRequest) (e *empty.Empty, err error) {
+	var in bdy.DeleteRemoteInput
 	e = &empty.Empty{}
 
-	in.AppID = req.ApplianceId
+	in.RemoteID = req.RemoteId
 
-	err = h.i.DeleteAppliance(ctx, in)
+	err = h.i.DeleteRemote(ctx, in)
 	return
 }
 
-func (h *Handler) DeleteCommand(ctx context.Context, req *aimv1.DeleteCommandRequest) (e *empty.Empty, err error) {
-	var in bdy.DeleteCommandInput
+func (h *Handler) DeleteButton(ctx context.Context, req *aimv1.DeleteButtonRequest) (e *empty.Empty, err error) {
+	var in bdy.DeleteButtonInput
 	e = &empty.Empty{}
 
-	in.AppID = req.ApplianceId
-	in.ComID = req.CommandId
-	err = h.i.DeleteCommand(ctx, in)
+	in.RemoteID = req.RemoteId
+	in.ButtonID = req.ButtonId
+	err = h.i.DeleteButton(ctx, in)
 	return
 }
 
-func (h *Handler) NotificateApplianceUpdate(ctx context.Context, o bdy.UpdateNotifyOutput) {
+func (h *Handler) NotificateRemoteUpdate(ctx context.Context, o bdy.UpdateNotifyOutput) {
 	defer h.c.L.Unlock()
-	var updateType aimv1.ApplianceUpdateNotification_UpdateType
+	var updateType aimv1.RemoteUpdateNotification_UpdateType
 	switch o.Type {
 	case bdy.UpdateTypeAdd:
-		updateType = aimv1.ApplianceUpdateNotification_UPDATE_TYPE_ADD
+		updateType = aimv1.RemoteUpdateNotification_UPDATE_TYPE_ADD
 	case bdy.UpdateTypeDelete:
-		updateType = aimv1.ApplianceUpdateNotification_UPDATE_TYPE_DELETE
+		updateType = aimv1.RemoteUpdateNotification_UPDATE_TYPE_DELETE
 	}
 
 	h.c.L.Lock()
-	h.notification = aimv1.ApplianceUpdateNotification{
-		ApplianceId: o.AppID,
-		UpdateType:  updateType,
+	h.notification = aimv1.RemoteUpdateNotification{
+		RemoteId:   o.RemoteID,
+		UpdateType: updateType,
 	}
 	h.c.Broadcast()
 }
 
-func (h *Handler) NotifyApplianceUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyApplianceUpdateServer) error {
+func (h *Handler) NotifyRemoteUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyRemoteUpdateServer) error {
 	for {
 		select {
 		case <-stream.Context().Done():

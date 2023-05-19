@@ -1,4 +1,4 @@
-package command
+package button
 
 import (
 	"fmt"
@@ -30,39 +30,39 @@ func NewID(id string) ID {
 	return ID(id)
 }
 
-type Command struct {
+type Button struct {
 	ID     ID
 	Name   Name
 	IRData irdata.IRData
 }
 
-func New(name Name, irdata irdata.IRData) *Command {
-	return &Command{
+func New(name Name, irdata irdata.IRData) *Button {
+	return &Button{
 		Name:   name,
 		IRData: irdata,
 	}
 }
 
-func (c *Command) GetID() ID {
-	return c.ID
+func (b *Button) GetID() ID {
+	return b.ID
 }
 
-func (c *Command) SetID(id ID) {
-	c.ID = id
+func (b *Button) SetID(id ID) {
+	b.ID = id
 }
 
-func (c *Command) GetName() Name {
-	return c.Name
+func (b *Button) GetName() Name {
+	return b.Name
 }
 
-func (c *Command) SetName(name Name) {
-	c.Name = name
+func (b *Button) SetName(name Name) {
+	b.Name = name
 }
 
-func (c *Command) GetRawIRData() irdata.IRData {
-	return c.IRData
+func (b *Button) GetRawIRData() irdata.IRData {
+	return b.IRData
 }
 
-func (c *Command) SetRawIRData(irdata irdata.IRData) {
-	c.IRData = irdata
+func (b *Button) SetRawIRData(irdata irdata.IRData) {
+	b.IRData = irdata
 }

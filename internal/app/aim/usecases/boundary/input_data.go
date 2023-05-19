@@ -1,23 +1,23 @@
 package boundary
 
-type AddApplianceInput interface{}
+type AddRemoteInput interface{}
 
-type AddCustomInput struct {
+type AddCustomRemoteInput struct {
 	Name     string
 	DeviceID string
 }
 
-type AddToggleInput struct {
+type AddToggleRemoteInput struct {
 	Name     string
 	DeviceID string
 }
 
-type AddButtonInput struct {
+type AddButtonRemoteInput struct {
 	Name     string
 	DeviceID string
 }
 
-type AddThermostatInput struct {
+type AddThermostatRemoteInput struct {
 	Name               string
 	DeviceID           string
 	Scale              float64
@@ -27,47 +27,47 @@ type AddThermostatInput struct {
 	MinimumCoolingTemp int
 }
 
-type GetApplianceInput struct {
-	AppID string
+type GetRemoteInput struct {
+	RemoteID string
 }
 
-type EditApplianceInput struct {
-	AppID    string
+type EditRemoteInput struct {
+	RemoteID string
 	Name     string
 	DeviceID string
 }
 
-type DeleteAppInput struct {
-	AppID string
+type DeleteRemoteInput struct {
+	RemoteID string
 }
 
-type EditCommandInput struct {
-	AppID string
-	ComID string
-	Name  string
+type EditButtonInput struct {
+	RemoteID string
+	ButtonID string
+	Name     string
 }
 
-type AddCommandInput struct {
-	AppID string
-	Name  string
+type AddButtonInput struct {
+	RemoteID string
+	Name     string
 }
 
-type DeleteCommandInput struct {
-	AppID string
-	ComID string
+type DeleteButtonInput struct {
+	RemoteID string
+	ButtonID string
 }
 
-type GetCommandsInput struct {
-	AppID string
+type GetButtonsInput struct {
+	RemoteID string
 }
 
 type GetIRDataInput struct {
-	AppID string
-	ComID string
+	RemoteID string
+	ButtonID string
 }
 
 type SetIRDataInput struct {
-	AppID string
-	ComID string
-	Data  IRData
+	RemoteID string
+	ButtonID string
+	Data     IRData
 }

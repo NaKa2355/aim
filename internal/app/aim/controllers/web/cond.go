@@ -1,5 +1,7 @@
 package web
 
+//一つのチャネルから複数のチャネルへ通知をするときに使う。
+
 import (
 	"sync"
 	"sync/atomic"

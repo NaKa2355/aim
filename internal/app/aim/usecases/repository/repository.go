@@ -3,22 +3,22 @@ package repository
 import (
 	"context"
 
-	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
-	"github.com/NaKa2355/aim/internal/app/aim/entities/command"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/remote"
 )
 
 type Repository interface {
-	CreateAppliance(ctx context.Context, a *app.Appliance) (*app.Appliance, error)
-	CreateCommand(context.Context, app.ID, *command.Command) (*command.Command, error)
+	CreateRemote(ctx context.Context, a *remote.Remote) (*remote.Remote, error)
+	CreateButton(context.Context, remote.ID, *button.Button) (*button.Button, error)
 
-	ReadApp(context.Context, app.ID) (*app.Appliance, error)
-	ReadApps(context.Context) ([]*app.Appliance, error)
-	ReadCommands(ctx context.Context, appID app.ID) ([]*command.Command, error)
-	ReadCommand(context.Context, app.ID, command.ID) (*command.Command, error)
+	ReadRemote(context.Context, remote.ID) (*remote.Remote, error)
+	ReadRemotes(context.Context) ([]*remote.Remote, error)
+	ReadButtons(ctx context.Context, appID remote.ID) ([]*button.Button, error)
+	ReadButton(context.Context, remote.ID, button.ID) (*button.Button, error)
 
-	UpdateApp(context.Context, *app.Appliance) error
-	UpdateCommand(context.Context, app.ID, *command.Command) error
+	UpdateRemote(context.Context, *remote.Remote) error
+	UpdateButton(context.Context, remote.ID, *button.Button) error
 
-	DeleteApp(context.Context, app.ID) error
-	DeleteCommand(context.Context, app.ID, command.ID) error
+	DeleteRemote(context.Context, remote.ID) error
+	DeleteButton(context.Context, remote.ID, button.ID) error
 }

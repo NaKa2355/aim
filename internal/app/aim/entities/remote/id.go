@@ -1,4 +1,4 @@
-package appliance
+package remote
 
 type ID string
 

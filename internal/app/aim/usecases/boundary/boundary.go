@@ -4,50 +4,50 @@ import (
 	"context"
 )
 
-type ApplianceUpdateNotifier interface {
-	NotificateApplianceUpdate(ctx context.Context, o UpdateNotifyOutput)
+type RemoteUpdateNotifier interface {
+	NotificateRemoteUpdate(ctx context.Context, o UpdateNotifyOutput)
 }
 
-type ApplianceAdder interface {
-	AddAppliance(ctx context.Context, i AddApplianceInput) (AddAppOutput, error)
+type RemoteAdder interface {
+	AddRemote(ctx context.Context, i AddRemoteInput) (AddRemoteOutput, error)
 }
 
-type CommandAdder interface {
-	AddCommand(ctx context.Context, i AddCommandInput) error
+type ButtonAdder interface {
+	AddButton(ctx context.Context, i AddButtonInput) error
 }
 
-type AppliancesGetter interface {
-	GetAppliances(ctx context.Context) (GetAppliancesOutput, error)
+type RemotesGetter interface {
+	GetRemotes(ctx context.Context) (GetRemotesOutput, error)
 }
 
-type ApplianceGetter interface {
-	GetAppliance(ctx context.Context, i GetApplianceInput) (GetApplianceOutput, error)
+type RemoteGetter interface {
+	GetRemote(ctx context.Context, i GetRemoteInput) (GetRemoteOutput, error)
 }
 
-type CommandsGetter interface {
-	GetCommands(ctx context.Context, i GetCommandsInput) (GetCommandsOutput, error)
+type ButtonsGetter interface {
+	GetButtons(ctx context.Context, i GetButtonsInput) (GetButtonsOutput, error)
 }
 
 type IRDataGetter interface {
 	GetIRData(ctx context.Context, i GetIRDataInput) (GetIRDataOutput, error)
 }
 
-type ApplianceEditor interface {
-	EditAppliance(ctx context.Context, i EditApplianceInput) error
+type RemoteEditor interface {
+	EditRemote(ctx context.Context, i EditRemoteInput) error
 }
 
-type CommandEditor interface {
-	EditCommand(ctx context.Context, i EditCommandInput) error
+type ButtonEditor interface {
+	EditButton(ctx context.Context, i EditButtonInput) error
 }
 
 type IRDataSetter interface {
 	SetIRData(ctx context.Context, i SetIRDataInput) error
 }
 
-type ApplianceDeleter interface {
-	DeleteAppliance(ctx context.Context, i DeleteAppInput) error
+type RemoteDeleter interface {
+	DeleteRemote(ctx context.Context, i DeleteRemoteInput) error
 }
 
-type CommandDeleter interface {
-	DeleteCommand(ctx context.Context, i DeleteCommandInput) error
+type ButtonDeleter interface {
+	DeleteButton(ctx context.Context, i DeleteButtonInput) error
 }

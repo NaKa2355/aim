@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	app "github.com/NaKa2355/aim/internal/app/aim/entities/appliance"
+	"github.com/NaKa2355/aim/internal/app/aim/entities/remote"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 	"modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
@@ -24,29 +24,29 @@ const (
 )
 
 type ApplianceColumns struct {
-	id       app.ID
-	name     app.Name
-	appType  app.ApplianceType
-	deviceID app.DeviceID
+	id         remote.ID
+	name       remote.Name
+	remoteType remote.RemoteType
+	deviceID   remote.DeviceID
 }
 
-func (c *ApplianceColumns) convert() *app.Appliance {
-	var a *app.Appliance
-	switch c.appType {
-	case app.TypeCustom:
-		a = app.LoadCustom(c.id, c.name, c.deviceID)
-	case app.TypeButton:
-		a = app.LoadButton(c.id, c.name, c.deviceID)
-	case app.TypeToggle:
-		a = app.LoadToggle(c.id, c.name, c.deviceID)
-	case app.TypeThermostat:
-		a = app.LoadThermostat(c.id, c.name, c.deviceID)
+func (c *ApplianceColumns) convert() *remote.Remote {
+	var a *remote.Remote
+	switch c.remoteType {
+	case remote.TypeCustom:
+		a = remote.LoadCustom(c.id, c.name, c.deviceID)
+	case remote.TypeButton:
+		a = remote.LoadButton(c.id, c.name, c.deviceID)
+	case remote.TypeToggle:
+		a = remote.LoadToggle(c.id, c.name, c.deviceID)
+	case remote.TypeThermostat:
+		a = remote.LoadThermostat(c.id, c.name, c.deviceID)
 	}
 	return a
 }
 
-func InsertApp(ctx context.Context, tx *sql.Tx, a *app.Appliance) (*app.Appliance, error) {
-	a.ID = app.ID(genID())
+func InsertApp(ctx context.Context, tx *sql.Tx, a *remote.Remote) (*remote.Remote, error) {
+	a.ID = remote.ID(genID())
 	_, err := tx.ExecContext(ctx, `INSERT INTO appliances VALUES(?, ?, ?, ?)`, a.ID, a.Name, a.DeviceID, a.Type)
 
 	if sqlErr, ok := err.(*sqlite.Error); ok {
@@ -62,7 +62,7 @@ func InsertApp(ctx context.Context, tx *sql.Tx, a *app.Appliance) (*app.Applianc
 	return a, err
 }
 
-func SelectFromAppsWhere(ctx context.Context, tx *sql.Tx, id app.ID) (a *app.Appliance, err error) {
+func SelectFromAppsWhere(ctx context.Context, tx *sql.Tx, id remote.ID) (a *remote.Remote, err error) {
 	c := ApplianceColumns{}
 
 	rows, err := tx.QueryContext(ctx, `SELECT * FROM appliances a WHERE a.app_id = ?`, id)
@@ -79,7 +79,7 @@ func SelectFromAppsWhere(ctx context.Context, tx *sql.Tx, id app.ID) (a *app.App
 		return
 	}
 
-	err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType)
+	err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.remoteType)
 	return c.convert(), err
 }
 
@@ -92,7 +92,7 @@ func selectCountFromApps(ctx context.Context, tx *sql.Tx) (count int, err error)
 	return
 }
 
-func SelectFromApps(ctx context.Context, tx *sql.Tx) (apps []*app.Appliance, err error) {
+func SelectFromApps(ctx context.Context, tx *sql.Tx) (apps []*remote.Remote, err error) {
 	c := ApplianceColumns{}
 	count, err := selectCountFromApps(ctx, tx)
 	if err != nil {
@@ -105,10 +105,10 @@ func SelectFromApps(ctx context.Context, tx *sql.Tx) (apps []*app.Appliance, err
 	}
 	defer rows.Close()
 
-	apps = make([]*app.Appliance, 0, count)
+	apps = make([]*remote.Remote, 0, count)
 
 	for rows.Next() {
-		err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.appType)
+		err = rows.Scan(&c.id, &c.name, &c.deviceID, &c.remoteType)
 		if err != nil {
 			return
 		}
@@ -118,7 +118,7 @@ func SelectFromApps(ctx context.Context, tx *sql.Tx) (apps []*app.Appliance, err
 	return apps, err
 }
 
-func UpdateApp(ctx context.Context, tx *sql.Tx, a *app.Appliance) (err error) {
+func UpdateApp(ctx context.Context, tx *sql.Tx, a *remote.Remote) (err error) {
 	_, err = tx.ExecContext(ctx, `UPDATE appliances SET name=?, device_id=? WHERE app_id=?`, a.Name, a.DeviceID, a.ID)
 	if sqlErr, ok := err.(*sqlite.Error); ok {
 		if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
@@ -132,7 +132,7 @@ func UpdateApp(ctx context.Context, tx *sql.Tx, a *app.Appliance) (err error) {
 	return
 }
 
-func DeleteApp(ctx context.Context, tx *sql.Tx, id app.ID) (err error) {
+func DeleteApp(ctx context.Context, tx *sql.Tx, id remote.ID) (err error) {
 	_, err = tx.ExecContext(ctx, `DELETE FROM appliances WHERE app_id=?`, id)
 	return
 }
