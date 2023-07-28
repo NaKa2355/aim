@@ -3,7 +3,7 @@ PRAGMA foreign_keys=true;
 CREATE TABLE IF NOT EXISTS remotes (
 	remote_id TEXT PRIMARY KEY NOT NULL, 
 	name TEXT NOT NULL UNIQUE, 
-	button_id TEXT NOT NULL,
+	device_id TEXT NOT NULL,
 	remote_type INTEGER NOT NULL
 );
 

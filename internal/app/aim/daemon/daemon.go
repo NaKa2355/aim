@@ -69,6 +69,12 @@ func (d *Daemon) Start(domainSocket string) error {
 		return err
 	}
 
+	err = os.Chmod(domainSocket, 0770)
+	if err != nil {
+		d.logger.Error("faild to change permisson", "error", err)
+		return err
+	}
+
 	d.srv.Start(listener)
 
 	d.logger.Info(
