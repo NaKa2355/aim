@@ -63,12 +63,12 @@ func (d *DataAccess) CreateRemote(ctx context.Context, a *remote.Remote) (_ *rem
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			a, err = queries.InsertApp(ctx, tx, a)
+			a, err = queries.InsertIntoRemotes(ctx, tx, a)
 			return err
 		},
 
 		func(tx *sql.Tx) error {
-			_, err = queries.InsertIntoCommands(ctx, tx, a.ID, a.Buttons)
+			_, err = queries.InsertIntoButtons(ctx, tx, a.ID, a.Buttons)
 			return err
 		},
 	})
@@ -80,7 +80,7 @@ func (d *DataAccess) CreateButton(ctx context.Context, appID remote.ID, c *butto
 	var coms []*button.Button
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			coms, err = queries.InsertIntoCommands(ctx, tx, appID, []*button.Button{c})
+			coms, err = queries.InsertIntoButtons(ctx, tx, appID, []*button.Button{c})
 			return err
 		},
 	})
@@ -91,7 +91,7 @@ func (d *DataAccess) ReadRemote(ctx context.Context, appID remote.ID) (a *remote
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			a, err = queries.SelectFromAppsWhere(ctx, tx, appID)
+			a, err = queries.SelectFromRemotesWhere(ctx, tx, appID)
 			return err
 		},
 	})
@@ -102,7 +102,7 @@ func (d *DataAccess) ReadRemotes(ctx context.Context) (apps []*remote.Remote, er
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			apps, err = queries.SelectFromApps(ctx, tx)
+			apps, err = queries.SelectFromRemotes(ctx, tx)
 			return err
 		},
 	})
@@ -113,7 +113,7 @@ func (d *DataAccess) ReadButton(ctx context.Context, appID remote.ID, comID butt
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			c, err = queries.SelectFromCommandsWhere(ctx, tx, appID, comID)
+			c, err = queries.SelectFromButtonsWhere(ctx, tx, appID, comID)
 			return err
 		},
 	})
@@ -135,7 +135,7 @@ func (d *DataAccess) UpdateRemote(ctx context.Context, a *remote.Remote) (err er
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			return queries.UpdateApp(ctx, tx, a)
+			return queries.UpdateRemote(ctx, tx, a)
 		},
 	})
 	return
@@ -145,7 +145,7 @@ func (d *DataAccess) UpdateButton(ctx context.Context, appID remote.ID, c *butto
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			return queries.UpdateCommand(ctx, tx, appID, c)
+			return queries.UpdataButton(ctx, tx, appID, c)
 		},
 	})
 	return
@@ -155,7 +155,7 @@ func (d *DataAccess) DeleteRemote(ctx context.Context, appID remote.ID) (err err
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			return queries.DeleteApp(ctx, tx, appID)
+			return queries.DeleteFromRemoteWhere(ctx, tx, appID)
 		},
 	})
 	return err
@@ -165,7 +165,7 @@ func (d *DataAccess) DeleteButton(ctx context.Context, appID remote.ID, comID bu
 	defer wrapErr(&err)
 	d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			return queries.DeleteFromCommand(ctx, tx, appID, comID)
+			return queries.DeleteFromButtonsWhere(ctx, tx, appID, comID)
 		},
 	})
 	return

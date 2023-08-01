@@ -45,7 +45,7 @@ func (record *RemoteRecord) convert() *remote.Remote {
 	return a
 }
 
-func InsertApp(ctx context.Context, tx *sql.Tx, r *remote.Remote) (*remote.Remote, error) {
+func InsertIntoRemotes(ctx context.Context, tx *sql.Tx, r *remote.Remote) (*remote.Remote, error) {
 	r.ID = remote.ID(genID())
 	_, err := tx.ExecContext(ctx, `INSERT INTO remotes VALUES(?, ?, ?, ?)`, r.ID, r.Name, r.DeviceID, r.Type)
 
@@ -62,7 +62,7 @@ func InsertApp(ctx context.Context, tx *sql.Tx, r *remote.Remote) (*remote.Remot
 	return r, err
 }
 
-func SelectFromAppsWhere(ctx context.Context, tx *sql.Tx, id remote.ID) (r *remote.Remote, err error) {
+func SelectFromRemotesWhere(ctx context.Context, tx *sql.Tx, id remote.ID) (r *remote.Remote, err error) {
 	record := RemoteRecord{}
 
 	rows, err := tx.QueryContext(ctx, `SELECT * FROM remotes a WHERE a.remote_id = ?`, id)
@@ -92,7 +92,7 @@ func selectCountFromApps(ctx context.Context, tx *sql.Tx) (count int, err error)
 	return
 }
 
-func SelectFromApps(ctx context.Context, tx *sql.Tx) (apps []*remote.Remote, err error) {
+func SelectFromRemotes(ctx context.Context, tx *sql.Tx) (apps []*remote.Remote, err error) {
 	record := RemoteRecord{}
 	count, err := selectCountFromApps(ctx, tx)
 	if err != nil {
@@ -118,7 +118,7 @@ func SelectFromApps(ctx context.Context, tx *sql.Tx) (apps []*remote.Remote, err
 	return apps, err
 }
 
-func UpdateApp(ctx context.Context, tx *sql.Tx, a *remote.Remote) (err error) {
+func UpdateRemote(ctx context.Context, tx *sql.Tx, a *remote.Remote) (err error) {
 	_, err = tx.ExecContext(ctx, `UPDATE remotes SET name=?, device_id=? WHERE remote_id=?`, a.Name, a.DeviceID, a.ID)
 	if sqlErr, ok := err.(*sqlite.Error); ok {
 		if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
@@ -132,7 +132,7 @@ func UpdateApp(ctx context.Context, tx *sql.Tx, a *remote.Remote) (err error) {
 	return
 }
 
-func DeleteApp(ctx context.Context, tx *sql.Tx, id remote.ID) (err error) {
+func DeleteFromRemoteWhere(ctx context.Context, tx *sql.Tx, id remote.ID) (err error) {
 	_, err = tx.ExecContext(ctx, `DELETE FROM remotes WHERE remote_id=?`, id)
 	return
 }
