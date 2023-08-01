@@ -35,18 +35,29 @@ func (i *Interactor) addRemote(ctx context.Context, _in bdy.AddRemoteInput) (out
 	case bdy.AddToggleRemoteInput:
 		r, err = remote.NewToggle(in.Name, in.DeviceID)
 	case bdy.AddThermostatRemoteInput:
+		var scale float64
+		switch in.Scale {
+		case bdy.Half:
+			scale = 0.5
+		case bdy.One:
+			scale = 1
+		}
 		r, err = remote.NewThermostat(
 			in.Name,
 			in.DeviceID,
-			in.Scale,
+			scale,
 			in.MinimumHeatingTemp,
 			in.MaximumHeatingTemp,
 			in.MinimumCoolingTemp,
 			in.MaximumCoolingTemp,
 		)
 	default:
-		err = errors.New("invaild input")
+		err = bdy.NewError(
+			bdy.CodeInvaildInput,
+			errors.New("invaild remote type"),
+		)
 	}
+
 	if err != nil {
 		return out, err
 	}
@@ -56,12 +67,6 @@ func (i *Interactor) addRemote(ctx context.Context, _in bdy.AddRemoteInput) (out
 		return
 	}
 
-	i.output.NotificateRemoteUpdate(
-		ctx, bdy.UpdateNotifyOutput{
-			RemoteID: string(r.ID),
-			Type:     bdy.UpdateTypeAdd,
-		},
-	)
 	out.Remote = bdy.Remote{
 		ID:           string(r.ID),
 		Name:         string(r.Name),
@@ -69,6 +74,13 @@ func (i *Interactor) addRemote(ctx context.Context, _in bdy.AddRemoteInput) (out
 		DeviceID:     string(r.DeviceID),
 		CanAddButton: (r.AddButton() == nil),
 	}
+
+	i.output.NotificateRemoteUpdate(
+		ctx, bdy.UpdateNotifyOutput{
+			Remote: out.Remote,
+			Type:   bdy.UpdateTypeAdd,
+		},
+	)
 	return out, err
 }
 
@@ -230,7 +242,8 @@ func (i *Interactor) setIRData(ctx context.Context, in bdy.SetIRDataInput) (err 
 
 // Delete
 func (i *Interactor) deleteRemote(ctx context.Context, in bdy.DeleteRemoteInput) (err error) {
-	if _, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID)); err != nil {
+	r, err := i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
+	if err != nil {
 		return err
 	}
 
@@ -242,8 +255,14 @@ func (i *Interactor) deleteRemote(ctx context.Context, in bdy.DeleteRemoteInput)
 	i.output.NotificateRemoteUpdate(
 		ctx,
 		bdy.UpdateNotifyOutput{
-			RemoteID: in.RemoteID,
-			Type:     bdy.UpdateTypeDelete,
+			Remote: bdy.Remote{
+				ID:           string(r.ID),
+				Name:         string(r.Name),
+				Type:         bdy.RemoteType(r.Type),
+				DeviceID:     string(r.DeviceID),
+				CanAddButton: r.Type == remote.TypeCustom,
+			},
+			Type: bdy.UpdateTypeDelete,
 		},
 	)
 	return err

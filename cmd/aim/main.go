@@ -9,7 +9,7 @@ import (
 )
 
 const ConfigFilePath = "/etc/aimd.json"
-const DomainSocketPath = "/tmp/aimd.sock"
+const DomainSocketPath = "/tmp/aimd/aimd.sock"
 
 func main() {
 	logger := slog.New(slog.Default().Handler())

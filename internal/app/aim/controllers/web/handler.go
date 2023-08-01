@@ -60,6 +60,17 @@ func convertRemoteType(in bdy.RemoteType) (out aimv1.Remote_RemoteType) {
 	}
 }
 
+func convertThermostatScale(scale aimv1.AddThermostatRemoteRequest_Scale) bdy.ThermostatScale {
+	switch scale {
+	case aimv1.AddThermostatRemoteRequest_HALF:
+		return bdy.Half
+	case aimv1.AddThermostatRemoteRequest_ONE:
+		return bdy.One
+	default:
+		return bdy.One
+	}
+}
+
 func (h *Handler) SetInteractor(i Boundary) {
 	h.i = i
 }
@@ -88,7 +99,7 @@ func (h *Handler) AddRemote(ctx context.Context, _req *aimv1.AddRemoteRequest) (
 		in = bdy.AddThermostatRemoteInput{
 			Name:               r.Thermostat.Name,
 			DeviceID:           r.Thermostat.DeviceId,
-			Scale:              float64(r.Thermostat.Scale),
+			Scale:              convertThermostatScale(r.Thermostat.Scale),
 			MinimumHeatingTemp: int(r.Thermostat.MinimumHeatingTemp),
 			MaximumHeatingTemp: int(r.Thermostat.MaximumHeatingTemp),
 			MinimumCoolingTemp: int(r.Thermostat.MinimumCoolingTemp),
@@ -269,19 +280,37 @@ func (h *Handler) DeleteButton(ctx context.Context, req *aimv1.DeleteButtonReque
 
 func (h *Handler) NotificateRemoteUpdate(ctx context.Context, o bdy.UpdateNotifyOutput) {
 	defer h.c.L.Unlock()
-	var updateType aimv1.RemoteUpdateNotification_UpdateType
+	notification := aimv1.RemoteUpdateNotification{}
+
 	switch o.Type {
 	case bdy.UpdateTypeAdd:
-		updateType = aimv1.RemoteUpdateNotification_UPDATE_TYPE_ADD
+		notification.Notification = &aimv1.RemoteUpdateNotification_Add{
+			Add: &aimv1.RemoteAdditionNotification{
+				Remote: &aimv1.Remote{
+					Id:           o.Remote.ID,
+					Name:         o.Remote.Name,
+					DeviceId:     o.Remote.DeviceID,
+					RemoteType:   convertRemoteType(o.Remote.Type),
+					CanAddButton: o.Remote.CanAddButton,
+				},
+			},
+		}
 	case bdy.UpdateTypeDelete:
-		updateType = aimv1.RemoteUpdateNotification_UPDATE_TYPE_DELETE
+		notification.Notification = &aimv1.RemoteUpdateNotification_Delete{
+			Delete: &aimv1.RemoteDeletionNotification{
+				RemoteId: o.Remote.ID,
+			},
+		}
 	}
 
 	h.c.L.Lock()
-	h.notification = aimv1.RemoteUpdateNotification{
-		RemoteId:   o.RemoteID,
-		UpdateType: updateType,
-	}
+	h.notification = notification
+	/*
+		h.notification = aimv1.RemoteUpdateNotification{
+			RemoteId:   o.RemoteID,
+			UpdateType: updateType,
+		}
+	*/
 	h.c.Broadcast()
 }
 

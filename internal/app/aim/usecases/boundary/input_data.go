@@ -17,10 +17,17 @@ type AddButtonRemoteInput struct {
 	DeviceID string
 }
 
+type ThermostatScale int
+
+const (
+	Half ThermostatScale = iota
+	One
+)
+
 type AddThermostatRemoteInput struct {
 	Name               string
 	DeviceID           string
-	Scale              float64
+	Scale              ThermostatScale
 	MaximumHeatingTemp int
 	MinimumHeatingTemp int
 	MaximumCoolingTemp int

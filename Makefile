@@ -22,6 +22,8 @@ CONFIG_INSTALL:=/etc/aimd.json
 SERVICE_FILE:=config/aimd.service
 SERVICE_INSTALL:=/etc/systemd/system/aimd.service
 
+SOCK_DIR:=/tmp/aimd
+
 #--------------------Makefile-------------------
 .PHONY: all
 all:
@@ -40,6 +42,7 @@ $(BIN): $(GO_FILES)
 install: update
 	cp $(CONFIG_FILE) $(CONFIG_INSTALL)
 	cp $(SERVICE_FILE) $(SERVICE_INSTALL)
+	mkdir $(SOCK_DIR)
 
 .PHONY: update
 update:
@@ -53,3 +56,4 @@ remove:
 purge: remove
 	rm $(CONFIG_INSTALL)
 	rm $(SERVICE_INSTALL)
+	rm -rf $(SOCK_DIR)

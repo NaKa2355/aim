@@ -56,6 +56,6 @@ const (
 )
 
 type UpdateNotifyOutput struct {
-	RemoteID string
-	Type     UpdateType
+	Remote Remote
+	Type   UpdateType
 }
