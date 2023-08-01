@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
-	"github.com/NaKa2355/aim/internal/app/aim/controllers/web"
+	"github.com/NaKa2355/aim/internal/app/aim/controllers/web/handler"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/web/server"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
 	"golang.org/x/exp/slog"
@@ -55,7 +55,7 @@ func New(configPath string, dbFilePath string, logger *slog.Logger) (*Daemon, er
 		return d, err
 	}
 
-	h := web.NewHandler()
+	h := handler.New()
 	i := interactor.New(repo, h)
 	h.SetInteractor(i)
 	d.srv = server.New(h, config.EnableReflection)

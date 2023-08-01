@@ -1,4 +1,4 @@
-package web
+package cond
 
 //一つのチャネルから複数のチャネルへ通知をするときに使う。
 

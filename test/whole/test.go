@@ -7,7 +7,7 @@ import (
 	"os/signal"
 
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
-	"github.com/NaKa2355/aim/internal/app/aim/controllers/web"
+	"github.com/NaKa2355/aim/internal/app/aim/controllers/web/handler"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/web/server"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
 )
@@ -21,7 +21,7 @@ func main() {
 	}
 	defer d.Close()
 
-	h := web.NewHandler()
+	h := handler.New()
 	i := interactor.New(d, h)
 	h.SetInteractor(i)
 	s := server.New(h, true)
