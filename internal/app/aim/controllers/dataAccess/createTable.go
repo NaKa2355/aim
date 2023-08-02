@@ -1,11 +1,11 @@
-package data_access
+package dataAccess
 
 import (
 	"fmt"
 )
 
 func (d *DataAccess) CreateTable() error {
-	query, err := createTableQueries.ReadFile("queries/create_table.sql")
+	query, err := createTableQueries.ReadFile("queries/createTable.sql")
 	if err != nil {
 		return err
 	}

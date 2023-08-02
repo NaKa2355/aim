@@ -1,4 +1,4 @@
-package data_access
+package dataAccess
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 	"embed"
 	"fmt"
 
-	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access/queries"
+	"github.com/NaKa2355/aim/internal/app/aim/controllers/dataAccess/queries"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/remote"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/database"
 	repo "github.com/NaKa2355/aim/internal/app/aim/usecases/repository"
 )
 
-//go:embed queries/create_table.sql
+//go:embed queries/createTable.sql
 var createTableQueries embed.FS
 
 type DataAccess struct {

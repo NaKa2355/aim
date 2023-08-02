@@ -6,7 +6,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/NaKa2355/aim/internal/app/aim/controllers/data_access"
+	"github.com/NaKa2355/aim/internal/app/aim/controllers/dataAccess"
 	"github.com/NaKa2355/aim/internal/app/aim/controllers/web/handler"
 	"github.com/NaKa2355/aim/internal/app/aim/infrastructure/web/server"
 	"github.com/NaKa2355/aim/internal/app/aim/usecases/interactor"
@@ -46,7 +46,7 @@ func New(configPath string, dbFilePath string, logger *slog.Logger) (*Daemon, er
 		return d, err
 	}
 
-	repo, err := data_access.New(dbFilePath)
+	repo, err := dataAccess.New(dbFilePath)
 	if err != nil {
 		d.logger.Error(
 			"faild to access to database",
