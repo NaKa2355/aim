@@ -62,14 +62,20 @@ func New(configPath string, dbFilePath string, logger *slog.Logger) (*Daemon, er
 	return d, nil
 }
 
-func (d *Daemon) Start(domainSocket string) error {
-	listener, err := net.Listen("unix", domainSocket)
+func (d *Daemon) Start(domainSocketPath string, domainSocketDir string) error {
+	err := os.MkdirAll(domainSocketDir, os.ModePerm)
+	if err != nil {
+		d.logger.Error("faild to make a directory", "error", err)
+		return err
+	}
+
+	listener, err := net.Listen("unix", domainSocketPath)
 	if err != nil {
 		d.logger.Error("faild to make a socket", "error", err)
 		return err
 	}
 
-	err = os.Chmod(domainSocket, 0770)
+	err = os.Chmod(domainSocketPath, 0770)
 	if err != nil {
 		d.logger.Error("faild to change permisson", "error", err)
 		return err
@@ -79,7 +85,7 @@ func (d *Daemon) Start(domainSocket string) error {
 
 	d.logger.Info(
 		"daemon started",
-		"unix domain socket path", domainSocket,
+		"unix domain socket path", domainSocketPath,
 	)
 
 	d.srv.WaitSigAndStop(syscall.SIGTERM, syscall.SIGKILL, syscall.SIGINT)
