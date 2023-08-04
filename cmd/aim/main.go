@@ -9,8 +9,7 @@ import (
 )
 
 const ConfigFilePath = "/etc/aimd.json"
-const DomainSocketPath = "/run/aimd/aimd.sock"
-const DomainSocketDir = "/run/aimd"
+const DomainSocketPath = "/var/run/aimd/aimd.sock"
 
 func main() {
 	logger := slog.New(slog.Default().Handler())
@@ -29,7 +28,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	err = d.Start(DomainSocketPath, DomainSocketDir)
+	err = d.Start(DomainSocketPath)
 	if err != nil {
 		os.Exit(-1)
 	}

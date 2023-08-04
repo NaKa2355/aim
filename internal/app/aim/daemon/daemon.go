@@ -62,12 +62,7 @@ func New(configPath string, dbFilePath string, logger *slog.Logger) (*Daemon, er
 	return d, nil
 }
 
-func (d *Daemon) Start(domainSocketPath string, domainSocketDir string) error {
-	err := os.MkdirAll(domainSocketDir, os.ModePerm)
-	if err != nil {
-		d.logger.Error("faild to make a directory", "error", err)
-		return err
-	}
+func (d *Daemon) Start(domainSocketPath string) error {
 
 	listener, err := net.Listen("unix", domainSocketPath)
 	if err != nil {
