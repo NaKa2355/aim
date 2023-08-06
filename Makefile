@@ -39,7 +39,6 @@ $(BIN): $(GO_FILES)
 
 .PHONY: install
 install: update
-	mkdir $(SOCK_DIR)
 	cp $(CONFIG_FILE) $(CONFIG_INSTALL)
 	cp $(SERVICE_FILE) $(SERVICE_INSTALL)
 
