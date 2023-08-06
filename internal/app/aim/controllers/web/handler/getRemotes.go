@@ -20,11 +20,10 @@ func (h *Handler) GetRemotes(ctx context.Context, _ *empty.Empty) (res *aimv1.Ge
 	res.Remotes = make([]*aimv1.Remote, len(out.Remotes))
 	for i, r := range out.Remotes {
 		res.Remotes[i] = &aimv1.Remote{
-			Id:           r.ID,
-			Name:         r.Name,
-			RemoteType:   convertRemoteType(r.Type),
-			DeviceId:     r.DeviceID,
-			CanAddButton: r.CanAddButton,
+			Id:       r.ID,
+			Name:     r.Name,
+			Tag:      r.Tag,
+			DeviceId: r.DeviceID,
 		}
 	}
 	return

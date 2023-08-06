@@ -20,11 +20,10 @@ func (h *Handler) GetRemote(ctx context.Context, req *aimv1.GetRemoteRequest) (r
 	}
 
 	res.Remote = &aimv1.Remote{
-		Id:           out.Remote.ID,
-		Name:         out.Remote.Name,
-		RemoteType:   convertRemoteType(out.Remote.Type),
-		DeviceId:     out.Remote.DeviceID,
-		CanAddButton: out.Remote.CanAddButton,
+		Id:       out.Remote.ID,
+		Name:     out.Remote.Name,
+		Tag:      out.Remote.Tag,
+		DeviceId: out.Remote.DeviceID,
 	}
 	return res, err
 }

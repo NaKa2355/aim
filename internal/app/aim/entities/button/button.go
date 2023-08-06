@@ -30,15 +30,23 @@ func NewID(id string) ID {
 	return ID(id)
 }
 
+type Tag string
+
+func NewTag(tag string) Tag {
+	return Tag(tag)
+}
+
 type Button struct {
 	ID     ID
 	Name   Name
+	Tag    Tag
 	IRData irdata.IRData
 }
 
-func New(name Name, irdata irdata.IRData) *Button {
+func New(name Name, tag Tag, irdata irdata.IRData) *Button {
 	return &Button{
 		Name:   name,
+		Tag:    tag,
 		IRData: irdata,
 	}
 }
@@ -57,6 +65,14 @@ func (b *Button) GetName() Name {
 
 func (b *Button) SetName(name Name) {
 	b.Name = name
+}
+
+func (b *Button) GetTag() Tag {
+	return b.Tag
+}
+
+func (b *Button) SetTag(tag Tag) {
+	b.Tag = tag
 }
 
 func (b *Button) GetRawIRData() irdata.IRData {

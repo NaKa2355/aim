@@ -2,6 +2,16 @@ github.com/NaKa2355/irdeck-proto v0.0.0-20230801190757-5bd659679dad h1:IYBwVApoJ
 github.com/NaKa2355/irdeck-proto v0.0.0-20230801190757-5bd659679dad/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
 github.com/NaKa2355/irdeck-proto v0.0.0-20230801192630-22e0db2aecde h1:uFJ0/3M+ywA4R8eoA8YQ1HK5Ju2KpBRKBTRu4FX6nLM=
 github.com/NaKa2355/irdeck-proto v0.0.0-20230801192630-22e0db2aecde/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230805062056-2e00d71aef9c h1:WSh6/PpjjYKhxFEvED5qtFfM1pdj44qkLtGU9hEv+Zk=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230805062056-2e00d71aef9c/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230805081303-ceb1e1a8f8be h1:OmM81TZ6yKP09/pOVdpvqN1uTl9NsMhi347rT/JKL4E=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230805081303-ceb1e1a8f8be/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230805083356-3a9b7f38bee5 h1:4r6SzMstaro9E3zo/O2mv1R6GGJcdDFShSMRSHJq8Ds=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230805083356-3a9b7f38bee5/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230806051212-4aca41238bde h1:T0mETwDsV32K9A8ScZlDdJgXSoF5Kt0t98U2n99ncDo=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230806051212-4aca41238bde/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230806051503-b4f197fafe2f h1:bJWvjq5TIg1tcH2WWc6jAYjGDyDbVeMEvyV4zdeDSw0=
+github.com/NaKa2355/irdeck-proto v0.0.0-20230806051503-b4f197fafe2f/go.mod h1:8K5eQhsukZOxCj9DFuf1NfckwMIvg6P9f/AETl89rfI=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

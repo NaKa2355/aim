@@ -14,40 +14,9 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-type ApplianceType int
-
-const (
-	TypeCustom     = 0
-	TypeButton     = 1
-	TypeToggle     = 2
-	TypeThermostat = 3
-)
-
-type RemoteRecord struct {
-	id         remote.ID
-	name       remote.Name
-	remoteType remote.RemoteType
-	deviceID   remote.DeviceID
-}
-
-func (record *RemoteRecord) convert() *remote.Remote {
-	var a *remote.Remote
-	switch record.remoteType {
-	case remote.TypeCustom:
-		a = remote.LoadCustom(record.id, record.name, record.deviceID)
-	case remote.TypeButton:
-		a = remote.LoadButton(record.id, record.name, record.deviceID)
-	case remote.TypeToggle:
-		a = remote.LoadToggle(record.id, record.name, record.deviceID)
-	case remote.TypeThermostat:
-		a = remote.LoadThermostat(record.id, record.name, record.deviceID)
-	}
-	return a
-}
-
 func InsertIntoRemotes(ctx context.Context, tx *sql.Tx, r *remote.Remote) (*remote.Remote, error) {
 	r.ID = remote.ID(genID())
-	_, err := tx.ExecContext(ctx, `INSERT INTO remotes VALUES(?, ?, ?, ?)`, r.ID, r.Name, r.DeviceID, r.Type)
+	_, err := tx.ExecContext(ctx, `INSERT INTO remotes(remote_id, name, device_id, tag) VALUES(?, ?, ?, ?)`, r.ID, r.Name, r.DeviceID, r.Tag)
 
 	if sqlErr, ok := err.(*sqlite.Error); ok {
 		if sqlErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
@@ -63,7 +32,7 @@ func InsertIntoRemotes(ctx context.Context, tx *sql.Tx, r *remote.Remote) (*remo
 }
 
 func SelectFromRemotesWhere(ctx context.Context, tx *sql.Tx, id remote.ID) (r *remote.Remote, err error) {
-	record := RemoteRecord{}
+	r = &remote.Remote{}
 
 	rows, err := tx.QueryContext(ctx, `SELECT * FROM remotes a WHERE a.remote_id = ?`, id)
 	if err != nil {
@@ -79,11 +48,11 @@ func SelectFromRemotesWhere(ctx context.Context, tx *sql.Tx, id remote.ID) (r *r
 		return
 	}
 
-	err = rows.Scan(&record.id, &record.name, &record.deviceID, &record.remoteType)
-	return record.convert(), err
+	err = rows.Scan(&r.ID, &r.Name, &r.DeviceID, &r.Tag)
+	return r, err
 }
 
-func selectCountFromApps(ctx context.Context, tx *sql.Tx) (count int, err error) {
+func selectCountFromRemotes(ctx context.Context, tx *sql.Tx) (count int, err error) {
 	row := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM remotes`)
 	if err != nil {
 		return
@@ -92,9 +61,8 @@ func selectCountFromApps(ctx context.Context, tx *sql.Tx) (count int, err error)
 	return
 }
 
-func SelectFromRemotes(ctx context.Context, tx *sql.Tx) (apps []*remote.Remote, err error) {
-	record := RemoteRecord{}
-	count, err := selectCountFromApps(ctx, tx)
+func SelectFromRemotes(ctx context.Context, tx *sql.Tx) (remos []*remote.Remote, err error) {
+	count, err := selectCountFromRemotes(ctx, tx)
 	if err != nil {
 		return
 	}
@@ -105,17 +73,18 @@ func SelectFromRemotes(ctx context.Context, tx *sql.Tx) (apps []*remote.Remote, 
 	}
 	defer rows.Close()
 
-	apps = make([]*remote.Remote, 0, count)
+	remos = make([]*remote.Remote, 0, count)
 
 	for rows.Next() {
-		err = rows.Scan(&record.id, &record.name, &record.deviceID, &record.remoteType)
+		remo := remote.Remote{}
+		err = rows.Scan(&remo.ID, &remo.Name, &remo.DeviceID, &remo.Tag)
 		if err != nil {
 			return
 		}
-		apps = append(apps, record.convert())
+		remos = append(remos, &remo)
 	}
 
-	return apps, err
+	return remos, err
 }
 
 func UpdateRemote(ctx context.Context, tx *sql.Tx, a *remote.Remote) (err error) {

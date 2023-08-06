@@ -23,11 +23,10 @@ func (i *Interactor) deleteRemote(ctx context.Context, in bdy.DeleteRemoteInput)
 		ctx,
 		bdy.UpdateNotifyOutput{
 			Remote: bdy.Remote{
-				ID:           string(r.ID),
-				Name:         string(r.Name),
-				Type:         bdy.RemoteType(r.Type),
-				DeviceID:     string(r.DeviceID),
-				CanAddButton: r.Type == remote.TypeCustom,
+				ID:       string(r.ID),
+				Name:     string(r.Name),
+				Tag:      string(r.Tag),
+				DeviceID: string(r.DeviceID),
 			},
 			Type: bdy.UpdateTypeDelete,
 		},

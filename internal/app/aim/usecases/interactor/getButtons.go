@@ -10,7 +10,7 @@ import (
 
 func (i *Interactor) getButtons(ctx context.Context, in bdy.GetButtonsInput) (out bdy.GetButtonsOutput, err error) {
 	var buttons []*button.Button
-	r, err := i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
+	_, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}
@@ -21,13 +21,11 @@ func (i *Interactor) getButtons(ctx context.Context, in bdy.GetButtonsInput) (ou
 	}
 
 	out.Buttons = make([]bdy.Button, len(buttons))
-	for i, c := range buttons {
-		c.GetRawIRData()
-		out.Buttons[i].ID = string(c.ID)
-		out.Buttons[i].Name = string(c.Name)
-		out.Buttons[i].CanRename = (r.ChangeButtonName() == nil)
-		out.Buttons[i].CanDelete = (r.ChangeButtonName() == nil)
-		out.Buttons[i].HasIRData = (len(c.IRData) != 0)
+	for i, b := range buttons {
+		out.Buttons[i].ID = string(b.ID)
+		out.Buttons[i].Name = string(b.Name)
+		out.Buttons[i].Tag = string(b.Tag)
+		out.Buttons[i].HasIRData = (len(b.IRData) != 0)
 	}
 
 	return

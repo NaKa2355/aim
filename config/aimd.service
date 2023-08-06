@@ -3,4 +3,5 @@ Description=Infrared appliances manager. config file: (/etc/aimd.json)
 
 [Service]
 Type=simple
+RuntimeDirectory=aimd
 ExecStart=/usr/local/bin/aim

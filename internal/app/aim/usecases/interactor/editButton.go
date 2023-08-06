@@ -9,15 +9,9 @@ import (
 )
 
 func (i *Interactor) renameButton(ctx context.Context, in bdy.EditButtonInput) (err error) {
-	var r *remote.Remote
 	var b *button.Button
 
-	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
-	if err != nil {
-		return
-	}
-
-	err = r.ChangeButtonName()
+	_, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}

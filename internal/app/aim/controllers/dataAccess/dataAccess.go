@@ -59,32 +59,33 @@ func (d *DataAccess) Close() (err error) {
 	return
 }
 
-func (d *DataAccess) CreateRemote(ctx context.Context, a *remote.Remote) (_ *remote.Remote, err error) {
+func (d *DataAccess) CreateRemote(ctx context.Context, r *remote.Remote) (_ *remote.Remote, err error) {
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			a, err = queries.InsertIntoRemotes(ctx, tx, a)
+			r, err = queries.InsertIntoRemotes(ctx, tx, r)
 			return err
 		},
 
 		func(tx *sql.Tx) error {
-			_, err = queries.InsertIntoButtons(ctx, tx, a.ID, a.Buttons)
+			for _, button := range r.Buttons {
+				_, err = queries.InsertIntoButton(ctx, tx, remote.ID(button.ID), button)
+			}
 			return err
 		},
 	})
-	return a, err
+	return r, err
 }
 
-func (d *DataAccess) CreateButton(ctx context.Context, appID remote.ID, c *button.Button) (_ *button.Button, err error) {
+func (d *DataAccess) CreateButton(ctx context.Context, appID remote.ID, b *button.Button) (_ *button.Button, err error) {
 	defer wrapErr(&err)
-	var coms []*button.Button
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			coms, err = queries.InsertIntoButtons(ctx, tx, appID, []*button.Button{c})
+			b, err = queries.InsertIntoButton(ctx, tx, appID, b)
 			return err
 		},
 	})
-	return coms[0], err
+	return b, err
 }
 
 func (d *DataAccess) ReadRemote(ctx context.Context, appID remote.ID) (a *remote.Remote, err error) {
@@ -124,7 +125,7 @@ func (d *DataAccess) ReadButtons(ctx context.Context, appID remote.ID) (coms []*
 	defer wrapErr(&err)
 	err = d.db.BeginTransaction(database.Transaction{
 		func(tx *sql.Tx) error {
-			coms, err = queries.SelectFromCommands(ctx, tx, appID)
+			coms, err = queries.SelectFromButtons(ctx, tx, appID)
 			return err
 		},
 	})

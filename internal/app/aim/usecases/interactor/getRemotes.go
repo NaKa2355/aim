@@ -18,11 +18,10 @@ func (i *Interactor) getRemotes(ctx context.Context) (out bdy.GetRemotesOutput, 
 	out.Remotes = make([]bdy.Remote, len(remotes))
 	for i, r := range remotes {
 		out.Remotes[i] = bdy.Remote{
-			ID:           string(r.ID),
-			DeviceID:     string(r.DeviceID),
-			Type:         convertType(r.Type),
-			Name:         string(r.Name),
-			CanAddButton: (r.AddButton() == nil),
+			ID:       string(r.ID),
+			DeviceID: string(r.DeviceID),
+			Tag:      string(r.Tag),
+			Name:     string(r.Name),
 		}
 	}
 	return

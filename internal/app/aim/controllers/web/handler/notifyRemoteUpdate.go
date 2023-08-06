@@ -10,23 +10,22 @@ import (
 
 func (h *Handler) NotificateRemoteUpdate(ctx context.Context, o bdy.UpdateNotifyOutput) {
 	defer h.c.L.Unlock()
-	notification := aimv1.RemoteUpdateNotification{}
+	notification := aimv1.UpdateNotification{}
 
 	switch o.Type {
 	case bdy.UpdateTypeAdd:
-		notification.Notification = &aimv1.RemoteUpdateNotification_Add{
+		notification.Notification = &aimv1.UpdateNotification_Add{
 			Add: &aimv1.RemoteAdditionNotification{
 				Remote: &aimv1.Remote{
-					Id:           o.Remote.ID,
-					Name:         o.Remote.Name,
-					DeviceId:     o.Remote.DeviceID,
-					RemoteType:   convertRemoteType(o.Remote.Type),
-					CanAddButton: o.Remote.CanAddButton,
+					Id:       o.Remote.ID,
+					Name:     o.Remote.Name,
+					DeviceId: o.Remote.DeviceID,
+					Tag:      o.Remote.Tag,
 				},
 			},
 		}
 	case bdy.UpdateTypeDelete:
-		notification.Notification = &aimv1.RemoteUpdateNotification_Delete{
+		notification.Notification = &aimv1.UpdateNotification_Delete{
 			Delete: &aimv1.RemoteDeletionNotification{
 				RemoteId: o.Remote.ID,
 			},
@@ -38,7 +37,7 @@ func (h *Handler) NotificateRemoteUpdate(ctx context.Context, o bdy.UpdateNotify
 	h.c.Broadcast()
 }
 
-func (h *Handler) NotifyRemoteUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyRemoteUpdateServer) error {
+func (h *Handler) NotifyRemoteUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyUpdateServer) error {
 	for {
 		select {
 		case <-stream.Context().Done():

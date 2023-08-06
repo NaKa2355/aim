@@ -3,7 +3,7 @@ module github.com/NaKa2355/aim
 go 1.20
 
 require (
-	github.com/NaKa2355/irdeck-proto v0.0.0-20230801192630-22e0db2aecde
+	github.com/NaKa2355/irdeck-proto v0.0.0-20230806051503-b4f197fafe2f
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/golang/protobuf v1.5.3
 	github.com/oklog/ulid v1.3.1

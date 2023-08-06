@@ -6,38 +6,11 @@ type AddRemoteOutput struct {
 	Remote Remote
 }
 
-type AddRemoteInput interface{}
-
-type AddCustomRemoteInput struct {
+type AddRemoteInput struct {
 	Name     string
 	DeviceID string
-}
-
-type AddToggleRemoteInput struct {
-	Name     string
-	DeviceID string
-}
-
-type AddButtonRemoteInput struct {
-	Name     string
-	DeviceID string
-}
-
-type ThermostatScale int
-
-const (
-	Half ThermostatScale = iota
-	One
-)
-
-type AddThermostatRemoteInput struct {
-	Name               string
-	DeviceID           string
-	Scale              ThermostatScale
-	MaximumHeatingTemp int
-	MinimumHeatingTemp int
-	MaximumCoolingTemp int
-	MinimumCoolingTemp int
+	Tag      string
+	Buttons  []AddButtonInput
 }
 
 type RemoteAdder interface {

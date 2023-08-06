@@ -4,59 +4,43 @@ import (
 	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
 )
 
-type RemoteType int
-
-const (
-	TypeCustom RemoteType = iota
-	TypeButton
-	TypeToggle
-	TypeThermostat
-)
+type Tag string
 
 type Remote struct {
 	ID       ID
 	Name     Name
 	DeviceID DeviceID
-	Type     RemoteType
+	Tag      Tag
 	Buttons  []*button.Button
-	RemoteOperator
 }
 
-type RemoteOperator interface {
-	ChangeButtonName() error
-	AddButton() error
-	RemoveButton() error
-}
-
-func NewAppliance(n string, d string, remoteType RemoteType, buttons []*button.Button, opr RemoteOperator) (*Remote, error) {
+func NewRemote(name string, deviceID string, tag string, buttons []*button.Button) (*Remote, error) {
 	var remote *Remote
-	name, err := NewName(n)
+	n, err := NewName(name)
 	if err != nil {
 		return remote, err
 	}
 
-	deviceID, err := NewDeviceID(d)
+	d, err := NewDeviceID(deviceID)
 	if err != nil {
 		return remote, err
 	}
 
 	remote = &Remote{
-		Name:           name,
-		Type:           remoteType,
-		DeviceID:       deviceID,
-		Buttons:        buttons,
-		RemoteOperator: opr,
+		Name:     n,
+		Tag:      Tag(tag),
+		DeviceID: d,
+		Buttons:  buttons,
 	}
 	return remote, err
 }
 
-func LoadAppliance(id ID, name Name, deviceID DeviceID, remoteType RemoteType, opr RemoteOperator) *Remote {
+func LoadAppliance(id ID, name Name, deviceID DeviceID, tag Tag) *Remote {
 	return &Remote{
-		ID:             id,
-		Name:           name,
-		DeviceID:       deviceID,
-		Type:           remoteType,
-		RemoteOperator: opr,
+		ID:       id,
+		Name:     name,
+		DeviceID: deviceID,
+		Tag:      tag,
 	}
 }
 
@@ -66,6 +50,11 @@ func (r *Remote) SetID(id string) error {
 		return err
 	}
 	r.ID = _id
+	return nil
+}
+
+func (a *Remote) SetTag(tag string) error {
+	a.Tag = Tag(tag)
 	return nil
 }
 

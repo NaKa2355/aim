@@ -9,14 +9,7 @@ import (
 )
 
 func (i *Interactor) deleteButton(ctx context.Context, in bdy.DeleteButtonInput) (err error) {
-	var r *remote.Remote
-
-	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
-	if err != nil {
-		return
-	}
-
-	err = r.RemoveButton()
+	_, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
 		return
 	}

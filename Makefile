@@ -21,7 +21,6 @@ CONFIG_INSTALL:=/etc/aimd.json
 #サービスファイルのインストール先
 SERVICE_FILE:=config/aimd.service
 SERVICE_INSTALL:=/etc/systemd/system/aimd.service
-SOCK_DIR:=/var/run/aimd
 
 
 #--------------------Makefile-------------------
@@ -41,7 +40,6 @@ $(BIN): $(GO_FILES)
 .PHONY: install
 install: update
 	mkdir $(SOCK_DIR)
-	chmod 777 $(SOCK_DIR)
 	cp $(CONFIG_FILE) $(CONFIG_INSTALL)
 	cp $(SERVICE_FILE) $(SERVICE_INSTALL)
 
@@ -57,4 +55,3 @@ remove:
 purge: remove
 	rm $(CONFIG_INSTALL)
 	rm $(SERVICE_INSTALL)
-	rm -rf $(SOCK_DIR)

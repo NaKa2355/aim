@@ -13,40 +13,36 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-func InsertIntoButtons(ctx context.Context, tx *sql.Tx, appID remote.ID, coms []*button.Button) (res []*button.Button, err error) {
-	stmt, err := tx.PrepareContext(ctx, `INSERT INTO buttons VALUES(?, ?, ?, ?)`)
+func InsertIntoButton(ctx context.Context, tx *sql.Tx, remoteID remote.ID, b *button.Button) (*button.Button, error) {
+	stmt, err := tx.PrepareContext(ctx, `INSERT INTO buttons(button_id, remote_id, name, tag, irdata) VALUES(?, ?, ?, ?, ?)`)
 	if err != nil {
-		return
+		return b, err
 	}
 	defer stmt.Close()
 
 	var sqliteErr *sqlite.Error
 
-	for _, com := range coms {
+	b.ID = button.ID(genID())
 
-		com.ID = button.ID(genID())
-
-		_, err = stmt.Exec(com.ID, appID, com.GetName(), []byte{})
-		if err == nil {
-			continue
-		}
-
-		if _, ok := err.(*sqlite.Error); !ok {
-			return
-		}
-
-		sqliteErr = err.(*sqlite.Error)
-
-		if sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
-			err = repo.NewError(
-				repo.CodeAlreadyExists,
-				fmt.Errorf("same name button already exists: %w", err),
-			)
-			return
-		}
+	_, err = stmt.Exec(b.ID, remoteID, b.GetName(), b.Tag, []byte{})
+	if err == nil {
+		return b, err
 	}
 
-	return coms, err
+	if _, ok := err.(*sqlite.Error); !ok {
+		return b, err
+	}
+
+	sqliteErr = err.(*sqlite.Error)
+	if sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+		err = repo.NewError(
+			repo.CodeAlreadyExists,
+			fmt.Errorf("same name button already exists: %w", err),
+		)
+		return b, err
+	}
+
+	return b, err
 }
 
 func UpdataButton(ctx context.Context, tx *sql.Tx, appID remote.ID, c *button.Button) (err error) {
@@ -70,32 +66,27 @@ func SelectCountFromButtonsWhere(ctx context.Context, tx *sql.Tx, appID remote.I
 	return
 }
 
-func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID remote.ID) (coms []*button.Button, err error) {
-	var c = button.Button{}
-
+func SelectFromButtons(ctx context.Context, tx *sql.Tx, appID remote.ID) (buttons []*button.Button, err error) {
 	count, err := SelectCountFromButtonsWhere(ctx, tx, appID)
 	if err != nil {
 		return
 	}
 
-	coms = make([]*button.Button, 0, count)
+	buttons = make([]*button.Button, 0, count)
 
-	rows, err := tx.QueryContext(ctx, `SELECT name, irdata, button_id FROM buttons WHERE remote_id=?`, appID)
+	rows, err := tx.QueryContext(ctx, `SELECT name, irdata, button_id, tag FROM buttons WHERE remote_id=?`, appID)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err = rows.Scan(&c.Name, &c.IRData, &c.ID)
+		var c = button.Button{}
+		err = rows.Scan(&c.Name, &c.IRData, &c.ID, &c.Tag)
 		if err != nil {
 			return
 		}
-		coms = append(coms, &button.Button{
-			Name:   c.Name,
-			ID:     c.ID,
-			IRData: c.IRData,
-		})
+		buttons = append(buttons, &c)
 	}
 	return
 }
@@ -103,7 +94,7 @@ func SelectFromCommands(ctx context.Context, tx *sql.Tx, appID remote.ID) (coms 
 func SelectFromButtonsWhere(ctx context.Context, tx *sql.Tx, appID remote.ID, comID button.ID) (com *button.Button, err error) {
 	var c = &button.Button{}
 
-	rows, err := tx.QueryContext(ctx, `SELECT name, irdata FROM buttons WHERE remote_id=? AND button_id=?`, appID, comID)
+	rows, err := tx.QueryContext(ctx, `SELECT name, irdata, tag FROM buttons WHERE remote_id=? AND button_id=?`, appID, comID)
 	if err != nil {
 		return
 	}
@@ -113,7 +104,7 @@ func SelectFromButtonsWhere(ctx context.Context, tx *sql.Tx, appID remote.ID, co
 		return c, repo.NewError(repo.CodeNotFound, errors.New("button not found"))
 	}
 
-	err = rows.Scan(&c.Name, &c.IRData)
+	err = rows.Scan(&c.Name, &c.IRData, &c.Tag)
 	c.ID = comID
 	return c, err
 }

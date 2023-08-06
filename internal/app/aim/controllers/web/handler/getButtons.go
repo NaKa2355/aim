@@ -24,8 +24,7 @@ func (h *Handler) GetButtons(ctx context.Context, req *aimv1.GetButtonsRequest) 
 		res.Buttons[i] = &aimv1.Button{
 			Id:        b.ID,
 			Name:      b.Name,
-			CanRename: b.CanRename,
-			CanDelete: b.CanDelete,
+			Tag:       b.Tag,
 			HasIrdata: b.HasIRData,
 		}
 	}

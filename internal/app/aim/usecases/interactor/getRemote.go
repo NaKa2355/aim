@@ -16,11 +16,10 @@ func (i *Interactor) getRemote(ctx context.Context, in bdy.GetRemoteInput) (out 
 	}
 
 	out.Remote = bdy.Remote{
-		ID:           string(r.ID),
-		DeviceID:     string(r.DeviceID),
-		Type:         convertType(r.Type),
-		Name:         string(r.Name),
-		CanAddButton: (r.AddButton() == nil),
+		ID:       string(r.ID),
+		DeviceID: string(r.DeviceID),
+		Tag:      string(r.Tag),
+		Name:     string(r.Name),
 	}
 	return out, err
 }

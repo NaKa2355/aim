@@ -9,26 +9,26 @@ import (
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
 )
 
-func (i *Interactor) addButton(ctx context.Context, in bdy.AddButtonInput) (err error) {
-	var r *remote.Remote
-	var b *button.Button
-
-	r, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
+func (i *Interactor) addButton(ctx context.Context, in bdy.AddButtonInput) (out bdy.AddButtonOutput, err error) {
+	_, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
 	if err != nil {
-		return
+		return out, err
 	}
+	b := button.New(button.Name(in.Name), button.Tag(in.Tag), irdata.IRData{})
 
-	err = r.AddButton()
-	if err != nil {
-		return
+	b, err = i.repo.CreateButton(ctx, remote.ID(in.RemoteID), b)
+
+	out.Button = bdy.Button{
+		ID:        string(b.ID),
+		Name:      string(b.Name),
+		Tag:       string(b.Tag),
+		HasIRData: (len(b.IRData) == 0),
 	}
-
-	b = button.New(button.Name(in.Name), irdata.IRData{})
-	_, err = i.repo.CreateButton(ctx, remote.ID(in.RemoteID), b)
 	return
 }
 
-func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) error {
-	err := i.addButton(ctx, in)
-	return wrapErr(err)
+func (i *Interactor) AddButton(ctx context.Context, in bdy.AddButtonInput) (out bdy.AddButtonOutput, err error) {
+	out, err = i.addButton(ctx, in)
+	err = wrapErr(err)
+	return out, err
 }

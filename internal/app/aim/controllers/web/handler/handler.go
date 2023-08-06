@@ -28,8 +28,8 @@ type Boundary interface {
 type Handler struct {
 	aimv1.UnimplementedAimServiceServer
 	i            Boundary
-	nc           chan aimv1.RemoteUpdateNotification
-	notification aimv1.RemoteUpdateNotification
+	nc           chan aimv1.UpdateNotification
+	notification aimv1.UpdateNotification
 	c            *cond.Cond
 }
 
@@ -37,7 +37,7 @@ var _ aimv1.AimServiceServer = &Handler{}
 
 func New() *Handler {
 	return &Handler{
-		nc: make(chan aimv1.RemoteUpdateNotification),
+		nc: make(chan aimv1.UpdateNotification),
 		c:  cond.NewCond(&sync.Mutex{}),
 	}
 }
