@@ -4,7 +4,7 @@ RUN apk update && \
     apk add bash make && \
     apk add --upgrade grep
 
-WORKDIR ./aimd
+WORKDIR ./aim
 COPY ./ ./
 RUN make build
 RUN make install
