@@ -13,5 +13,6 @@ WORKDIR ../
 RUN rm -rf ./aim
 RUN go clean --modcache
 RUN mkdir /var/run/aimd
+RUN chmod 755 /var/run/aimd
 
 CMD ["aim"]
