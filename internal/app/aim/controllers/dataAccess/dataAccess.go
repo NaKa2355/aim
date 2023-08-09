@@ -69,7 +69,7 @@ func (d *DataAccess) CreateRemote(ctx context.Context, r *remote.Remote) (_ *rem
 
 		func(tx *sql.Tx) error {
 			for _, button := range r.Buttons {
-				_, err = queries.InsertIntoButton(ctx, tx, remote.ID(button.ID), button)
+				_, err = queries.InsertIntoButton(ctx, tx, remote.ID(r.ID), button)
 			}
 			return err
 		},
