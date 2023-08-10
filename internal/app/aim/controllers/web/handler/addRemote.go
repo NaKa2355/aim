@@ -17,7 +17,10 @@ func (h *Handler) AddRemote(ctx context.Context, _req *aimv1.AddRemoteRequest) (
 		Tag:      _req.Tag,
 	}
 
-	in.Buttons = make([]bdy.AddButtonInput, len(_req.Buttons))
+	in.Buttons = make([]struct {
+		Name string
+		Tag  string
+	}, len(_req.Buttons))
 
 	for i, b := range _req.Buttons {
 		in.Buttons[i].Name = b.Name

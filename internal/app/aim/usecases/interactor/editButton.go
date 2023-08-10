@@ -2,6 +2,7 @@ package interactor
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
 	remote "github.com/NaKa2355/aim/internal/app/aim/entities/remote"
@@ -11,14 +12,13 @@ import (
 func (i *Interactor) renameButton(ctx context.Context, in bdy.EditButtonInput) (err error) {
 	var b *button.Button
 
-	_, err = i.repo.ReadRemote(ctx, remote.ID(in.RemoteID))
+	b, err = i.repo.ReadButton(ctx, remote.ID(in.RemoteID), button.ID(in.ButtonID))
 	if err != nil {
 		return
 	}
 
-	b, err = i.repo.ReadButton(ctx, remote.ID(in.RemoteID), button.ID(in.ButtonID))
-	if err != nil {
-		return
+	if b.Tag != "" {
+		return bdy.NewError(bdy.CodeInvaildOperation, fmt.Errorf("cannot edit a button which has tag"))
 	}
 
 	b.SetName(button.Name(in.Name))

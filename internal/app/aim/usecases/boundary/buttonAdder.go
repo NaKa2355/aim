@@ -4,7 +4,6 @@ import "context"
 
 type AddButtonInput struct {
 	RemoteID string
-	Tag      string
 	Name     string
 }
 

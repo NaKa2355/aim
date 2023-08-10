@@ -10,7 +10,10 @@ type AddRemoteInput struct {
 	Name     string
 	DeviceID string
 	Tag      string
-	Buttons  []AddButtonInput
+	Buttons  []struct {
+		Name string
+		Tag  string
+	}
 }
 
 type RemoteAdder interface {

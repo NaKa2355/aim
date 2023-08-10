@@ -13,7 +13,6 @@ func (h *Handler) AddButton(ctx context.Context, req *aimv1.AddButtonRequest) (r
 	in := bdy.AddButtonInput{
 		RemoteID: req.RemoteId,
 		Name:     req.Name,
-		Tag:      req.Tag,
 	}
 
 	b, err := h.i.AddButton(ctx, in)

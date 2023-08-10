@@ -14,7 +14,7 @@ func (i *Interactor) addButton(ctx context.Context, in bdy.AddButtonInput) (out 
 	if err != nil {
 		return out, err
 	}
-	b := button.New(button.Name(in.Name), button.Tag(in.Tag), irdata.IRData{})
+	b := button.New(button.Name(in.Name), button.Tag(""), irdata.IRData{})
 
 	b, err = i.repo.CreateButton(ctx, remote.ID(in.RemoteID), b)
 
