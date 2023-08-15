@@ -2,6 +2,7 @@ package interactor
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NaKa2355/aim/internal/app/aim/entities/button"
 	"github.com/NaKa2355/aim/internal/app/aim/entities/irdata"
@@ -10,6 +11,11 @@ import (
 )
 
 func (i *Interactor) addRemote(ctx context.Context, in bdy.AddRemoteInput) (out bdy.AddRemoteOutput, err error) {
+	if len(in.Buttons) > 150 {
+		err = bdy.NewError(bdy.CodeInvaildInput, fmt.Errorf("too much buttons. count of buttons must be under 150"))
+		return
+	}
+
 	buttons := make([]*button.Button, len(in.Buttons))
 
 	for i, b := range in.Buttons {
