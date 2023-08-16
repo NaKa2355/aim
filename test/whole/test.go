@@ -26,7 +26,7 @@ func main() {
 	h.SetInteractor(i)
 	s := server.New(h, true)
 
-	listener, err := net.Listen("tcp", ":8080")
+	listener, err := net.Listen("tcp", ":3000")
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -15,7 +15,7 @@ func New(dbFile string) (*DataBase, error) {
 	d := &DataBase{
 		dbFile: dbFile,
 	}
-	db, err := sql.Open("sqlite3", dbFile)
+	db, err := sql.Open("sqlite3", dbFile+":databaselocked.sqlite?cache=shared&mode=rwc")
 	if err != nil {
 		return d, err
 	}
