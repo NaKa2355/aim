@@ -35,14 +35,7 @@ func (d *DataBase) Close() error {
 type Transaction []func(tx *sql.Tx) error
 
 func (d *DataBase) BeginTransaction(ctx context.Context, t Transaction, readOnly bool) (err error) {
-	conn, err := d.db.Conn(ctx)
-	if err != nil {
-		return
-	}
-	defer conn.Close()
-
-	tx, err := conn.BeginTx(ctx, &sql.TxOptions{ReadOnly: readOnly})
-
+	tx, err := d.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: readOnly})
 	if err != nil {
 		return
 	}
