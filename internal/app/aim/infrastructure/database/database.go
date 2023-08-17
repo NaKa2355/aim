@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 
 	_ "modernc.org/sqlite"
@@ -15,7 +16,7 @@ func New(dbFile string) (*DataBase, error) {
 	d := &DataBase{
 		dbFile: dbFile,
 	}
-	db, err := sql.Open("sqlite3", dbFile+":databaselocked.sqlite?cache=shared&mode=rwc")
+	db, err := sql.Open("sqlite3", dbFile)
 	if err != nil {
 		return d, err
 	}
@@ -33,8 +34,15 @@ func (d *DataBase) Close() error {
 
 type Transaction []func(tx *sql.Tx) error
 
-func (d *DataBase) BeginTransaction(t Transaction) (err error) {
-	tx, err := d.db.Begin()
+func (d *DataBase) BeginTransaction(ctx context.Context, t Transaction, readOnly bool) (err error) {
+	conn, err := d.db.Conn(ctx)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	tx, err := conn.BeginTx(ctx, &sql.TxOptions{ReadOnly: readOnly})
+
 	if err != nil {
 		return
 	}
