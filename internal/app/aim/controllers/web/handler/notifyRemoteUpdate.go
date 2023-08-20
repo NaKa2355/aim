@@ -37,7 +37,7 @@ func (h *Handler) NotificateRemoteUpdate(ctx context.Context, o bdy.UpdateNotify
 	h.c.Broadcast()
 }
 
-func (h *Handler) NotifyRemoteUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyUpdateServer) error {
+func (h *Handler) NotifyUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyUpdateServer) error {
 	for {
 		select {
 		case <-stream.Context().Done():
