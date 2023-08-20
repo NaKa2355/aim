@@ -7,6 +7,7 @@ type UpdateType int
 const (
 	UpdateTypeAdd UpdateType = iota
 	UpdateTypeDelete
+	UpdateTypeUpdate
 )
 
 type UpdateNotifyOutput struct {

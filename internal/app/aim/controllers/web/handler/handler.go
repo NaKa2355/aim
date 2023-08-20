@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"sync"
 
 	bdy "github.com/NaKa2355/aim/internal/app/aim/usecases/boundary"
@@ -27,18 +28,20 @@ type Boundary interface {
 
 type Handler struct {
 	aimv1.UnimplementedAimServiceServer
-	i            Boundary
-	nc           chan aimv1.UpdateNotification
-	notification aimv1.UpdateNotification
-	c            *cond.Cond
+	i                Boundary
+	nc               chan aimv1.UpdateNotification
+	notification     aimv1.UpdateNotification
+	c                *cond.Cond
+	StreamingContext context.Context
 }
 
 var _ aimv1.AimServiceServer = &Handler{}
 
-func New() *Handler {
+func New(ctx context.Context) *Handler {
 	return &Handler{
-		nc: make(chan aimv1.UpdateNotification),
-		c:  cond.NewCond(&sync.Mutex{}),
+		nc:               make(chan aimv1.UpdateNotification),
+		c:                cond.NewCond(&sync.Mutex{}),
+		StreamingContext: ctx,
 	}
 }
 

@@ -28,7 +28,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	err = d.Start(DomainSocketPath)
+	err = d.StartWithDomainSocket(DomainSocketPath)
 	if err != nil {
 		os.Exit(-1)
 	}

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net"
 	"os"
 	"os/signal"
@@ -11,10 +12,11 @@ import (
 )
 
 type Server struct {
-	s *grpc.Server
+	s                  *grpc.Server
+	cancelAllStreaming context.CancelFunc
 }
 
-func New(handler v1.AimServiceServer, useReflection bool) *Server {
+func New(handler v1.AimServiceServer, useReflection bool, cancelAllStreaming context.CancelFunc) *Server {
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(UnaryErrInterceptor),
 	)
@@ -23,7 +25,8 @@ func New(handler v1.AimServiceServer, useReflection bool) *Server {
 	}
 	v1.RegisterAimServiceServer(s, handler)
 	return &Server{
-		s: s,
+		cancelAllStreaming: cancelAllStreaming,
+		s:                  s,
 	}
 }
 
@@ -38,9 +41,11 @@ func (s *Server) WaitSigAndStop(sig ...os.Signal) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, sig...)
 	<-sigCh
+	s.cancelAllStreaming()
 	s.s.GracefulStop()
 }
 
 func (s *Server) Stop() {
+	s.cancelAllStreaming()
 	s.s.GracefulStop()
 }

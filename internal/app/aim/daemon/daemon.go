@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"os"
@@ -32,19 +33,10 @@ func (d *Daemon) readConf(filePath string) (*Config, error) {
 	return config, err
 }
 
-func New(configPath string, dbFilePath string, logger *slog.Logger) (*Daemon, error) {
+func NewWithoutConfig(dbFilePath string, enableReflection bool, logger *slog.Logger) (*Daemon, error) {
 	var err error = nil
 	var d = &Daemon{}
 	d.logger = logger
-
-	config, err := d.readConf(configPath)
-	if err != nil {
-		d.logger.Error(
-			"faild to read config file",
-			"error", err.Error(),
-		)
-		return d, err
-	}
 
 	repo, err := dataAccess.New(dbFilePath)
 	if err != nil {
@@ -55,14 +47,40 @@ func New(configPath string, dbFilePath string, logger *slog.Logger) (*Daemon, er
 		return d, err
 	}
 
-	h := handler.New()
+	streamingContext, closeAllStreaming := context.WithCancel(context.Background())
+
+	h := handler.New(streamingContext)
 	i := interactor.New(repo, h)
 	h.SetInteractor(i)
-	d.srv = server.New(h, config.EnableReflection)
+	d.srv = server.New(h, enableReflection, closeAllStreaming)
 	return d, nil
 }
 
-func (d *Daemon) Start(domainSocketPath string) error {
+func New(configPath string, dbFilePath string, logger *slog.Logger) (*Daemon, error) {
+	var err error = nil
+	var d = &Daemon{}
+
+	config, err := d.readConf(configPath)
+	if err != nil {
+		d.logger.Error(
+			"faild to read config file",
+			"error", err.Error(),
+		)
+		return d, err
+	}
+
+	return NewWithoutConfig(dbFilePath, config.EnableReflection, logger)
+}
+
+func (d *Daemon) start(listener net.Listener) error {
+	d.srv.Start(listener)
+	d.srv.WaitSigAndStop(syscall.SIGTERM, syscall.SIGKILL, syscall.SIGINT)
+	d.logger.Info("shutting down daemon...")
+	d.logger.Info("stopped daemon")
+	return nil
+}
+
+func (d *Daemon) StartWithDomainSocket(domainSocketPath string) error {
 
 	listener, err := net.Listen("unix", domainSocketPath)
 	if err != nil {
@@ -76,15 +94,18 @@ func (d *Daemon) Start(domainSocketPath string) error {
 		return err
 	}
 
-	d.srv.Start(listener)
-
 	d.logger.Info(
-		"daemon started",
+		"daemon starting",
 		"unix domain socket path", domainSocketPath,
 	)
 
-	d.srv.WaitSigAndStop(syscall.SIGTERM, syscall.SIGKILL, syscall.SIGINT)
-	d.logger.Info("shutting down daemon...")
-	d.logger.Info("stopped daemon")
-	return nil
+	return d.start(listener)
+}
+
+func (d *Daemon) StartWithNet(network string, address string) error {
+	listener, err := net.Listen(network, address)
+	if err != nil {
+		return err
+	}
+	return d.start(listener)
 }

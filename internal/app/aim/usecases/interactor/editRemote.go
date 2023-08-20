@@ -26,6 +26,15 @@ func (i *Interactor) editRemote(ctx context.Context, in bdy.EditRemoteInput) (er
 	}
 
 	err = i.repo.UpdateRemote(ctx, r)
+	i.output.NotificateRemoteUpdate(ctx, bdy.UpdateNotifyOutput{
+		Type: bdy.UpdateTypeUpdate,
+		Remote: bdy.Remote{
+			ID:       string(r.ID),
+			Name:     string(r.Name),
+			Tag:      string(r.Tag),
+			DeviceID: string(r.DeviceID),
+		},
+	})
 	return
 }
 

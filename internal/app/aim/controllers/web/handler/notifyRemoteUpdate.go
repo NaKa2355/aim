@@ -30,6 +30,17 @@ func (h *Handler) NotificateRemoteUpdate(ctx context.Context, o bdy.UpdateNotify
 				RemoteId: o.Remote.ID,
 			},
 		}
+	case bdy.UpdateTypeUpdate:
+		notification.Notification = &aimv1.UpdateNotification_Update{
+			Update: &aimv1.RemoteUpdateNotification{
+				Remote: &aimv1.Remote{
+					Id:       o.Remote.ID,
+					Name:     o.Remote.Name,
+					DeviceId: o.Remote.DeviceID,
+					Tag:      o.Remote.Tag,
+				},
+			},
+		}
 	}
 
 	h.c.L.Lock()
@@ -40,6 +51,8 @@ func (h *Handler) NotificateRemoteUpdate(ctx context.Context, o bdy.UpdateNotify
 func (h *Handler) NotifyUpdate(_ *empty.Empty, stream aimv1.AimService_NotifyUpdateServer) error {
 	for {
 		select {
+		case <-h.StreamingContext.Done():
+			return h.StreamingContext.Err()
 		case <-stream.Context().Done():
 			return stream.Context().Err()
 		case <-h.c.NotifyChan():
