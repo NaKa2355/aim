@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello, World!")
 	logger := slog.New(slog.Default().Handler())
+	logger.Info("Starting Daemon...")
 	daemon, err := daemon.NewWithoutConfig("./test.db", true, logger)
 	if err != nil {
 		fmt.Println(err)
